@@ -439,7 +439,9 @@ function pack(id, name, icon, findings) {
 function g1(doc, cfg) {
   const f = []; const content = doc.text;
   const REG = cfg.registry, AT = cfg.allowTokens || [];
-  const tokens = content.match(/\[([a-zA-Z0-9\-]+)\]/g) || [];
+  // 引用 token 扫描：抓裸 `[n]`/`[key]` 型引用；用负向预查 `(?!\()` 排除 `[文本](URL)` markdown 链接
+  // （链接文本如 [CHANGELOG](...) 不是断链引用，否则误报——样例裸 [1] 仍照抓，五裁决不变）。
+  const tokens = content.match(/\[([a-zA-Z0-9\-]+)\](?!\()/g) || [];
   tokens.forEach((tk) => {
     const key = tk.slice(1, -1);
     if (!REG.refs.includes(key) && !AT.includes(key))
