@@ -9,6 +9,20 @@
 
 ---
 
+### v0.12.0（2026-08-31）：M11 web 端可扩展改造 —— 从单页报表到三层治理控制台
+
+> **来源**：用户反馈"web 端感觉很扁平、没什么可拓展的感觉"。取证确认症结非视觉（M8 已把配色/深度/暗色/字体做厚），而是三处结构性"扁"——① 导航只有一屏（一根到底长滚动，看着像静态报表不像产品）；② 信息只一层深（点文档=换右侧六卡，无下钻/趋势/历史/对比）；③ CLI 早已有的 project-config / metaMap / `--compare` 换配置差异能力，web 端一个没暴露，仍硬编码 5 篇 A–E 样例 + 写死 DEFAULT_CONFIG。经用户"都做"批准，按 P0（导航+下钻）+P1（配置外置+diff）+P2（demo 模式+CI）全量落地。
+> - **执行（P0 视图导航层）**：`gatekeeper.html` 引入 `.viewnav` 五视图切换（总览/明细/编排/配置对照/趋势）+ `.crumbs` 五级面包屑（批次›项目›文档›门禁›命中）+ hash 路由（`#/inspect` 等可分享可回退）。CSS 全 additive，旧类名（band/ring/gpill/cols/rail/item/cards/gate/finding/dws/node/lane/step）与响应式/暗色令牌一律保留。
+> - **执行（P0 信息架构下钻）**：门禁卡去掉 `slice(0,6)` 截断，改**全量 findings** + 按 P0–P3 级别筛选 chips；命中项可点击**联动定位并高亮原文对应片段**（展开原文 `<pre>` 滚动到命中处）。总览页新增跨项目健康对比卡 + 关键指标网格。
+> - **执行（P1 配置/数据外置）**：新建 `configs/batches.sample.json`（3 项目 9 篇，含电商/西游记口径）+ `sync-configs.mjs`（仿 `sync-gates.mjs`，把 `configs/*.json` 与批次数据注入 HTML 的 `GK-CONFIGS-SRC`/`GK-DATA-SRC` 标记块，`--check` 作第二道漂移门禁）；前端 `DOCS`/`DEFAULT_CONFIG` 硬编码全部下沉到注入块——**加演示项目=改 json 跑 sync，不改 HTML**。引擎块与 `gates.mjs` 零改动（`sync-gates --check` 仍绿）。
+> - **执行（P1 换配置 diff 视图）**：新增「配置对照」视图，把 CLI `project-check --compare` 可视化——同一批产出物在「样例默认 vs 项目口径」下的命中差异表 + Δ + 被抑制门禁标注（西游记文学语境 G4 命中 2→0 直观呈现），并显式声明"配置是如实描述口径、非刷绿"。
+> - **执行（P2 分发两端）**：① `?demo=1` 离线演示模式——`body.demo` 态下编排视图展示 `output/live-evidence.md` 的**真实钉钉回执**（E 链 4 节点 taskId/nodeId/openDingId + 端到端计时），断网可从头演到尾；② `.github/workflows/gatekeeper.yml`——把 `sync-gates/sync-configs --check` + `verify.mjs` + `check-docs.mjs` + `project-check` 封进 CI，"web 一个端"扩到"web + CI 两端"。新建 `verify.mjs` 固化回归红线（环 50/6P0/9P1/8P2/1 可发布/A 阻断0分/E 100/G4 抑制/六 ID 稳定）供本地与 CI 共用。
+> - **文件**：prototype/gatekeeper.html（前端层重构：CSS 扩展 + body 五视图 + 渲染/路由 JS，引擎块与字体行未动）、prototype/sync-configs.mjs（新建）、prototype/verify.mjs（新建）、prototype/configs/batches.sample.json（新建）、prototype/configs/gatekeeper-self.json（currentVersion→0.12.0 + 登记版本）、.github/workflows/gatekeeper.yml（新建）、prototype/social/ui-{1280,1024,640}.png（三档截图重生成）、Web端可扩展改造方案.md（本改造规格，新建）、README.md + 交接文档.md + STRUCTURE.md + ROADMAP.md（版本 v0.12.0 + 结构/进度/回写）。
+> - **验证**：`sync-gates --check` + `sync-configs --check` 双绿；`verify.mjs` 9 项红线全过（样例批逐字不变）；Playwright（Chromium）实测——控制台 **0 报错**、五视图切换均可见、明细下钻+P0 筛选+命中跳转生效、西游记 diff 2 行、`?demo=1` 编排展示"真实回执"徽章、640px 无横向溢出；三档截图留档。一次性迁移脚本（apply-frontend/_frontend.part/_verify_*）已回收站清理。
+> - **状态**：已落地。遗留（如实）：趋势视图当前以 3 项目实时健康分作柱状对比，真正的"批次时间线趋势"须接真实多批次数据（ROADMAP §7 决策闸门：无真实数据不投空图）；桌面壳（Tauri）/钉钉 H5 微应用留长期，未进本次；CI workflow 在共享大仓内不触发，须作品抽出为独立 repo 方生效。
+
+---
+
 ### v0.11.0（2026-08-31）：M10 project-config —— 换配置体检不同项目 + 自身文档全量转绿
 
 > **来源**：M8.5 自我 DRL 暴露"引擎默认配置面向脱敏样例、套真实项目会大量误判"；用户批准把"换配置"从运行时手改 REGISTRY 升级为**声明式可加载 project-config**，并把蓝图/交接推到可发布、把可推广性做成可跑 demo。

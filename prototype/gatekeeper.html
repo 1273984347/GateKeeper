@@ -182,6 +182,91 @@
   @media(max-width:1024px){.band{grid-template-columns:1fr;gap:18px}.counters{justify-content:flex-start}.cols{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.branch{grid-template-columns:1fr}}
   @media(max-width:640px){.top-in{flex-wrap:wrap}.brand b{font-size:18px}.doc-head{flex-direction:column;align-items:flex-start}.verdict{align-self:flex-start}.wrap{padding:0 14px 48px}}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+  /* ============ 控制台扩展层（M11：视图导航 / 下钻 / 配置外置 / 分发）· 全 additive ============ */
+  /* 视图导航条：sticky 于顶栏下方，胶囊式 tab */
+  .viewnav{position:sticky;top:57px;z-index:25;background:var(--bg);border-bottom:1px solid var(--line-2);display:flex;gap:6px;padding:10px 0;flex-wrap:wrap;align-items:center}
+  .viewnav .vtab{border:1px solid var(--line);background:var(--card);color:var(--ink-2);font-family:var(--sans);font-size:13px;font-weight:600;padding:7px 15px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:7px;letter-spacing:.2px;transition:all .16s var(--ease);box-shadow:var(--sh-1)}
+  .viewnav .vtab:hover{transform:translateY(-1px);box-shadow:var(--sh-2);border-color:var(--muted)}
+  .viewnav .vtab.active{background:var(--cinnabar-grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px -8px rgba(178,58,46,.5)}
+  .viewnav .vtab .n{font-family:var(--serif);font-size:11px;opacity:.7}
+  .viewnav .proj-switch{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .viewnav select{font-family:var(--sans);font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--card);color:var(--ink);cursor:pointer}
+  .viewnav select:focus-visible{outline:2px solid var(--cinnabar);outline-offset:1px}
+  /* 面包屑：五级下钻 */
+  .crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:16px;font-family:var(--mono)}
+  .crumbs a{color:var(--ink-2);cursor:pointer;text-decoration:none;padding:2px 6px;border-radius:6px;transition:background .14s,color .14s}
+  .crumbs a:hover{background:var(--cinnabar-soft);color:var(--cinnabar)}
+  .crumbs .sep{opacity:.45}
+  .crumbs .cur{color:var(--cinnabar);font-weight:700}
+  /* 视图容器 */
+  .view{display:none;animation:fadeUp .35s var(--ease) both}
+  .view.active{display:block}
+  .view-title{font-family:var(--serif);font-size:15px;font-weight:700;letter-spacing:.4px;margin:20px 0 2px;color:var(--ink)}
+  .view-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+  /* 项目对比卡（总览） */
+  .projgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .projcard{background:linear-gradient(180deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--sh-1);cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s var(--ease);animation:fadeUp .45s var(--ease) both;position:relative;overflow:hidden}
+  .projcard:hover{transform:translateY(-3px);box-shadow:var(--sh-3)}
+  .projcard .pn{font-family:var(--serif);font-size:16px;font-weight:700}
+  .projcard .pcfg{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+  .projcard .pbar{height:7px;border-radius:4px;background:var(--line-2);margin:12px 0 6px;overflow:hidden}
+  .projcard .pbar i{display:block;height:100%;border-radius:4px;transition:width .8s var(--ease)}
+  .projcard .pstat{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-2)}
+  .projcard .pstat b{font-family:var(--serif);font-size:20px}
+  .projcard .pnote{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5}
+  /* 命中过滤器 chips */
+  .filterrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:2px 0 10px}
+  .filterrow .flabel{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-right:2px}
+  .fchip{border:1px solid var(--line);background:var(--card);color:var(--ink-2);font-size:11px;font-weight:600;padding:4px 11px;border-radius:999px;cursor:pointer;transition:all .14s var(--ease)}
+  .fchip:hover{border-color:var(--muted)}
+  .fchip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .fchip.on.lv-p0{background:var(--p0);border-color:var(--p0)} .fchip.on.lv-p1{background:var(--p1);border-color:var(--p1)} .fchip.on.lv-p2{background:var(--p2);border-color:var(--p2)} .fchip.on.lv-p3{background:var(--muted);border-color:var(--muted)}
+  .finding{cursor:pointer}
+  .finding.sel{background:var(--cinnabar-soft);box-shadow:inset 0 0 0 1px rgba(178,58,46,.35)}
+  .jump-hint{font-size:10px;color:var(--cinnabar);opacity:0;transition:opacity .14s;float:right}
+  .finding:hover .jump-hint{opacity:.8}
+  /* 配置对照 diff 表 */
+  .difftable{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);overflow:hidden}
+  .difftable th{background:var(--card-2);text-align:left;padding:10px 12px;font-weight:600;color:var(--muted);letter-spacing:.4px;border-bottom:1px solid var(--line);font-size:11px;text-transform:uppercase}
+  .difftable td{padding:9px 12px;border-bottom:1px solid var(--line-2);vertical-align:top;font-family:var(--sans)}
+  .difftable tr:last-child td{border-bottom:none}
+  .difftable td.doc{font-weight:600}
+  .difftable .delta{text-align:right;font-family:var(--serif);font-weight:700;white-space:nowrap}
+  .delta.down{color:var(--jade)} .delta.up{color:var(--p0)} .delta.eq{color:var(--muted)}
+  .supp{display:inline-block;font-size:10px;color:var(--jade);background:var(--jade-soft);padding:1px 7px;border-radius:999px;margin:1px 3px 1px 0}
+  /* 趋势条（历史视图，取真实多项目/批次计算值） */
+  .trend{display:flex;align-items:flex-end;gap:18px;height:200px;padding:14px 16px;background:linear-gradient(180deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}
+  .trendcol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px}
+  .trendcol .tval{font-family:var(--serif);font-size:14px;font-weight:700}
+  .trendcol .tbar{width:70%;max-width:64px;border-radius:8px 8px 0 0;transition:height .8s var(--ease);min-height:4px;box-shadow:var(--sh-1)}
+  .trendcol .tlab{font-size:11px;color:var(--muted);text-align:center;line-height:1.3}
+  .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--sh-1)}
+  .metric .mv{font-family:var(--serif);font-size:26px;font-weight:700;line-height:1}
+  .metric .mk{font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:.3px}
+  /* DWS 真实回执面板 */
+  .evidence{margin-top:18px;border:1px solid var(--line);border-radius:var(--r-lg);background:linear-gradient(180deg,var(--card),var(--card-2));box-shadow:var(--sh-1);padding:18px 20px}
+  .evidence h4{font-family:var(--serif);font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .evidence .erec{font-size:12px;border-left:3px solid var(--jade);padding:8px 12px;margin-top:8px;background:var(--card);border-radius:0 var(--r-sm) var(--r-sm) 0}
+  .evidence .erec .rk{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .evidence .erec .rv{font-family:var(--mono);color:var(--jade);word-break:break-all}
+  .live-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:999px;letter-spacing:.5px;text-transform:uppercase}
+  .live-badge.sim{background:var(--orange-soft);color:var(--warn)}
+  .live-badge.real{background:var(--jade-soft);color:var(--jade)}
+  /* 演示模式横幅 */
+  .demo-banner{display:none;align-items:center;gap:10px;margin-top:18px;background:linear-gradient(90deg,var(--jade-soft),var(--card));border:1px solid rgba(31,122,92,.4);border-radius:var(--r-md);padding:10px 16px;font-size:12px;color:var(--jade)}
+  body.demo .demo-banner{display:flex}
+  .demo-badge{font-family:var(--serif);font-weight:700;font-size:11px;letter-spacing:1px;color:#fff;background:var(--jade);padding:2px 9px;border-radius:6px}
+  /* 暗色补全 */
+  :root[data-theme='dark'] .viewnav{background:var(--bg)}
+  :root[data-theme='dark'] .vtab,:root[data-theme='dark'] .fchip,:root[data-theme='dark'] select{background:var(--card)}
+  :root[data-theme='dark'] .fchip.on{background:var(--ink);color:var(--card)}
+  :root[data-theme='dark'] .projcard.on-drill{border-color:var(--cinnabar)}
+  :root[data-theme='dark'] .evidence .erec{background:var(--card-2)}
+  /* 响应式补全 */
+  @media(max-width:1024px){.viewnav{top:0;position:static}.viewnav .proj-switch{margin-left:0;width:100%}}
+  @media(max-width:640px){.trend{gap:10px;padding:10px}.crumbs{font-size:11px}.filterrow{gap:5px}}
 </style>
 </head>
 <body>
@@ -195,6 +280,8 @@
 </div></header>
 
 <div class="wrap">
+  <div class="demo-banner"><span class="demo-badge">DEMO</span><span>离线演示模式（<span class="mono">?demo=1</span>）· 零外部依赖，断网可从头演到尾；编排链路已预生成真实钉钉回执结果态。</span></div>
+
   <div class="band">
     <div>
       <div class="ring">
@@ -202,11 +289,11 @@
           <circle cx="65" cy="65" r="56" stroke="#e2ddd2" stroke-width="10" fill="none"></circle>
           <circle id="ringArc" cx="65" cy="65" r="56" stroke="#2f6b52" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="352" stroke-dashoffset="352"></circle>
         </svg>
-        <div class="num"><b id="ringNum">--</b><small>批次健康分</small></div>
+        <div class="num"><b id="ringNum">--</b><small id="ringCap">批次健康分</small></div>
       </div>
     </div>
     <div>
-      <div class="section-label">门禁矩阵 · 全批命中</div>
+      <div class="section-label" id="stripLabel">门禁矩阵 · 全批命中</div>
       <div class="gates-strip" id="gatesStrip"></div>
     </div>
     <div>
@@ -216,40 +303,82 @@
   </div>
 
   <div id="pasteBox" class="paste-box" style="display:none">
-    <div class="paste-hint">把任意 AI 生成的文案 / 文档贴进来，实时跑内容门禁（引用 / 格式 / 合规 / 敏感信息 / 版本）：</div>
+    <div class="paste-hint">把任意 AI 生成的文案 / 文档贴进来，用<b>当前项目的配置口径</b>实时跑内容门禁（引用 / 格式 / 合规 / 敏感信息 / 证据链）：</div>
     <textarea id="pasteTa" class="paste-ta" placeholder="例如：本产品全网第一，100%有效，客服微信 13800001234，准确率提升 [1]……"></textarea>
     <div class="paste-actions"><button class="btn" id="btnPaste">跑门禁</button><button class="btn ghost" id="btnPasteClear">清空</button></div>
   </div>
 
-  <div class="cols">
-    <div class="rail">
-      <h3>产出物批次</h3>
-      <div id="list"></div>
-      <div class="rail-foot">数据源注册表 · 权威版本 <b class="mono">v2.4.0</b>，有效引文 <b class="mono">[1][2][3][cost-2024]</b>。全部样例为脱敏模拟数据。</div>
+  <nav class="viewnav" id="viewnav">
+    <button class="vtab active" data-view="overview">◎ 总览</button>
+    <button class="vtab" data-view="inspect">▤ 明细</button>
+    <button class="vtab" data-view="pipeline">⇄ 编排</button>
+    <button class="vtab" data-view="config">⚙ 配置对照</button>
+    <button class="vtab" data-view="history">↗ 趋势</button>
+    <div class="proj-switch"><span>项目</span><select id="projSel"></select></div>
+  </nav>
+
+  <div class="crumbs" id="crumbs"></div>
+
+  <!-- 总览 -->
+  <section class="view active" id="view-overview">
+    <div class="view-title">批次健康总览</div>
+    <div class="view-sub" id="ovSub"></div>
+    <div class="projgrid" id="projGrid"></div>
+    <div class="metrics-grid" id="ovMetrics"></div>
+    <div class="footer">— 点击任一项目卡可下钻到明细；顶栏「粘贴文本检测」可对任意文本按当前口径即时体检 —</div>
+  </section>
+
+  <!-- 明细 -->
+  <section class="view" id="view-inspect">
+    <div class="cols">
+      <div class="rail">
+        <h3 id="railTitle">产出物</h3>
+        <div id="list"></div>
+        <div class="rail-foot" id="railFoot"></div>
+      </div>
+      <div class="main">
+        <div class="doc-head" id="docHead"></div>
+        <details class="doc-body" id="docBodyWrap"><summary>查看 / 收起原文</summary><pre id="docBody"></pre></details>
+        <div class="filterrow" id="filterRow"></div>
+        <div class="cards" id="cards"></div>
+        <div class="footer">— 门禁卡内命中项可点击，联动定位并高亮原文对应片段 —</div>
+      </div>
     </div>
+  </section>
 
-    <div class="main">
-      <div class="doc-head" id="docHead"></div>
-      <details class="doc-body" id="docBodyWrap"><summary>查看 / 收起原文</summary><pre id="docBody"></pre></details>
-      <div class="cards" id="cards"></div>
-
-      <div class="dws">
-        <h3>钉钉 DWS 发布编排</h3>
-        <div class="note">原型模拟 · 复赛阶段接入真实钉钉：审批单、待办、群机器人、知识库、日志模板（CLI 化，可经 Agent / MCP 调用）</div>
-        <div class="flow" id="flow"></div>
-        <div class="branch">
-          <div class="lane ok" id="laneOk"><h4><span class="tag t-ok sq">通过</span> 可发布链路</h4>
-            <div class="steps"><span class="step">生成审批单</span><span class="arrow">→</span><span class="step">主管审批</span><span class="arrow">→</span><span class="step">群机器人播报</span><span class="arrow">→</span><span class="step">归档知识库</span><span class="arrow">→</span><span class="step">写日志模板</span></div>
-          </div>
-          <div class="lane no" id="laneNo"><h4><span class="tag t-block sq">阻断</span> 驳回整改链路</h4>
-            <div class="steps"><span class="step">自动驳回</span><span class="arrow">→</span><span class="step">建待办 @作者</span><span class="arrow">→</span><span class="step">按修复建议改</span><span class="arrow">→</span><span class="step">重跑门禁</span></div>
-          </div>
+  <!-- 编排 -->
+  <section class="view" id="view-pipeline">
+    <div class="dws">
+      <h3>钉钉 DWS 发布编排</h3>
+      <div class="note" id="dwsNote">原型模拟 · 复赛阶段接入真实钉钉：审批单、待办、群机器人、知识库、日志模板（CLI 化，可经 Agent / MCP 调用）</div>
+      <div class="flow" id="flow"></div>
+      <div class="branch">
+        <div class="lane ok" id="laneOk"><h4><span class="tag t-ok sq">通过</span> 可发布链路</h4>
+          <div class="steps"><span class="step">生成审批单</span><span class="arrow">→</span><span class="step">主管审批</span><span class="arrow">→</span><span class="step">群机器人播报</span><span class="arrow">→</span><span class="step">归档知识库</span><span class="arrow">→</span><span class="step">写日志模板</span></div>
+        </div>
+        <div class="lane no" id="laneNo"><h4><span class="tag t-block sq">阻断</span> 驳回整改链路</h4>
+          <div class="steps"><span class="step">自动驳回</span><span class="arrow">→</span><span class="step">建待办 @作者</span><span class="arrow">→</span><span class="step">按修复建议改</span><span class="arrow">→</span><span class="step">重跑门禁</span></div>
         </div>
       </div>
-
-      <div class="footer">— 验收官 · 一夫当关 ｜ 让 AI 批量产出的文档，规模再大也管得住、查得清、放得行 —</div>
     </div>
-  </div>
+    <div id="evidenceMount"></div>
+    <div class="footer">— 验收官 · 一夫当关 ｜ 让 AI 批量产出的文档，规模再大也管得住、查得清、放得行 —</div>
+  </section>
+
+  <!-- 配置对照 -->
+  <section class="view" id="view-config">
+    <div class="view-title">project-config 对照</div>
+    <div class="view-sub" id="cfgSub"></div>
+    <div id="cfgMount"></div>
+  </section>
+
+  <!-- 趋势 -->
+  <section class="view" id="view-history">
+    <div class="view-title">跨项目 / 批次趋势</div>
+    <div class="view-sub">健康分与召回率均由引擎按各口径实时计算（非演示假数据）；接入真实批次后即为治理看板。</div>
+    <div class="trend" id="trendMount"></div>
+    <div class="metrics-grid" id="histMetrics"></div>
+  </section>
 </div>
 
 <script>
@@ -426,184 +555,300 @@ function flattenFindings(gates) {
 }
 /* ==== GATES-SRC-END ==== */
 
-/* ===== 样例产出物（脱敏模拟数据，HTML 演示专用）===== */
-const DOCS = [
-  {
-    id:'A', name:'智能客服 SaaS 发布文案', type:'营销物料', author:'市场部',
-    meta:{session:'S-2026-0812-A', created:'2026-08-12', source:'—'},
-    text:`【新品发布】智联客服 · 全网第一的智能对话引擎。
-采用国家级自然语言处理技术，工单解决率 100%有效，遥遥领先同类产品。
-现在下单立享限时特惠，错过不再有！
-我们的技术碾压同行，客户满意度行业第一。`
-  },
-  {
-    id:'B', name:'Q2 客服效能分析报告', type:'经营分析', author:'数据分析组',
-    meta:{session:'S-2026-0810-B', created:'2026-08-10', source:'text-search.json'},
-    text:`本报告基于 v2.3 数据口径，结论已与 v2.4.0 版本核对。
-二季度智能客服准确率达到 92%，较一季度 [1] 提升明显；
-二次质检模型准确率 95%，与财务口径 [2] 保持一致；
-用户满意度 [3] 环比上升，成本数据来源 [9]。
-自动分派转化率 38%，坐席留存率 81%。`
-  },
-  {
-    id:'C', name:'重点客户回访纪要', type:'客户记录', author:'客服团队',
-    meta:{session:'', created:'2026-08-09', source:''},
-    text:`回访对象：张先生（VIP）。
-手机号 13812345678，身份证号 110101199003071234，邮箱 zhang@example.com。
-客户反馈续约意愿强，内部成本约每件 800 元，建议按标准报价跟进。
-联系人助理 15987654321。`
-  },
-  {
-    id:'D', name:'新产品 FAQ 文档', type:'知识条目', author:'产品组',
-    meta:{},
-    text:`# 产品常见问题
-### 如何开通服务
-登录后台, 点击"开通"按钮, 按提示完成实名即可
-### 计费方式
-按月订阅，支持随时取消
-# 退款政策
-## 退款流程
-提交工单, 3 个工作日内处理`
-  },
-  {
-    id:'E', name:'合规巡检平台周报', type:'运营周报', author:'运营组',
-    meta:{session:'S-2026-0811-E', created:'2026-08-11', source:'ops-db'},
-    text:`本周通过流水线发布物料 128 份，其中高质量内容占比领先。
-自动门禁共拦截问题 47 处，团队响应满意度高 [1]。
-下周继续推进知识库归档与巡检闭环。`
-  }
-];
+/* ==== GK-CONFIGS-SRC-START ==== 由 sync-configs.mjs 从 configs/*.json 生成，勿手改（改配置请改 json 后跑 node sync-configs.mjs）==== */
+const GK_CONFIGS = {"ecommerce-marketing":{"name":"电商营销物料(对外发布)","_why":"对照组：这是真正需要广告法+KPI 指标一致性的场景。同一引擎、换这套配置，G4/G2 指标维度即被点亮——证明渠道开关是真实生效、不是永远抑制。","registry":{"currentVersion":"2.4.0","metrics":["准确率","转化率","留存率","满意度","命中率"]},"channel":{"adLaw":true},"allowTokens":[]},"gatekeeper-self":{"name":"GateKeeper 自身治理文档","_why":"验收官给『自己』做体检用的项目口径。不是放宽门禁——是把引擎默认(为脱敏样例调的 2.4.0/KPI/广告法/来源提示)如实换成本项目真实口径：版本注册表登记 CHANGELOG 真实发布谱系；治理文档不承载营销 KPI 故指标维度留空；非对外发布故关广告法渠道；评分权重/召回率等叙述数字非引用数据故关来源提示；正文示例占位 [n]/[x]/[style] 登记为合法 token。断链引用与敏感信息(P0/P1)始终不豁免。","registry":{"currentVersion":"0.12.0","versions":["0.12.0","0.11.0","0.10.0","0.9.1","0.9.0","0.8.0","0.7.0","0.6.0","0.5.0","0.4.0","0.3.0","0.2.0","0.1.0","2.4.0"],"refs":[],"metrics":[]},"channel":{"adLaw":false,"sourceHint":false},"allowTokens":["n","x","style","Unreleased"],"metaMap":{"session":["Session","会话"],"created":["创建日期","更新"],"source":["数据指标","引用","来源"]}},"xiyouji":{"name":"详解西游记(内容生产项目)","_why":"第三方项目对照：字段映射换成西游记 docs 的真实 schema（引用/创建日期/轨标），文学语境关广告法。演示同一引擎体检完全不同项目的文档。","registry":{"currentVersion":"0.0.0","versions":[],"refs":[],"metrics":[]},"channel":{"adLaw":false},"allowTokens":["n","x"],"metaMap":{"session":["Session","会话"],"created":["创建日期","更新"],"source":["引用","数据来源","数据指标","来源"]}}};
+/* ==== GK-CONFIGS-SRC-END ==== */
+/* ==== GK-DATA-SRC-START ==== 由 sync-configs.mjs 从 configs/batches.sample.json 生成，勿手改 ==== */
+const GK_DATA = {"batchName":"验收官 · 多项目对照批次","batchId":"B-2026-0915","timestamp":"2026-09-15T10:00:00+08:00","disclaimer":"全部为脱敏模拟数据，不含真实个人信息或商业秘密。用于演示同一引擎换不同 project-config 体检不同项目。","projects":[{"id":"sample","name":"智能客服 · 脱敏样例批","configRef":null,"note":"营销/分析/纪要混合，走样例默认口径（版本 2.4.0 + KPI 指标 + 广告法渠道全开）。","docs":[{"id":"A","name":"智能客服 SaaS 发布文案","type":"营销物料","author":"市场部","meta":{"session":"S-2026-0812-A","created":"2026-08-12","source":"—"},"text":"【新品发布】智联客服 · 全网第一的智能对话引擎。\n采用国家级自然语言处理技术，工单解决率 100%有效，遥遥领先同类产品。\n现在下单立享限时特惠，错过不再有！\n我们的技术碾压同行，客户满意度行业第一。"},{"id":"B","name":"Q2 客服效能分析报告","type":"经营分析","author":"数据分析组","meta":{"session":"S-2026-0810-B","created":"2026-08-10","source":"text-search.json"},"text":"本报告基于 v2.3 数据口径，结论已与 v2.4.0 版本核对。\n二季度智能客服准确率达到 92%，较一季度 [1] 提升明显；\n二次质检模型准确率 95%，与财务口径 [2] 保持一致；\n用户满意度 [3] 环比上升，成本数据来源 [9]。\n自动分派转化率 38%，坐席留存率 81%。"},{"id":"C","name":"重点客户回访纪要","type":"客户记录","author":"客服团队","meta":{"session":"","created":"2026-08-09","source":""},"text":"回访对象：张先生（VIP）。\n手机号 13812345678，身份证号 110101199003071234，邮箱 zhang@example.com。\n客户反馈续约意愿强，内部成本约每件 800 元，建议按标准报价跟进。\n联系人助理 15987654321。"},{"id":"D","name":"新产品 FAQ 文档","type":"知识条目","author":"产品组","meta":{},"text":"# 产品常见问题\n### 如何开通服务\n登录后台, 点击\"开通\"按钮, 按提示完成实名即可\n### 计费方式\n按月订阅，支持随时取消\n# 退款政策\n## 退款流程\n提交工单, 3 个工作日内处理"},{"id":"E","name":"合规巡检平台周报","type":"运营周报","author":"运营组","meta":{"session":"S-2026-0811-E","created":"2026-08-11","source":"ops-db"},"text":"本周通过流水线发布物料 128 份，其中高质量内容占比领先。\n自动门禁共拦截问题 47 处，团队响应满意度高 [1]。\n下周继续推进知识库归档与巡检闭环。"}]},{"id":"ecommerce","name":"电商大促物料","configRef":"ecommerce-marketing","note":"对外发布场景，同一引擎换电商口径：广告法渠道 + KPI 指标维度点亮。","docs":[{"id":"EC1","name":"618 主推爆品详情页文案","type":"电商详情","author":"运营一部","meta":{"session":"S-2026-0601-EC1","created":"2026-06-01","source":"goods-db"},"text":"全网销量第一的家用破壁机，转化率 38%。采用顶级电机，静音效果最佳。\n限时三天，错过不再有——满意度 92%，留存率 81%。"},{"id":"EC2","name":"会员日活动推送","type":"推送文案","author":"CRM 组","meta":{"session":"S-2026-0605-EC2","created":"2026-06-05","source":"crm"},"text":"尊享会员专属：本店客服满意度行业领先 [1]，复购转化率提升明显。\n活动款均为国家级质检合格品。"}]},{"id":"xiyouji","name":"详解西游记 · 内容生产","configRef":"xiyouji","note":"文学语境，关广告法渠道；字段映射换西游记真实 schema。示例 [n]/[x] 登记为合法占位 token。","docs":[{"id":"X1","name":"孙悟空人物深度分析","type":"人物档案","author":"内容组","meta":{"session":"S-2026-0820-X1","created":"2026-08-20","source":"《西游记》原著第七回"},"text":"孙悟空号称『万里挑一』的战斗能力，是大闹天宫的第一主角。\n他自封『齐天大圣』，是全书唯一贯穿始终的核心形象 [x]。\n取经路上，他是团队中无可替代的护法者。"},{"id":"X2","name":"取经团队领导力剖析","type":"分析文档","author":"内容组","meta":{"session":"","created":"","source":""},"text":"唐僧是这支队伍名义上的领导者，他『心志最坚』却是能力最弱的一位。\n本文从组织行为学角度，剖析四人一马的协作结构。"}]}]};
+/* ==== GK-DATA-SRC-END ==== */
 
-/* ===== 前端展示层：DOM 转义 ===== */
-function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+/* ===== 前端展示层 · 治理控制台（M11：多视图 / 五级下钻 / 配置对照 / 趋势 / 演示模式）=====
+   职责边界：上方 GATES-SRC 块 = 唯一规则源（gates.mjs 注入）；GK-CONFIGS/GK-DATA 块 = 配置与批次数据（sync-configs 注入）。
+   本区仅做「渲染 + 视图路由 + 下钻 + diff」，不含任何门禁规则。加演示项目 = 改 configs/ 后跑 sync，不改本区。 */
 
-/* ============ 高亮原文命中的违禁词 ============ */
-function highlight(text){
+const E = (id) => document.getElementById(id);
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+// —— 配置解析：项目有 configRef 走 makeConfig(项目json)，否则走样例默认 ——
+function cfgOf(project){
+  if(!project || !project.configRef) return DEFAULT_CONFIG;
+  const j = (typeof GK_CONFIGS!=='undefined') ? GK_CONFIGS[project.configRef] : null;
+  return j ? makeConfig(j) : DEFAULT_CONFIG;
+}
+// —— 构建内存模型：每项目按其口径预跑六道门禁（引擎 analyze 复用，规则零改动）——
+const PROJECTS = GK_DATA.projects.map(p=>{
+  const cfg = cfgOf(p);
+  const docs = p.docs.map(d=>analyze(d,cfg));
+  return { id:p.id, name:p.name, configRef:p.configRef, note:p.note, cfg, docs };
+});
+const GATE_META = PROJECTS[0].docs[0].gates.map(g=>({id:g.id,name:g.name,icon:g.icon}));
+
+// —— 聚合 ——
+function agg(docs){
+  const total={P0:0,P1:0,P2:0,P3:0};
+  docs.forEach(d=>d.gates.forEach(g=>g.findings.forEach(x=>{ if(total[x.level]!==undefined) total[x.level]++; })));
+  const n=docs.length||1;
+  const avg=Math.round(docs.reduce((s,d)=>s+d.score,0)/n);
+  const okCount=docs.filter(d=>d.verdict.k==='ok').length;
+  const gateN = docs.length ? docs[0].gates.map(g=>({id:g.id,name:g.name,icon:g.icon,hit:0,max:0})) : [];
+  docs.forEach(d=>d.gates.forEach((g,i)=>{ gateN[i].max++; if(g.findings.length) gateN[i].hit++; }));
+  return { total, avg, okCount, gateN, n:docs.length };
+}
+
+// —— 高亮原文命中（按当前口径的违禁词库）——
+function highlight(text, cfg){
   let html=esc(text);
   const words=new Set();
-  BANNED.forEach(r=>r.words.forEach(w=>{if(text.includes(w))words.add(w)}));
-  [...words].sort((a,b)=>b.length-a.length).forEach(w=>{
-    html=html.split(esc(w)).join('<mark>'+esc(w)+'</mark>');
-  });
+  (cfg.banned||BANNED).forEach(r=>r.words.forEach(w=>{ if(text.includes(w)) words.add(w); }));
+  [...words].sort((a,b)=>b.length-a.length).forEach(w=>{ html=html.split(esc(w)).join('<mark>'+esc(w)+'</mark>'); });
   return html;
 }
-
-/* ============ 渲染 ============ */
-const results=DOCS.map(d=>{const gates=runGates(d);const score=scoreDoc(gates);return {...d,gates,score,verdict:verdictOf(gates,score)}});
-let active=results[0].id;
-
-function renderList(){
-  document.getElementById('list').innerHTML=results.map(r=>{
-    const cnt=r.gates.reduce((a,g)=>a+g.findings.length,0);
-    return `<div class="item ${r.id===active?'active':''}" data-id="${r.id}">
-      <div class="name"><span>${r.name}</span><span class="tag ${r.verdict.tag}">${r.verdict.t}</span></div>
-      <div class="meta">${r.type} · ${r.author} · 命中 ${cnt} 项 · 分 ${r.score}</div>
-    </div>`;
-  }).join('');
-  document.querySelectorAll('.item').forEach(el=>el.onclick=()=>{active=el.dataset.id;renderList();renderDoc()});
-}
-
-function renderBand(){
-  const total={P0:0,P1:0,P2:0,P3:0}; let sum=0;
-  results.forEach(r=>{sum+=r.score; r.gates.forEach(g=>g.findings.forEach(x=>{if(total[x.level]!==undefined)total[x.level]++}))});
-  const avg=Math.round(sum/results.length);
-  const arc=document.getElementById('ringArc'); const C=352;
-  arc.style.strokeDashoffset=C*(1-avg/100);
-  arc.setAttribute('stroke', avg>=85?'var(--pass)':avg>=55?'var(--warn)':'var(--p0)');
-  document.getElementById('ringNum').textContent=avg;
-  // per-gate strip
-  const gateNames=results[0].gates.map(g=>({id:g.id,name:g.name,icon:g.icon,hit:0,max:0}));
-  results.forEach(r=>r.gates.forEach((g,i)=>{gateNames[i].max++; if(g.findings.length)gateNames[i].hit++;}));
-  document.getElementById('gatesStrip').innerHTML=gateNames.map(g=>{
-    const clean=g.max-g.hit;
-    return `<div class="gpill"><div class="t"><span>${g.icon}</span>${g.id} ${g.name}</div><div class="v"><span style="color:var(--jade)">${clean}</span><span style="color:var(--muted);font-size:13px">/${g.max} 干净</span></div></div>`;
-  }).join('');
-  document.getElementById('counters').innerHTML=
-    `<div class="cnt c-p0"><b>${total.P0}</b><small>P0 阻断</small></div>
-     <div class="cnt c-p1"><b>${total.P1}</b><small>P1 高危</small></div>
-     <div class="cnt c-p2"><b>${total.P2+total.P3}</b><small>P2 告警</small></div>
-     <div class="cnt c-pass"><b>${results.filter(r=>r.verdict.k==='ok').length}</b><small>可发布</small></div>`;
-}
-
 function sevChip(sev){
   const map={P0:'P0 阻断',P1:'P1 高危',P2:'P2 告警',P3:'P3 提示',pass:'通过'};
   const color={P0:'var(--p0)',P1:'var(--p1)',P2:'var(--p2)',P3:'var(--muted)',pass:'var(--pass)'}[sev];
   return `<span class="sev" style="background:${color}">${map[sev]}</span>`;
 }
+const scoreColor=(s)=> s>=85?'var(--pass)':s>=55?'var(--warn)':'var(--p0)';
 
+// —— 状态与路由 ——
+const state={ view:'overview', pid:PROJECTS[0].id, docId:PROJECTS[0].docs[0].id, gateFilter:'all', custom:null };
+function activeProject(){ return PROJECTS.find(p=>p.id===state.pid) || PROJECTS[0]; }
+function curDocs(){ const p=activeProject(); return state.custom ? [state.custom] : p.docs; }
+function curDoc(){ const ds=curDocs(); return ds.find(d=>d.id===state.docId) || ds[0]; }
+function goView(v){ state.view=v; state.custom=null; render(); }
+function goProject(pid){ state.pid=pid; state.docId=activeProject().docs[0].id; state.custom=null; render(); }
+
+function renderNav(){
+  document.querySelectorAll('.vtab').forEach(b=>b.classList.toggle('active', b.dataset.view===state.view));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active', s.id==='view-'+state.view));
+  const sel=E('projSel');
+  sel.innerHTML=PROJECTS.map(p=>`<option value="${p.id}" ${p.id===state.pid?'selected':''}>${esc(p.name)}</option>`).join('');
+}
+function renderCrumbs(){
+  const p=activeProject(); const d=curDoc(); let parts=[];
+  parts.push({t:'批次',v:'overview'});
+  if(state.view!=='overview') parts.push({t:p.name, v:'proj'});
+  if(state.view==='inspect' && d) parts.push({t:d.name, v:'doc'});
+  if(state.view==='config') parts.push({t:'配置对照', cur:true});
+  if(state.view==='pipeline') parts.push({t:'DWS 编排', cur:true});
+  if(state.view==='history') parts.push({t:'趋势看板', cur:true});
+  if(state.view==='overview') parts=[{t:'批次健康总览', cur:true}];
+  const last=parts[parts.length-1];
+  E('crumbs').innerHTML=parts.map((x,i)=> x.cur ? `<span class="cur">${esc(x.t)}</span>` : `<a data-crumb="${x.v}">${esc(x.t)}</a>`).join('<span class="sep">›</span>');
+  E('crumbs').querySelectorAll('a').forEach(a=>a.onclick=()=>{ if(a.dataset.crumb==='overview'){state.view='overview';}else if(a.dataset.crumb==='proj'){state.view='inspect';} render(); });
+}
+
+// —— Hero 带（当前项目聚合，样例项目默认命中回归红线：环 50 / 6P0 9P1 8P2 1可发布）——
+function renderBand(){
+  const p=activeProject(); const a=agg(p.docs);
+  const arc=E('ringArc'); const C=352;
+  arc.style.strokeDashoffset=C*(1-a.avg/100); arc.setAttribute('stroke', scoreColor(a.avg));
+  E('ringNum').textContent=a.avg; E('ringCap').textContent='· '+p.name;
+  E('stripLabel').textContent='门禁矩阵 · '+p.name+'（'+p.docs.length+' 篇）';
+  E('gatesStrip').innerHTML=a.gateN.map(g=>{ const clean=g.max-g.hit;
+    return `<div class="gpill"><div class="t"><span>${g.icon}</span>${g.id} ${g.name}</div><div class="v"><span style="color:var(--jade)">${clean}</span><span style="color:var(--muted);font-size:13px">/${g.max} 干净</span></div></div>`; }).join('');
+  E('counters').innerHTML=
+    `<div class="cnt c-p0"><b>${a.total.P0}</b><small>P0 阻断</small></div>
+     <div class="cnt c-p1"><b>${a.total.P1}</b><small>P1 高危</small></div>
+     <div class="cnt c-p2"><b>${a.total.P2+a.total.P3}</b><small>P2 告警</small></div>
+     <div class="cnt c-pass"><b>${a.okCount}</b><small>可发布</small></div>`;
+}
+
+// —— 总览 ——
+function renderOverview(){
+  E('ovSub').textContent=`${GK_DATA.batchName} · ${PROJECTS.length} 个项目 / ${PROJECTS.reduce((s,p)=>s+p.docs.length,0)} 篇产出物 ｜ ${GK_DATA.disclaimer}`;
+  E('projGrid').innerHTML=PROJECTS.map((p,i)=>{ const a=agg(p.docs);
+    return `<div class="projcard" data-pid="${p.id}" style="animation-delay:${i*0.05}s">
+      <div class="pn">${esc(p.name)}</div>
+      <div class="pcfg">口径：${p.configRef? esc(GK_CONFIGS[p.configRef].name):'样例默认'}</div>
+      <div class="pbar"><i style="width:${a.avg}%;background:${scoreColor(a.avg)}"></i></div>
+      <div class="pstat"><span>平均健康分 <b style="color:${scoreColor(a.avg)}">${a.avg}</b></span><span>${a.okCount}/${a.n} 可发布</span></div>
+      <div class="pnote">${esc(p.note)}</div>
+    </div>`; }).join('');
+  E('projGrid').querySelectorAll('.projcard').forEach(c=>c.onclick=()=>{ goProject(c.dataset.pid); state.view='inspect'; render(); });
+  const all=PROJECTS.flatMap(p=>p.docs); const A=agg(all);
+  E('ovMetrics').innerHTML=[
+    ['产出物总数', all.length,'跨 '+PROJECTS.length+' 项目 · 同一引擎体检'],
+    ['P0 阻断合计', A.total.P0,'任一 P0 → 阻断发布'],
+    ['平均健康分', A.avg,'Σ(P0×25+P1×12+P2×5+P3×2) 扣减'],
+    ['可放行', A.okCount, '全绿可进 DWS 发布链'],
+    ['门禁道数', GATE_META.length, '引用/一致/格式/合规/脱敏/证据链'],
+  ].map(m=>`<div class="metric"><div class="mv">${m[1]}</div><div class="mk">${m[0]} · ${m[2]}</div></div>`).join('');
+}
+
+// —— 明细（五级下钻：批次 › 项目 › 文档 › 门禁 › 命中）——
+function renderInspect(){
+  const p=activeProject();
+  E('railTitle').textContent='产出物 · '+p.name;
+  E('list').innerHTML=curDocs().map(r=>{ const cnt=r.gates.reduce((a,g)=>a+g.findings.length,0);
+    return `<div class="item ${r.id===state.docId?'active':''}" data-id="${r.id}">
+      <div class="name"><span>${esc(r.name)}</span><span class="tag ${r.verdict.tag}">${r.verdict.t}</span></div>
+      <div class="meta">${esc(r.type||'—')} · ${esc(r.author||'—')} · 命中 ${cnt} 项 · 分 ${r.score}</div></div>`; }).join('');
+  E('list').querySelectorAll('.item').forEach(el=>el.onclick=()=>{ state.docId=el.dataset.id; renderDoc(); renderCrumbs(); });
+  const cfg=p.cfg;
+  E('railFoot').innerHTML=`口径 <b class="mono">${esc(cfg.name)}</b> · 权威版本 <b class="mono">v${esc(cfg.registry.currentVersion)}</b> · 广告法渠道 <b>${cfg.channel.adLaw?'开':'关'}</b> · 来源提示 <b>${cfg.channel.sourceHint===false?'关':'开'}</b>。`;
+  renderDoc();
+}
 function renderDoc(){
-  const r=results.find(x=>x.id===active)||customResult;
-  if(!r)return;
-  document.getElementById('docHead').innerHTML=`
-    <div class="who"><h2>${r.name}</h2><div class="sub">${r.type} · ${r.author} · Session ${r.meta&&r.meta.session?r.meta.session:'—'} · ${r.meta&&r.meta.created?r.meta.created:'—'}</div></div>
+  const p=activeProject(); const r=curDoc(); if(!r) return;
+  E('docHead').innerHTML=`
+    <div class="who"><h2>${esc(r.name)}</h2><div class="sub">${esc(r.type||'—')} · ${esc(r.author||'—')} · Session ${esc(r.meta&&r.meta.session?r.meta.session:'—')} · ${esc(r.meta&&r.meta.created?r.meta.created:'—')}</div></div>
     <div class="${r.verdict.c} verdict">${r.verdict.t} · ${r.score} 分</div>`;
-  document.getElementById('docBody').innerHTML=highlight(r.text);
-  document.getElementById('cards').innerHTML=r.gates.map(g=>{
-    const bg={P0:'var(--p0)',P1:'var(--p1)',P2:'var(--p2)',pass:'var(--pass)',P3:'var(--muted)'}[g.sev];
-    let body;
-    if(!g.findings.length){body=`<div class="clean">✓ 未发现问题</div>`;}
-    else{
-      const shown=g.findings.filter(x=>x.level!=='P3').slice(0,6);
-      const p3=g.findings.filter(x=>x.level==='P3');
-      let inner=shown.map(x=>`<div class="finding ${x.level}"><div><span class="snip">${esc(x.snip)}</span></div><div class="issue">${esc(x.issue)}</div><div class="basis">${esc(x.basis)}</div><div class="fix">${esc(x.fix)}</div></div>`).join('');
-      if(p3.length) inner+=`<div class="finding P3"><div class="issue" style="color:var(--muted)">另有 ${p3.length} 项提示级建议（补齐来源编号等）</div></div>`;
-      body=inner;
-    }
-    return `<div class="gate"><div class="gh"><div class="ic" style="background:${bg}">${g.icon}</div>
-      <div class="gn">${g.id} · ${g.name}<small>${g.findings.length} 项发现</small></div>${sevChip(g.sev)}</div>
-      <div class="gb">${body}</div></div>`;
-  }).join('');
+  E('docBody').innerHTML=highlight(r.text, p.cfg);
+  const hasP={P0:0,P1:0,P2:0,P3:0}; r.gates.forEach(g=>g.findings.forEach(x=>hasP[x.level]!==undefined&&hasP[x.level]++));
+  E('filterRow').innerHTML=`<span class="flabel">命中过滤</span>`+
+    `<button class="fchip ${state.gateFilter==='all'?'on':''}" data-f="all">全部 ${r.gates.reduce((a,g)=>a+g.findings.length,0)}</button>`+
+    ['P0','P1','P2','P3'].map(l=>`<button class="fchip lv-${l.toLowerCase()} ${state.gateFilter===l?'on':''}" data-f="${l}">${l} ${hasP[l]}</button>`).join('');
+  E('filterRow').querySelectorAll('.fchip').forEach(c=>c.onclick=()=>{ state.gateFilter=c.dataset.f; renderDoc(); });
+  renderCards(r);
   renderFlow(r.verdict);
 }
-
-function renderFlow(verdict){
-  const passed=verdict.k==='ok';
-  document.getElementById('laneOk').classList.toggle('active',passed);
-  document.getElementById('laneNo').classList.toggle('active',!passed);
-  document.getElementById('flow').innerHTML=[
-    ['产出物入库','粘贴 / 批量导入',true],
-    ['六道门禁','并行校验 + 分级',true],
-    ['健康度裁决',passed?'全绿 · 放行':'存在阻断',true],
-    ['DWS 编排',passed?'审批 → 发布':'驳回 → 待办',true]
-  ].map((n,i,arr)=>`<div class="node ${n[2]?(i===arr.length-1?(passed?'on':'on-reject'):'on'):''}"><div class="nt">${n[0]}</div><div class="nd">${n[1]}</div></div>${i<arr.length-1?'<div class="arrow">→</div>':''}`).join('');
+function renderCards(r){
+  E('cards').innerHTML=r.gates.map(g=>{
+    const bg={P0:'var(--p0)',P1:'var(--p1)',P2:'var(--p2)',pass:'var(--pass)',P3:'var(--muted)'}[g.sev];
+    let fs=g.findings;
+    if(state.gateFilter!=='all') fs=fs.filter(x=>x.level===state.gateFilter);
+    let body;
+    if(!g.findings.length){ body=`<div class="clean">✓ 未发现问题</div>`; }
+    else if(!fs.length){ body=`<div class="clean" style="color:var(--muted)">本层无 ${state.gateFilter} 级命中（共 ${g.findings.length} 项，已按筛选隐藏）</div>`; }
+    else{
+      body=fs.map(x=>`<div class="finding ${x.level}" data-snip="${esc(x.snip)}"><span class="jump-hint">定位原文 ↖</span>
+        <div><span class="snip">${esc(x.snip)}</span></div>
+        <div class="issue">${esc(x.issue)}</div><div class="basis">${esc(x.basis)}</div><div class="fix">${esc(x.fix)}</div></div>`).join('');
+    }
+    const filtered=(state.gateFilter!=='all')? ` <small style="color:var(--muted);font-weight:400">（筛选 ${fs.length}/${g.findings.length}）</small>`:'';
+    return `<div class="gate"><div class="gh"><div class="ic" style="background:${bg}">${g.icon}</div>
+      <div class="gn">${g.id} · ${g.name}<small>${g.findings.length} 项发现${filtered}</small></div>${sevChip(g.sev)}</div>
+      <div class="gb">${body}</div></div>`; }).join('');
+  E('cards').querySelectorAll('.finding').forEach(f=>f.onclick=()=>jumpToSource(f.dataset.snip,f));
+}
+function jumpToSource(snip, el){
+  const r=curDoc(); if(!r) return;
+  const raw=(snip||'').replace(/^…/,'').replace(/…$/,'').trim();
+  E('docBodyWrap').open=true;
+  E('cards').querySelectorAll('.finding.sel').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  const pre=E('docBody');
+  if(raw){ const idx=r.text.indexOf(raw);
+    if(idx>=0){ pre.scrollTop=Math.max(0,(idx/r.text.length)*pre.scrollHeight-30); pre.style.transition='background .2s'; pre.style.background='var(--cinnabar-soft)'; setTimeout(()=>pre.style.background='',650); } }
+  pre.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-/* ============ 粘贴实时检测 ============ */
-let customResult=null;
-document.getElementById('btnDemo').onclick=()=>{const b=document.getElementById('pasteBox');b.style.display=b.style.display==='none'?'block':'none'};
-document.getElementById('btnPasteClear').onclick=()=>{document.getElementById('pasteTa').value='';};
-document.getElementById('btnPaste').onclick=()=>{
-  const text=document.getElementById('pasteTa').value.trim();
-  if(!text){alert('请先粘贴内容');return;}
+// —— 编排 ——
+const EVIDENCE = {
+  todo:[['A 阻断','5669****245'],['B 阻断','5658****957'],['C 阻断','5654****572'],['D 需修复','5658****913'],['E 通过','5654****391']],
+  doc:{ name:'[验收通过·E] 合规巡检平台周报 · GateKeeper验收报告', nodeId:'pYLa****MqPxX6', url:'https://alidocs.dingtalk.com/i/nodes/pYLa****MqPxX6' },
+  ding:{ openDingId:'C914****544C', to:'刘峥' },
+  timing:'墙钟 ≈ 2 秒 / 4 动作 ≈ 0.5 秒/动作；5 份样例全链路（约 14 动作）< 10 秒（含门禁扫描 1.5ms）。'
+};
+function renderFlow(verdict){
+  const passed=verdict.k==='ok';
+  E('laneOk').classList.toggle('active',passed); E('laneNo').classList.toggle('active',!passed);
+  E('flow').innerHTML=[
+    ['产出物入库', (state.custom?'粘贴 / 自定义':activeProject().docs.length+' 篇批量导入')],
+    ['六道门禁','并行校验 + 分级 · 口径「'+activeProject().cfg.name+'」'],
+    ['健康度裁决', passed?'全绿 · 放行':'存在阻断/待修复'],
+    ['DWS 编排', passed?'审批 → 发布':'驳回 → 待办']
+  ].map((n,i,arr)=>`<div class="node ${i===arr.length-1?(passed?'on':'on-reject'):'on'}"><div class="nt">${n[0]}</div><div class="nd">${esc(n[1])}</div></div>${i<arr.length-1?'<div class="arrow">→</div>':''}`).join('');
+  renderEvidence(passed);
+}
+function renderEvidence(passed){
+  const real = document.body.classList.contains('demo');
+  const badge = real? `<span class="live-badge real">真实回执</span>` : `<span class="live-badge sim">原型模拟</span>`;
+  let html=`<div class="evidence"><h4>${badge} E「可发布」完整链路 · 4 个 DWS 节点</h4>
+    <div class="note" style="font-size:12px;color:var(--muted);margin:4px 0 8px">${real?'数据取自 prototype/output/live-evidence.md 的真实执行留档。':'切 ?demo=1 演示模式或接入真实 Agent 后，此处展示真实回执。'}</div>`;
+  if(passed){
+    html+=`<div class="erec"><div class="rk">① 归档钉钉文档 · dws doc create</div><div class="rv">nodeId ${EVIDENCE.doc.nodeId}</div><div class="rk">${esc(EVIDENCE.doc.name)}</div></div>`;
+    html+=`<div class="erec"><div class="rk">② 群播报 · dws chat message send　→　③ 复核待办 · dws todo task create</div><div class="rv">taskId ${EVIDENCE.todo[4][1]}（E 通过复核）</div></div>`;
+    html+=`<div class="erec"><div class="rk">④ DING 催办审批人 · dws ding +send-personal</div><div class="rv">openDingId ${EVIDENCE.ding.openDingId} → ${esc(EVIDENCE.ding.to)}</div></div>`;
+  }else{
+    html+=`<div class="erec"><div class="rk">驳回整改链路 · dws todo + ding 承载审批门（OA 无法新建实例）</div><div class="rv">建 P0 待办 @作者 → 群告警 → 按修复建议改 → 重跑门禁</div></div>`;
+  }
+  html+=`<div class="erec" style="border-color:var(--cinnabar)"><div class="rk">端到端计时</div><div class="rv" style="color:var(--ink-2)">${esc(EVIDENCE.timing)}</div></div>`;
+  html+=`</div>`;
+  E('evidenceMount').innerHTML=html;
+}
+
+// —— 配置对照（默认 vs 项目口径，可视化 project-check --compare）——
+function renderConfig(){
+  const p=activeProject();
+  E('cfgSub').textContent=`同一引擎、同一批产出物，换用项目口径后的命中差异。当前：${p.configRef? esc(GK_CONFIGS[p.configRef].name) : '样例默认（无差异项，用于展示基线）'}`;
+  if(!p.configRef){ E('cfgMount').innerHTML=`<div class="view-sub" style="margin-top:8px">「${esc(p.name)}」未绑定 project-config，走样例默认口径。切到「电商大促物料」或「详解西游记」可查看换配置的真实差异。</div>`; return; }
+  const cfg=p.cfg;
+  const info=`<div class="metrics-grid">
+    <div class="metric"><div class="mv mono" style="font-size:18px">v${esc(cfg.registry.currentVersion)}</div><div class="mk">权威版本注册</div></div>
+    <div class="metric"><div class="mv">${cfg.channel.adLaw?'开':'关'}</div><div class="mk">G4 广告法渠道</div></div>
+    <div class="metric"><div class="mv">${cfg.channel.sourceHint===false?'关':'开'}</div><div class="mk">G1 来源提示</div></div>
+    <div class="metric"><div class="mv mono" style="font-size:16px">${esc((cfg.allowTokens||[]).join(' ')||'—')}</div><div class="mk">合法占位 token</div></div>
+  </div>`;
+  const rows=p.docs.map(d=>{
+    const base=analyze(d, DEFAULT_CONFIG); const cnt=base.gates.reduce((a,g)=>a+g.findings.length,0);
+    const cur=d; const c2=cur.gates.reduce((a,g)=>a+g.findings.length,0);
+    const suppGates=base.gates.map((g,i)=>g.findings.length-cur.gates[i].findings.length).map((n,i)=>n>0?base.gates[i]:null).filter(Boolean);
+    const delta=cnt-c2;
+    return `<tr><td class="doc">${esc(d.name)}</td><td>${cnt}</td><td>${c2}</td>
+      <td class="delta ${delta<0?'down':delta>0?'up':'eq'}">${delta>0?'+'+delta:delta}</td>
+      <td>${suppGates.length? suppGates.map(g=>`<span class="supp">${g.icon}${g.id}</span>`).join(''):'<span style="color:var(--muted)">—</span>'}</td></tr>`;
+  }).join('');
+  E('cfgMount').innerHTML=info+`<div class="view-title" style="margin-top:22px">命中差异（默认口径 → 项目口径）</div>
+    <table class="difftable"><thead><tr><th>产出物</th><th>默认命中</th><th>项目口径</th><th>Δ</th><th>被抑制门禁</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="view-sub" style="margin-top:10px">Δ 为负＝换配置后命中减少（如文学语境关广告法，G4 命中被抑制）；被抑制门禁标注具体是哪道。<b>诚实原则：配置是如实描述某项目口径，不是为刷绿放宽——P0 级引用断链/敏感信息始终不豁免。</b></div>`;
+}
+
+// —— 趋势 ——
+function renderHistory(){
+  const items=PROJECTS.map(p=>{ const a=agg(p.docs); return {label:p.name, val:a.avg, ok:a.okCount, n:a.n}; });
+  const maxV=Math.max(100, ...items.map(i=>i.val));
+  E('trendMount').innerHTML=items.map((it,i)=>`<div class="trendcol">
+    <div class="tval">${it.val}</div>
+    <div class="tbar" style="height:${(it.val/maxV)*150}px;background:${scoreColor(it.val)};transition-delay:${i*0.08}s"></div>
+    <div class="tlab">${esc(it.label)}<br>${it.ok}/${it.n} 放行</div></div>`).join('');
+  const all=PROJECTS.flatMap(p=>p.docs); const A=agg(all);
+  E('histMetrics').innerHTML=[
+    ['平均健康分', A.avg, '全部 '+A.n+' 篇'],
+    ['P0 阻断', A.total.P0, '需整改'],
+    ['P1 高危', A.total.P1, '需修复后发布'],
+    ['可放行数', A.okCount, '进入发布链'],
+    ['覆盖口径', PROJECTS.length, 'project-config'],
+  ].map(m=>`<div class="metric"><div class="mv">${m[1]}</div><div class="mk">${m[0]} · ${m[2]}</div></div>`).join('');
+}
+
+// —— 主渲染 ——
+function render(){ renderNav(); renderCrumbs(); renderBand();
+  ({overview:renderOverview, inspect:renderInspect, pipeline:()=>{renderInspect();renderFlow(curDoc().verdict);}, config:renderConfig, history:renderHistory}[state.view])(); }
+
+/* ===== 交互绑定 ===== */
+document.querySelectorAll('.vtab').forEach(b=>b.onclick=()=>goView(b.dataset.view));
+E('projSel').onchange=(e)=>goProject(e.target.value);
+E('btnRun').onclick=()=>{ state.custom=null; goView('overview'); };
+E('btnDemo').onclick=()=>{ const b=E('pasteBox'); b.style.display=b.style.display==='none'?'block':'none'; };
+E('btnPasteClear').onclick=()=>{ E('pasteTa').value=''; };
+E('btnPaste').onclick=()=>{
+  const text=E('pasteTa').value.trim(); if(!text){alert('请先粘贴内容');return;}
   const doc={id:'CUSTOM',name:'自定义粘贴内容',type:'待检文本',author:'—',meta:{},text};
-  const gates=runGates(doc); const score=scoreDoc(gates);
-  customResult={...doc,gates,score,verdict:verdictOf(gates,score)};
-  active=doc.id;
-  document.querySelectorAll('.item').forEach(el=>el.classList.remove('active'));
-  renderDoc();
-  document.getElementById('cards').scrollIntoView({behavior:'smooth',block:'center'});
+  const a=analyze(doc, activeProject().cfg); state.custom=a; state.docId='CUSTOM'; goView('inspect');
+  setTimeout(()=>E('cards').scrollIntoView({behavior:'smooth',block:'center'}),50);
 };
-
-/* ============ 按钮 ============ */
-document.getElementById('btnRun').onclick=()=>{renderBand();renderList();renderDoc();};
-document.getElementById('btnApprove').onclick=()=>{
-  const r=(results.find(x=>x.id===active)||customResult);
-  if(!r)return;
+E('btnApprove').onclick=()=>{ const r=curDoc(); if(!r)return;
   if(r.verdict.k==='block'){alert('该产出物存在 P0 阻断问题，无法进入发布审批。\n流水线已自动：建待办 → @作者 → 按修复建议整改 → 重跑门禁。');}
-  else{alert('已按 DWS 编排提交钉钉审批：\n生成审批单 → 主管审批 → 群机器人播报 → 归档知识库 → 写日志模板。\n（原型模拟，复赛接入真实钉钉 CLI）');}
+  else{alert('已按 DWS 编排提交钉钉审批：\n生成审批单 → 归档文档 → 群播报 → 复核待办 → DING 催办审批人。\n（'+(document.body.classList.contains('demo')?'演示模式：见「编排」视图真实回执':'原型模拟，复赛接入真实钉钉 CLI')+'）');}
 };
 
-/* ============ 主题（暗色模式：默认跟随系统，按钮手动覆盖） ============ */
-const rootEl=document.documentElement;
-const darkMQ=matchMedia('(prefers-color-scheme: dark)');
+/* ===== 主题 ===== */
+const rootEl=document.documentElement; const darkMQ=matchMedia('(prefers-color-scheme: dark)');
 let curTheme=darkMQ.matches?'dark':'light';
-function applyTheme(t){rootEl.setAttribute('data-theme',t);curTheme=t;const b=document.getElementById('btnTheme');if(b)b.textContent=t==='dark'?'☀ 明亮':'◐ 主题';}
+function applyTheme(t){rootEl.setAttribute('data-theme',t);curTheme=t;const b=E('btnTheme');if(b)b.textContent=t==='dark'?'☀ 明亮':'◐ 主题';}
 applyTheme(curTheme);
 if(darkMQ.addEventListener)darkMQ.addEventListener('change',e=>applyTheme(e.matches?'dark':'light'));
-document.getElementById('btnTheme').onclick=()=>applyTheme(curTheme==='dark'?'light':'dark');
+E('btnTheme').onclick=()=>applyTheme(curTheme==='dark'?'light':'dark');
 
-/* ============ 初始化 ============ */
-renderBand();renderList();renderDoc();
+/* ===== 初始化 + 路由（?demo=1 / #hash）===== */
+if(/[?&]demo=1/.test(location.search)) document.body.classList.add('demo');
+const initialHash=(location.hash||'').replace('#/','').replace('#','');
+if(['overview','inspect','pipeline','config','history'].includes(initialHash)) state.view=initialHash;
+window.addEventListener('hashchange',()=>{ const v=(location.hash||'').replace('#/','').replace('#',''); if(['overview','inspect','pipeline','config','history'].includes(v)){state.view=v;render();} });
+render();
+
 </script>
 </body>
 </html>

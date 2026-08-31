@@ -5,7 +5,7 @@
 
 > **队名**：一夫当关　｜　**作品名**：验收官（代号 GateKeeper）
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.11.0　｜　**赛事**：千问办公 AI 生产力竞赛（初赛截止 2026-09-20）
+> **当前版本**：v0.12.0　｜　**赛事**：千问办公 AI 生产力竞赛（初赛截止 2026-09-20）
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
 
 ## 这是什么
@@ -16,10 +16,12 @@
 
 ```
 gates.mjs        六道门禁引擎（纯逻辑，前后端共用的唯一规则源）
- ├─ gatekeeper.html   可视化：引擎块由 sync-gates.mjs 从 gates.mjs 注入（勿手改），DOM 格式化在渲染层
- ├─ sync-gates.mjs    单一事实源生成器 + `--check` 漂移门禁
+ ├─ gatekeeper.html   可视化治理控制台：引擎块由 sync-gates 注入、配置/批次数据块由 sync-configs 注入（均勿手改），五视图/下钻/diff 在渲染层
+ ├─ sync-gates.mjs    单一事实源生成器（规则）+ `--check` 漂移门禁
+ ├─ sync-configs.mjs  单一事实源生成器（配置/数据）：把 configs/*.json 注入 HTML + `--check` 第二道漂移门禁
+ ├─ verify.mjs        回归红线 + 换配置差异统一验收（本地 / CI 共用）
  └─ dws-bridge.mjs    编排：裁决 → dws 命令计划（--live 由 Agent 直接调用才落地）
-      ├─ artifacts.sample.json   输入：一批 AI 产出物（脱敏模拟）
+      ├─ configs/*.json          声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）+ batches.sample.json 批次数据
       ├─ config.dws.json         目标 ID：群 / 复核人 / 作者 / 审批人 openDingTalkId
       └─ output/                 产物：accept-*.md 验收报告 · gate-report.json · dws-plan.sh · live-evidence.md · bench-report.md
 ```
@@ -29,10 +31,13 @@ gates.mjs        六道门禁引擎（纯逻辑，前后端共用的唯一规则
 ```bash
 cd prototype
 node sync-gates.mjs        # 改完 gates.mjs 后跑：把引擎逻辑重新注入 HTML（--check 可作提交前门禁）
+node sync-configs.mjs      # 改完 configs/*.json 后跑：把配置/批次数据注入 HTML（--check 作第二道漂移门禁）
+node verify.mjs            # 回归红线 + 换配置差异：环50/6P0/9P1/8P2/1可发布 + G4 抑制，全绿 exit 0
 node dws-bridge.mjs        # dry-run：打印将执行的真实 dws 命令 + 生成 output/dws-plan.sh
 node bench.mjs             # 省时实测：召回/误报/耗时 → output/bench-report.md
 node check-docs.mjs        # 提交前门禁：全部核心文档 self-config 体检，任一非「可发布」exit 1
-# 打开 gatekeeper.html 看可视化；--live 真实落地须由千问办公 Agent 直接调用 dws（见 README-DWS.md）
+# 打开 gatekeeper.html 看治理控制台（总览/明细/编排/配置对照/趋势 五视图 + 五级下钻）；加 ?demo=1 进离线演示模式
+# --live 真实落地须由千问办公 Agent 直接调用 dws（见 README-DWS.md）
 ```
 
 ## 文档索引
@@ -42,6 +47,7 @@ node check-docs.mjs        # 提交前门禁：全部核心文档 self-config �
 | [01-参赛蓝图.md](01-参赛蓝图.md) | 初赛提交正文（Demo简介/痛点/方案/实践/实测/自检/排期/红线） |
 | [DESIGN.md](DESIGN.md) | 设计方案：目标原则 / 三层架构 / 门禁契约 / 视觉系统 / 数据模型 / 取舍 |
 | [UI升级方案.md](UI升级方案.md) | 界面美化升级规格：量化验收标准 / 设计令牌 / 自检结论 |
+| [Web端可扩展改造方案.md](Web端可扩展改造方案.md) | web 端从单页报表→三层治理控制台改造规格：四痛点映射 / 分期 / 风险 / 待拍板项 |
 | [ROADMAP.md](ROADMAP.md) | 后续发展与迭代路线图：短中长期 / 指标演进 / 决策闸门 |
 | [CHANGELOG.md](CHANGELOG.md) | 正向时间线，每条含「来源/执行/文件/验证/状态」四件套 |
 | [交接文档.md](交接文档.md) | 接手主入口：进度 / 下一步 / 方法论 / 雷区 |
