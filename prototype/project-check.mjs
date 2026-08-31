@@ -91,3 +91,12 @@ mkdirSync(join(PROTO, 'output'), { recursive: true });
 writeFileSync(join(PROTO, 'output', outName), L.join('\n'), 'utf8');
 console.log(L.join('\n'));
 console.log('\n[输出] prototype/output/' + outName);
+
+// --strict：任一文档非「可发布」即退出码 1，供提交前门禁（check-docs.mjs）消费
+if (argv.includes('--strict')) {
+  if (still.length) {
+    console.error(`\n✗ 门禁未过：${still.length}/${rows.length} 份非「可发布」：${still.map((r) => r.name).join('、')}`);
+    process.exit(1);
+  }
+  console.log(`\n✓ 门禁通过：${rows.length}/${rows.length} 份均「可发布」`);
+}

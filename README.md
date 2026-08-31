@@ -31,6 +31,7 @@ cd prototype
 node sync-gates.mjs        # 改完 gates.mjs 后跑：把引擎逻辑重新注入 HTML（--check 可作提交前门禁）
 node dws-bridge.mjs        # dry-run：打印将执行的真实 dws 命令 + 生成 output/dws-plan.sh
 node bench.mjs             # 省时实测：召回/误报/耗时 → output/bench-report.md
+node check-docs.mjs        # 提交前门禁：全部核心文档 self-config 体检，任一非「可发布」exit 1
 # 打开 gatekeeper.html 看可视化；--live 真实落地须由千问办公 Agent 直接调用 dws（见 README-DWS.md）
 ```
 
