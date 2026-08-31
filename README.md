@@ -1,4 +1,5 @@
 # 验收官 · GateKeeper
+[![GateKeeper CI 状态](https://github.com/1273984347/GateKeeper/actions/workflows/gatekeeper.yml/badge.svg)](https://github.com/1273984347/GateKeeper/actions/workflows/gatekeeper.yml)
 > 创建日期：2026-08-31
 > 来源：验收官项目自审（自我深度审查）
 > Session：本次会话 ID 见提交表单留档
