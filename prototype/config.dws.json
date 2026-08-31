@@ -1,0 +1,12 @@
+{
+  "_说明": "GateKeeper 组织真实 ID（登录后经 dws 查询填入）。archiveFolderId 留空则归档落到「我的文档根目录」。",
+  "robotCode": "intelligent",
+  "groupOpenConversationId": "REDACTED-GROUP-ID",
+  "approverUserId": "4745444337675277",
+  "authorUserId": "4745444337675277",
+  "reviewerOpenDingTalkId": "D8G29iiRBsXxJD6JNciiXajy5qTYbxmj5yT",
+  "archiveFolderId": "",
+  "reportTemplateId": "",
+  "dueOffsetDays": 2,
+  "webhookToken": ""
+}
