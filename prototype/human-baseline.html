@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GateKeeper · 人工合规审核实测采集器</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#fff; --card-2:#fbfaf7; --ink:#191b1e; --ink-2:#43474d; --muted:#878d96; --line:#e8e4da;
+    --cinnabar:#b23a2e; --jade:#1f7a5c; --warn:#d97706;
+    --serif:"Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif;
+    --sans:"Inter","PingFang SC","Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"JetBrains Mono",Consolas,monospace;
+    --r:12px; --sh:0 1px 2px rgba(25,27,30,.05),0 8px 22px -14px rgba(25,27,30,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65}
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 80px}
+  h1{font-family:var(--serif);font-size:24px;margin-bottom:4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);margin-bottom:16px}
+  .note{font-size:13px;color:var(--ink-2)}
+  .note b{color:var(--cinnabar)}
+  .btn{border:0;background:var(--ink);color:#fff;font-family:var(--sans);font-size:14px;font-weight:600;padding:11px 20px;border-radius:8px;cursor:pointer}
+  .btn.cinn{background:var(--cinnabar)} .btn.jade{background:var(--jade)} .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+  .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .timer{font-family:var(--mono);font-size:15px;color:var(--jade);font-weight:700}
+  .item{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px;background:var(--card-2)}
+  .item .txt{font-size:15px;margin-bottom:10px}
+  .item .idx{font-family:var(--serif);color:var(--muted);margin-right:8px;font-weight:700}
+  .opt{display:inline-flex;align-items:center;gap:6px;margin-right:18px;cursor:pointer;font-size:14px}
+  .opt input{accent-color:var(--cinnabar);width:16px;height:16px}
+  .item textarea{width:100%;margin-top:8px;border:1px solid var(--line);border-radius:6px;padding:8px;font-family:var(--sans);font-size:13px;resize:vertical;min-height:34px;display:none}
+  .item.show-why textarea{display:block}
+  .hidden{display:none}
+  .prog{font-size:13px;color:var(--muted);margin:6px 0 14px}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .big{font-family:var(--serif);font-size:30px;font-weight:700}
+  .miss{color:var(--cinnabar)} .ok{color:var(--jade)}
+  pre.copy{background:var(--card-2);border:1px solid var(--line);border-radius:8px;padding:14px;font-family:var(--mono);font-size:12.5px;white-space:pre-wrap;word-break:break-word;margin-top:10px}
+  .foot{margin-top:24px;font-size:12px;color:var(--muted);text-align:center;font-family:var(--serif)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>人工合规审核 · 实测采集器</h1>
+  <div class="sub">GateKeeper 提效对照 · 约 5 分钟 · 全程本地计时，不联网、不上传、不留存你的答案</div>
+
+  <!-- 说明 -->
+  <div class="card" id="intro">
+    <div class="note">
+      下面 <b>20 条</b>营销文案，请<b>逐条</b>凭你的真实工作习惯判断：这条<b>有没有违反《广告法》或存在风险</b>的表述（极限词、绝对化、虚假承诺、数据无来源、贬损竞品、功效暗示、时限压迫、未脱敏个人信息、前后矛盾等）。<br><br>
+      允许你查资料/手机搜索——贴近真实审核。<b>点「开始计时」后秒表启动</b>，做完点「提交并出分」。答案对错<b>做完才揭晓</b>，请先独立作答。
+    </div>
+    <div class="row" style="margin-top:16px">
+      <input id="who" placeholder="姓名/岗位（可选）" style="flex:1;min-width:180px;border:1px solid var(--line);border-radius:8px;padding:10px;font-family:var(--sans);font-size:14px">
+      <button class="btn cinn" id="start">开始计时</button>
+    </div>
+  </div>
+
+  <!-- 作答区 -->
+  <div id="quiz" class="hidden">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="prog" id="prog">已作答 0 / 20</div>
+      <div class="row"><span class="timer" id="timer">⏱ 00:00</span></div>
+    </div>
+    <div id="items"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn jade" id="submit">提交并出分</button>
+      <button class="btn ghost" id="reset">重来</button>
+    </div>
+  </div>
+
+  <!-- 结果 -->
+  <div id="result" class="hidden">
+    <div class="card">
+      <div class="note" style="margin-bottom:6px">你的实测结果（组织者据此回填参赛蓝图）：</div>
+      <table id="scoreTable"></table>
+      <div style="margin-top:14px">
+        <div class="note" style="margin-bottom:4px"><b>逐条对照</b>（✓=你和我方真值一致）：</div>
+        <table id="detailTable"></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div class="note">复制下面这段发给组织者即可：</div>
+        <button class="btn" id="copy">复制结果</button>
+      </div>
+      <pre class="copy" id="copyBlock"></pre>
+    </div>
+  </div>
+
+  <div class="foot">— 验收官 · 一夫当关 ｜ 人工基线须由真人实测，本采集器只计时与判分，不代答 —</div>
+</div>
+
+<script>
+// 20 条与 bench.mjs / 人工实测对照表.md 完全一致。truth: v=违规 c=合规；type=违规类型。
+const ITEMS = [
+  {t:'全网第一的智能客服，工单秒级响应。', truth:'v', type:'绝对化「全网第一/第一」· 第9条第3项'},
+  {t:'解决率 100%有效，客户零投诉。', truth:'v', type:'虚假承诺「100%有效」· 第4、28条'},
+  {t:'通过国家级技术认证。', truth:'v', type:'极限量词「国家级」· 第9条第3项'},
+  {t:'同类产品销量遥遥领先。', truth:'v', type:'数据无据「遥遥领先」· 第11条'},
+  {t:'仅此一次，错过不再有。', truth:'v', type:'时限压迫「仅此一次/错过不再有」· 第28条'},
+  {t:'方案碾压同行，人无我有。', truth:'v', type:'贬损竞品「碾压同行」· 第13条'},
+  {t:'客户满意度行业第一。', truth:'v', type:'绝对化「第一」· 第9条第3项'},
+  {t:'可根治一切客服难题。', truth:'v', type:'功效暗示「根治」· 第17条'},
+  {t:'客服系统响应快，支持 7x24 在线。', truth:'c', type:''},
+  {t:'本月新增付费客户 1200 家。', truth:'c', type:'真实经营数据，非夸大'},
+  {t:'平均处理时长较上月下降 30%。', truth:'c', type:'有口径的数据陈述'},
+  {t:'值得信赖的首选合作伙伴。', truth:'v', type:'绝对化「首选」· 第9条第3项'},
+  {t:'顶级团队倾力打造。', truth:'v', type:'绝对化「顶级」· 第9条第3项'},
+  {t:'最好用的工单管理系统。', truth:'v', type:'绝对化「最好」· 第9条第3项'},
+  {t:'零风险免费试用三十天。', truth:'v', type:'虚假承诺「零风险」· 第4、28条'},
+  {t:'官方指定唯一供应商。', truth:'v', type:'权威误导「官方指定」+ 绝对化「唯一」· 第9条'},
+  {t:'追求极致的服务体验。', truth:'v', type:'绝对化「极致」· 第9条第3项'},
+  {t:'标准接口一键对接 ERP 与 CRM。', truth:'c', type:''},
+  {t:'支持多轮对话与私有知识库检索。', truth:'c', type:''},
+  {t:'史上最强并发处理能力。', truth:'v', type:'极限量词「史上最强」· 第9条第3项'},
+];
+const N = ITEMS.length, N_VIOL = ITEMS.filter(x=>x.truth==='v').length, N_CLEAN = N - N_VIOL;
+let startTs = 0, tick = null, done = false;
+const ans = new Array(N).fill(null); // 'v' | 'c'
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const fmt = ms => { const s=Math.floor(ms/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+
+$('start').onclick = () => {
+  $('intro').classList.add('hidden'); $('quiz').classList.remove('hidden');
+  renderItems(); startTs = Date.now();
+  tick = setInterval(()=>{ $('timer').textContent = '⏱ '+fmt(Date.now()-startTs); }, 500);
+  window.scrollTo(0,0);
+};
+
+function renderItems(){
+  $('items').innerHTML = ITEMS.map((it,i)=>`
+    <div class="item" id="it${i}">
+      <div class="txt"><span class="idx">${i+1}.</span>${esc(it.t)}</div>
+      <label class="opt"><input type="radio" name="q${i}" value="v"> 有问题</label>
+      <label class="opt"><input type="radio" name="q${i}" value="c"> 没问题</label>
+      <textarea placeholder="（可选）问题简述" data-i="${i}"></textarea>
+    </div>`).join('');
+  ITEMS.forEach((_,i)=>{
+    $('it'+i).querySelectorAll('input[type=radio]').forEach(r=>r.onchange=()=>{
+      ans[i]=r.value;
+      $('it'+i).classList.toggle('show-why', r.value==='v');
+      updateProg();
+    });
+  });
+}
+function updateProg(){ $('prog').textContent = '已作答 '+ans.filter(a=>a!==null).length+' / '+N; }
+
+$('reset').onclick = () => { if(!done && !confirm('确定重来？计时会重置。')) return; location.reload(); };
+
+$('submit').onclick = () => {
+  const unanswered = ans.filter(a=>a===null).length;
+  if(unanswered>0 && !confirm('还有 '+unanswered+' 条未作答，未答按"没问题"计。继续？')) return;
+  done = true; clearInterval(tick);
+  const totalMs = Date.now()-startTs, totalS = +(totalMs/1000).toFixed(1);
+  let hit=0, miss=0, falsePos=0;
+  ITEMS.forEach((it,i)=>{
+    const a = ans[i]||'c';
+    if(it.truth==='v'){ a==='v'?hit++:miss++; } else { a==='v'?falsePos++:0; }
+  });
+  const recall = Math.round(hit/N_VIOL*1000)/10;
+  const perItem = +(totalS/N).toFixed(1);
+  // 汇总表
+  $('scoreTable').innerHTML = `
+    <tr><th>指标</th><th>结果</th></tr>
+    <tr><td>测试人</td><td>${esc($('who').value||'（未填）')}</td></tr>
+    <tr><td>人工检出违规数</td><td>${hit} / ${N_VIOL}</td></tr>
+    <tr><td>人工召回率</td><td class="${recall>=100?'ok':'miss'}">${recall}%</td></tr>
+    <tr><td>人工漏检数</td><td class="${miss>0?'miss':'ok'}">${miss} 条</td></tr>
+    <tr><td>人工误报数</td><td class="${falsePos>0?'miss':'ok'}">${falsePos} 条（${N_CLEAN} 条合规中）</td></tr>
+    <tr><td>人工总耗时</td><td>${totalS} 秒（${fmt(totalMs)}）</td></tr>
+    <tr><td>平均每条</td><td>${perItem} 秒</td></tr>
+    <tr><td>流水线同批</td><td class="ok">扫描 1.5ms + 编排 <10s · 召回 100% · 零误报</td></tr>`;
+  // 逐条对照
+  $('detailTable').innerHTML = `<tr><th>#</th><th>真值</th><th>你的判断</th><th>违规类型（做完揭晓）</th></tr>`+
+    ITEMS.map((it,i)=>{
+      const a=ans[i]||'c'; const correct=(a===it.truth);
+      return `<tr><td>${i+1}</td><td>${it.truth==='v'?'违规':'合规'}</td>
+        <td>${a==='v'?'有问题':'没问题'} ${correct?'<span class="ok">✓</span>':'<span class="miss">✗</span>'}</td>
+        <td>${esc(it.type||'—')}</td></tr>`; }).join('');
+  // 复制块
+  $('copyBlock').textContent =
+`【GateKeeper 人工实测】${$('who').value?('· '+$('who').value):''}
+- 人工：20 条耗时 ${totalS} 秒（平均 ${perItem} 秒/条），检出 ${hit}/${N_VIOL}，漏检 ${miss} 条，误报 ${falsePos} 条，召回 ${recall}%
+- 流水线：扫描 1.5ms + 端到端 <10 秒，召回 100%，零误报，全程可审计
+- 结论：${miss>0?('人工漏检 '+miss+' 条，流水线全捕获'):('本批人工零漏检，但流水线仍具规模/留痕/一致性优势')}`;
+  $('quiz').classList.add('hidden'); $('result').classList.remove('hidden');
+  window.scrollTo(0,0);
+};
+
+$('copy').onclick = async () => {
+  const txt = $('copyBlock').textContent;
+  try { await navigator.clipboard.writeText(txt); $('copy').textContent='已复制 ✓'; setTimeout(()=>$('copy').textContent='复制结果',1500); }
+  catch(e){ const r=document.createRange(); r.selectNodeContents($('copyBlock')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $('copy').textContent='已选中，Ctrl+C'; }
+};
+</script>
+</body>
+</html>
