@@ -35,7 +35,7 @@ const KEYS = {
 // —— 按项目 schema 解析 `> 键：值` 元信息块 ——
 function parseDoc(path) {
   const text = readFileSync(resolve(process.cwd(), path), 'utf8');
-  const kv = Object.fromEntries([...text.matchAll(/^>\s*([^\uff1a:]+)[\uff1a:]\s*(.+)$/gm)].map((m) => [m[1].trim(), m[2].trim()]));
+  const kv = Object.fromEntries([...text.matchAll(/^>\s*([^\uff1a:\n]+)[\uff1a:]\s*(.+)$/gm)].map((m) => [m[1].trim(), m[2].trim()]));
   const pick = (arr) => (arr.map((k) => kv[k]).find((v) => v) || '');
   const meta = { session: pick(KEYS.session), created: pick(KEYS.created), source: pick(KEYS.source) };
   const title = (text.match(/^#\s+(.+)$/m) || [])[1] || basename(path, '.md');

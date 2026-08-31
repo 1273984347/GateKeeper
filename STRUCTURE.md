@@ -3,7 +3,7 @@
 > 来源：验收官项目自审（自我深度审查）
 > Session：本次会话 ID 见提交表单留档
 
-> 当前版本 v0.12.0（权威见 CHANGELOG）。本文件描述结构；文件计数用引用式表述（`ls`/`find` 实测为准），不硬编码易漂移数字。
+> 当前版本 v0.12.1（权威见 CHANGELOG）。本文件描述结构；文件计数用引用式表述（`ls`/`find` 实测为准），不硬编码易漂移数字。
 
 ## 顶层结构
 
@@ -32,6 +32,9 @@ prototype/
 ├── sync-gates.mjs       把 gates.mjs 注入 HTML 引擎块 + `--check` 漂移门禁
 ├── sync-configs.mjs     把 configs/*.json + 批次数据注入 HTML 配置/数据块 + `--check` 第二道漂移门禁
 ├── verify.mjs           回归红线 + 换配置差异统一验收（本地 / CI 共用）
+├── real-batch-audit.mjs 真实批次体检（对一批真实文档跑门禁→批次级报告·M9 实效证据）
+├── human-baseline.html  真人实测采集器（自计时+自动判分；?set=B 作者盲测新样本集）
+├── audit-configs/       真实批次体检用的生产级 config（如 xiyouji.json·映射真实 schema）
 ├── gatekeeper.html      可视化治理控制台单文件应用（引擎块 + 配置/数据块由 sync 注入，标记区勿手改）
 ├── dws-bridge.mjs       裁决 → dws 命令编排（dry-run / --live 生成 dws-plan.sh）
 ├── project-check.mjs    换 project-config 体检真实文档（--compare 对照默认配置）

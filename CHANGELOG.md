@@ -9,6 +9,19 @@
 
 ---
 
+### v0.12.1（2026-08-31）：M9 真实任务证据 + project-check 元信息解析 bugfix
+
+> **来源**：M9「真人实测」遇单人参赛约束——无第三方、作者测老样本有先验（必 100% 召回）不可信。经用户"想办法"，确立诚实补强双路径：① 路 1 真实任务证据（不依赖人工秒表）；② 采集器 `?set=B` 作者盲测新样本集（去先验）。本条落地路 1 + 盲测集，并修掉一个影响真实文档解析的老 bug。
+> - **执行（真实任务证据·路 1）**：新建 `prototype/real-batch-audit.mjs`——对一批真实文档跑六道门禁、产出批次级体检报告（总览/门禁分布/换配置抑制误报对照/真实缺口抽样/动态结论）。配一份**生产级** `prototype/audit-configs/xiyouji.json`（按西游记 docs 真实 schema：`核验状态`→可追溯字段、`创建于/创建日期`、`引用/来源`；登记其历史版本谱系 v2.0.49→v2.3.11；文学语境关广告法）。跑 **216 篇**真实人物分析文档 → **173 可发布(80%) / 43 需修复 / 0 阻断 / 均分 93 / 218 真实缺口**，含真实 G1 断链引用；同批默认口径 506 条文学误报经配置归零。自身 **11 份治理文档 100% 可发布、0 缺口**。
+> - **执行（盲测集·路 2）**：`human-baseline.html` 加 `?set=B` 全新 20 条样本（措辞全不同、答案键作者未见、8 类全覆盖、15 违规 5 合规）+ 冷跑提示横幅 + 结果标注样本来源；Playwright 双模式验证 0 报错。
+> - **执行（bugfix·真）**：`real-batch-audit.mjs`/`project-check.mjs` 的 `> 键：值` 解析正则 `[^\uff1a:]+` 会**跨行吞**——当文档首个 `>` 行无冒号（如西游记 `> **W246 A3…**`）时，一路吃到下一行冒号，把 `核验状态` 等字段解析成空、G6 误报全缺。收紧为 `[^\uff1a:\n]+`。另修 `real-batch-audit` 文件收集误删 `--sample` 后首个文件的 off-by-one。
+> - **执行（蓝图回填）**：`01-参赛蓝图.md` §五 增「真实任务证据」小节（假设区间 → 一手真实数据），诚实声明改注"单人参赛、备盲测+真实证据双路径"；`答辩速查卡.md` 补真实任务证据行、版本行由滞后的 v0.11.0 修正到 v0.12.1。
+> - **文件**：prototype/real-batch-audit.mjs（新建）、prototype/audit-configs/xiyouji.json（新建）、prototype/project-check.mjs（解析正则修复）、prototype/human-baseline.html（?set=B 盲测集）、prototype/configs/gatekeeper-self.json（currentVersion→0.12.1 + 登记）、prototype/gatekeeper.html（sync-configs 重注入）、prototype/output/real-batch-详解西游记·内容生产（生产口径）.md + real-batch-GateKeeper_自身治理文档.md（新建）、01-参赛蓝图.md + 答辩速查卡.md + README.md + STRUCTURE.md + 交接文档.md + ROADMAP.md（版本 v0.12.1 + 证据回填）。
+> - **验证**：`sync-gates --check` + `sync-configs --check` 双绿；`verify.mjs` 9 项红线全过（引擎与样例裁决零改动）；`check-docs` 11/11 可发布（蓝图 95 不变）；真实批次数字为 `real-batch-audit.mjs` 实测、可回溯原文；盲测采集器 Playwright 双模式 0 报错。
+> - **状态**：路 1 已落地（真实证据入档）；路 2 采集器已就绪、待作者/第三方冷跑取数。遗留（如实）：西游记 43 篇"缺结构化引用/创建时间"属该工程真实完整性缺口（非门禁误判），可作为 GateKeeper 给西游记项目的**反向治理建议**，但不在本作品内代改。
+
+---
+
 ### v0.12.0（2026-08-31）：M11 web 端可扩展改造 —— 从单页报表到三层治理控制台
 
 > **来源**：用户反馈"web 端感觉很扁平、没什么可拓展的感觉"。取证确认症结非视觉（M8 已把配色/深度/暗色/字体做厚），而是三处结构性"扁"——① 导航只有一屏（一根到底长滚动，看着像静态报表不像产品）；② 信息只一层深（点文档=换右侧六卡，无下钻/趋势/历史/对比）；③ CLI 早已有的 project-config / metaMap / `--compare` 换配置差异能力，web 端一个没暴露，仍硬编码 5 篇 A–E 样例 + 写死 DEFAULT_CONFIG。经用户"都做"批准，按 P0（导航+下钻）+P1（配置外置+diff）+P2（demo 模式+CI）全量落地。
