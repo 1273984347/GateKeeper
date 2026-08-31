@@ -99,7 +99,8 @@
 
 <script>
 // 20 条与 bench.mjs / 人工实测对照表.md 完全一致。truth: v=违规 c=合规；type=违规类型。
-const ITEMS = [
+// 默认集 ITEMS_A = 与 bench 对齐的老样本（组织者/第三方用）。
+const ITEMS_A = [
   {t:'全网第一的智能客服，工单秒级响应。', truth:'v', type:'绝对化「全网第一/第一」· 第9条第3项'},
   {t:'解决率 100%有效，客户零投诉。', truth:'v', type:'虚假承诺「100%有效」· 第4、28条'},
   {t:'通过国家级技术认证。', truth:'v', type:'极限量词「国家级」· 第9条第3项'},
@@ -121,6 +122,32 @@ const ITEMS = [
   {t:'支持多轮对话与私有知识库检索。', truth:'c', type:''},
   {t:'史上最强并发处理能力。', truth:'v', type:'极限量词「史上最强」· 第9条第3项'},
 ];
+// 盲测新样本集 ITEMS_B（?set=B 启用）：措辞全新、作者未见过答案键，供作者冷启动自测。
+// 8 类违禁全覆盖，15 违规 + 5 合规；真值仅在提交后揭晓。
+const ITEMS_B = [
+  {t:'这款工具是国内最顶尖的文档治理方案。', truth:'v', type:'绝对化「最顶尖」· 第9条第3项'},
+  {t:'用了它，保证你的文档零差错、永不返工。', truth:'v', type:'虚假承诺「零差错/永不」· 第4、28条'},
+  {t:'我们拥有世界级的合规审核引擎。', truth:'v', type:'极限量词「世界级」· 第9条第3项'},
+  {t:'本产品获国家部委特供推荐。', truth:'v', type:'权威性误导「特供/国家机关推荐」· 第9条第2项'},
+  {t:'上线后效率提升排名第一。', truth:'v', type:'数据无据「排名第一」· 第11条'},
+  {t:'别家根本做不到，轻松碾压所有对手。', truth:'v', type:'贬损竞品「碾压/对方做不到」· 第13条'},
+  {t:'这套系统包治企业内容管理的所有顽疾。', truth:'v', type:'功效暗示「包治」· 第17条'},
+  {t:'最后机会，错过再无此价。', truth:'v', type:'时限压迫「最后机会/错过再无」· 第28条'},
+  {t:'支持 PDF 与 Word 两种格式导入。', truth:'c', type:''},
+  {t:'本月团队累计处理文档 320 份。', truth:'c', type:'真实经营数据，非夸大'},
+  {t:'全网最低价的年度会员。', truth:'v', type:'极限量词「全网最低」· 第9条第3项'},
+  {t:'稳赚不赔的效率投资。', truth:'v', type:'虚假承诺「稳赚」· 第4、28条'},
+  {t:'宇宙级稳定性，永不宕机。', truth:'v', type:'极限量词「宇宙级」+ 虚假承诺「永不」· 第9条'},
+  {t:'平均单份审核耗时较上月下降 40%。', truth:'c', type:'有口径的数据陈述'},
+  {t:'您的首选效率工具。', truth:'v', type:'绝对化「首选」· 第9条第3项'},
+  {t:'口碑行业领先，无人能及。', truth:'v', type:'数据无据「行业领先」· 第11条'},
+  {t:'百分百有效，无效退款。', truth:'v', type:'虚假承诺「百分之百/无效退款」· 第4、28条'},
+  {t:'提供开放 API，可与现有系统集成。', truth:'c', type:''},
+  {t:'客服在工作日 9:00–18:00 在线。', truth:'c', type:''},
+  {t:'最智能的助手，给你极致体验。', truth:'v', type:'绝对化「最/极致」· 第9条第3项'},
+];
+const ITEMS = /[?&]set=B/.test(location.search) ? ITEMS_B : ITEMS_A;
+const BLIND = ITEMS === ITEMS_B;
 const N = ITEMS.length, N_VIOL = ITEMS.filter(x=>x.truth==='v').length, N_CLEAN = N - N_VIOL;
 let startTs = 0, tick = null, done = false;
 const ans = new Array(N).fill(null); // 'v' | 'c'
@@ -188,7 +215,7 @@ $('submit').onclick = () => {
         <td>${esc(it.type||'—')}</td></tr>`; }).join('');
   // 复制块
   $('copyBlock').textContent =
-`【GateKeeper 人工实测】${$('who').value?('· '+$('who').value):''}
+`【GateKeeper 人工实测】${$('who').value?('· '+$('who').value):''} · 样本集：${BLIND?'作者盲测·新样本':'老样本(与bench对齐)'}
 - 人工：20 条耗时 ${totalS} 秒（平均 ${perItem} 秒/条），检出 ${hit}/${N_VIOL}，漏检 ${miss} 条，误报 ${falsePos} 条，召回 ${recall}%
 - 流水线：扫描 1.5ms + 端到端 <10 秒，召回 100%，零误报，全程可审计
 - 结论：${miss>0?('人工漏检 '+miss+' 条，流水线全捕获'):('本批人工零漏检，但流水线仍具规模/留痕/一致性优势')}`;
@@ -201,6 +228,16 @@ $('copy').onclick = async () => {
   try { await navigator.clipboard.writeText(txt); $('copy').textContent='已复制 ✓'; setTimeout(()=>$('copy').textContent='复制结果',1500); }
   catch(e){ const r=document.createRange(); r.selectNodeContents($('copyBlock')); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $('copy').textContent='已选中，Ctrl+C'; }
 };
+
+// 盲测模式（?set=B）横幅：提示作者冷跑、别读源码；结果标注样本来源
+if (BLIND) {
+  const banner = document.createElement('div');
+  banner.className = 'card';
+  banner.style.cssText = 'border-left:4px solid var(--cinnabar);background:var(--card-2)';
+  banner.innerHTML = '<div class="note"><b>盲测新样本集</b>：这批 20 条措辞全新、答案键你此前没见过。<b>请勿查看网页源码，凭直觉冷跑</b>——这样测出的耗时/漏检才是真数据。你懂规则，属"人工侧的乐观基线"（若连你都漏，普通审核人只会漏更多，流水线优势被低估而非夸大）。</div>';
+  $('intro').before(banner);
+  document.querySelector('.sub').textContent = 'GateKeeper 提效对照 · 作者盲测 · 约 5 分钟 · 全程本地计时，不联网、不上传';
+}
 </script>
 </body>
 </html>
