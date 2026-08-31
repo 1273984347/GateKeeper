@@ -25,6 +25,7 @@ const titleArg = argv.indexOf('--title');
 const TITLE = titleArg >= 0 ? argv[titleArg + 1] : cfgJson.name;
 const sampleArg = argv.indexOf('--sample');
 const SAMPLE = sampleArg >= 0 ? parseInt(argv[sampleArg + 1], 10) : 8;
+const TODOS = argv.includes('--todos');
 
 // —— 收集文件：--glob 简易递归（**/*.md 或 *.md）或显式列表 ——
 function collect() {
@@ -78,7 +79,7 @@ for (const f of files) {
   scoreSum += a.score; realGapTotal += realGaps.length;
   g4DefaultTotal += base.gates.find((g) => g.id === 'G4').findings.length;
   g4CfgTotal += a.gates.find((g) => g.id === 'G4').findings.length;
-  rows.push({ name: doc.name, id: doc.id, verdict: a.verdict.t, score: a.score, realGaps: realGaps.length, p1: realGaps.some((x) => x.level === 'P1'), samples: realGaps.slice(0, 3) });
+  rows.push({ name: doc.name, id: doc.id, path: f, meta: doc.meta, verdict: a.verdict.t, score: a.score, realGaps: realGaps.length, p1: realGaps.some((x) => x.level === 'P1'), samples: realGaps.slice(0, 3) });
 }
 
 const n = rows.length, avg = Math.round(scoreSum / n);
@@ -140,7 +141,51 @@ L.push(`- 提效证据不依赖"算力÷人脑"倍数（不成立）；价值在
 L.push('');
 
 mkdirSync(join(PROTO, 'output'), { recursive: true });
-const outName = 'real-batch-' + cfgJson.name.replace(/[\\/:*?"<>|\s]+/g, '_') + '.md';
+const base = cfgJson.name.replace(/[\\/:*?"<>|\s]+/g, '_');
+const outName = 'real-batch-' + base + '.md';
 writeFileSync(join(PROTO, 'output', outName), L.join('\n'), 'utf8');
 console.log(L.join('\n'));
 console.log('\n[输出] prototype/output/' + outName);
+
+// —— 可选：导出「整改待办清单 + dws 命令计划（干跑·默认注释不执行）」——
+if (TODOS) {
+  const dws = JSON.parse(readFileSync(join(PROTO, 'config.dws.json'), 'utf8'));
+  const author = dws.authorUserId || '<AUTHOR_USER_ID>';
+  const due = new Date(Date.now() + (dws.dueOffsetDays || 2) * 864e5).toISOString().slice(0, 10);
+  const p1 = rows.filter((r) => r.p1);
+  const missingOf = (m) => [!m.session && '核验状态/Session', !m.created && '创建日期', !m.source && '引用/来源'].filter(Boolean);
+  // 待办清单 .md
+  const T = [];
+  T.push(`# 西游记内容生产 · 元信息整改待办清单（干跑）`);
+  T.push('');
+  T.push(`> 来源：GateKeeper \`real-batch-audit.mjs\` 真实批次体检 · 生产口径 \`audit-configs/xiyouji.json\``);
+  T.push(`> 命中 **${p1.length} 篇** P1（缺结构化引用/来源 + 创建日期）。**本清单为干跑产物，未向钉钉发起任何真实待办。**`);
+  T.push(`> 指派：authorUserId \`${author}\`　优先级 20（P1 待修复）　截止 ${due}`);
+  T.push('');
+  T.push('| # | 文档 | 缺失字段 | 建议补的元信息行 |');
+  T.push('|---|---|---|---|');
+  p1.forEach((r, i) => {
+    const miss = missingOf(r.meta);
+    const sug = miss.map((k) => (k.includes('引用') ? '> 引用：<来源>' : k.includes('创建') ? '> 创建日期：YYYY-MM-DD' : '> 核验状态：已核验')).join('　');
+    T.push(`| ${i + 1} | ${r.name} | ${miss.join('、')} | ${sug} |`);
+  });
+  T.push('');
+  T.push(`> 诚实说明：这些是**该工程真实的元信息一致性缺口**（老文档有、新写的深化专题/合集/外传漏填），非门禁误判；是否整改属内容决策，GateKeeper 只负责如实点名。`);
+  writeFileSync(join(PROTO, 'output', base + '-整改待办.md'), T.join('\n'), 'utf8');
+  // dws 计划 .sh（全部注释，默认不执行；去注释并确认 executors 后手动逐条跑）
+  const S = [];
+  S.push('#!/usr/bin/env bash');
+  S.push('# GateKeeper · 西游记元信息整改待办 —— dws 命令计划【干跑·默认注释，不自动执行】');
+  S.push(`# 生成：real-batch-audit.mjs --todos · 共 ${p1.length} 条 · 指派 ${author} · 截止 ${due}`);
+  S.push('# 用法：确认无误后，删除某行行首 "# " 再手动逐条执行；或整体去掉注释批量执行（谨慎，会在真实钉钉建待办）。');
+  S.push('set -euo pipefail');
+  S.push('');
+  p1.forEach((r) => {
+    const miss = missingOf(r.meta);
+    const title = `[元信息整改] 补 ${r.name}：${miss.join('、')}`;
+    S.push(`# dws todo task create --title "${title}" --executors ${author} --priority 20 --due ${due}`);
+  });
+  writeFileSync(join(PROTO, 'output', base + '-dws-plan.sh'), S.join('\n'), 'utf8');
+  console.log(`[干跑输出] prototype/output/${base}-整改待办.md（${p1.length} 条）`);
+  console.log(`[干跑输出] prototype/output/${base}-dws-plan.sh（命令已注释，未执行任何真实待办）`);
+}
