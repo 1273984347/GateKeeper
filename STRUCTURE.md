@@ -19,6 +19,7 @@ GateKeeper/
 ├── STRUCTURE.md         本文件
 ├── 配置切换Demo.md       三配置三结论可推广性 demo + 介绍话术
 ├── .github/workflows/   gatekeeper.yml —— CI 门禁（漂移双检 + verify + check-docs + project-check）
+├── docs/                过程治理文档（时点分析快照，如工作复盘与优化分析报告）
 └── prototype/           可运行原型与编排
 ```
 

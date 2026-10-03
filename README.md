@@ -5,7 +5,7 @@
 > Session：会话 ID 见 git 提交记录
 
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.15.3
+> **当前版本**：v0.15.4
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
 
 ![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)
@@ -94,6 +94,7 @@ node check-docs.mjs        # 提交前门禁：全部核心文档 self-config �
 | [配置切换Demo.md](配置切换Demo.md) | 同一引擎换三套配置体检三类项目——"改配置不改代码"的可执行实证 |
 | [prototype/README-DWS.md](prototype/README-DWS.md) | DWS 接入指南与执行模型 |
 | [prototype/人工实测对照表.md](prototype/人工实测对照表.md) | 人工审核耗时对照实测表（含 human-baseline 采集器使用说明） |
+| [docs/工作复盘与优化分析报告-2026-10.md](docs/工作复盘与优化分析报告-2026-10.md) | 2026-10 工作周期复盘：经验/技能/问题/流程优化与行动计划（时点快照） |
 
 ## 核心指标（引用式，权威值见 CHANGELOG / bench-report）
 
