@@ -13,6 +13,7 @@ const gates = [
   { name: '漂移门禁 · 注入块 == configs/', cmd: ['node', 'sync-configs.mjs', '--check'] },
   { name: '回归红线 verify（13 项）', cmd: ['node', 'verify.mjs'] },
   { name: '引擎单测 node --test', cmd: ['node', '--test', 'gates.test.mjs'] },
+  { name: '语法检查 node --check 全部 .mjs', cmd: ['node', 'tools/syntax-check.mjs'] },
   { name: '核心文档体检 check-docs', cmd: ['node', 'check-docs.mjs'] },
   ...(FULL ? [
     { name: '省时实测 bench', cmd: ['node', 'bench.mjs'] },

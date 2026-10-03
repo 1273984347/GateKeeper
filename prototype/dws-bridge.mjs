@@ -18,11 +18,12 @@ const cfg = JSON.parse(readFileSync(CFG_FILE, 'utf8'));
 const artifacts = JSON.parse(readFileSync(ART_FILE, 'utf8'));
 
 // 占位符检测：live 模式下若关键 ID 未填则拒绝执行
-const PLACEHOLDER = /^<.*>$/;
 // 占位符判定统一入口：trim 空白、拒绝全角尖括号变体（' <X>'、'＜X＞' 均不放行为真实 ID）
 function isPlaceholderLike(v) {
-  const s = String(v ?? '').trim();
-  return !s || PLACEHOLDER.test(s) || /^[＜＜].*[＞＞]$/.test(s);
+  let s = String(v ?? '').replace(/[＜＞]/g, (c) => (c === '＜' ? '<' : '>')).trim();
+  if (!s) return true; // 空值=未填
+  if (s.startsWith('<') || s.endsWith('>') || /[＜＞]/.test(s)) return true; // <...> 形态（含内嵌换行/混用全角变体）一律视为占位符
+  return false;
 }
 function missingConfig() {
   // robotCode 从未被生成命令引用，不校验；reviewerOpenDingTalkId 在 ding() 实际使用，必须纳入
@@ -41,7 +42,11 @@ function isoDue(days) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T18:00:00+08:00`;
 }
 // 命令 token 数组 → 可打印字符串（相对形式 dws ...，供展示 / 演示）
-function q(v) { v = String(v); return /[\s%&<>|^"'`]/.test(v) ? '"' + v.replace(/"/g, '\\"').replace(/`/g, '\\`') + '"' : v; } // 补 ` 与 ' ：展示行被复制进 bash 时防命令替换
+function q(v) {
+  v = String(v).replace(/[\r\n]+/g, ' '); // 压平换行（对齐 sq）
+  // $ 与反引号必须转义：双引号内 $()/${} 会被 bash 执行，展示行被复制即触发命令替换/变量外泄
+  return /[\s%&<>|^"'`$]/.test(v) ? '"' + v.replace(/"/g, '\\"').replace(/`/g, '\\`').replace(/\$/g, '\\$') + '"' : v;
+} // 补 ` '$ ：展示行被复制进 bash 时防命令替换
 function toStr(tokens) { return tokens.map(q).join(' '); }
 
 // bash 单引号安全包裹（供生成 dws-plan.sh）

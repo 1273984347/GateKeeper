@@ -9,6 +9,18 @@
 
 ---
 
+### v0.15.6（2026-10-04）：SK-02 试运行收敛 —— real-batch-audit 语法坏文件修复 + 重扫残留 13 条全处置
+
+> **来源**：SK-02 固化的 `rescan-audit` saved workflow 首次试运行（对 HEAD，追加核验 v0.15.4–v0.15.5 新增面）。21 候选 → 面板确认 13 条（1 P1 / 5 P2 / 7 info，去重后 11 独立项）。**试运行价值实证**：R1–R12 核验 11/12 落地，但抓出 R9 在姊妹脚本落坏的 1 个 P1——`real-batch-audit.mjs` 自 v0.15.3 起整文件语法损坏（sqT 正则字符类被写入真实换行字节），而五道门禁/CI 均不加载该文件，**绿灯掩盖损坏**；同函数转义串反斜杠丢失，即使修好语法转义也不生效（双重错误）。全部处置如下。
+> - **执行（P1）**：① `real-batch-audit.mjs` sqT 重写为与 dws-bridge sq() 完全同构（`\r\n` 转义压平 + `'\''` 转义），`node --check` 通过；端到端实证——含单引号/换行/`$(calc)` 的标题拼行后 `bash -n` 通过且 `$()` 落在单引号内不执行。② **补防线缺口**：新建 `prototype/tools/syntax-check.mjs`（全部 .mjs `node --check`，专防"未被任何门禁 import 的脚本"静默损坏）并纳入 gate.mjs 第六道门——本 P1 正是因此逃过全部绿灯。
+> - **执行（P2×5）**：③ `makeConfig` banned 词条过滤空串/纯空白（空词条 isIncludes 恒真会让 G4 对任意干净文本命中 P0 全量阻断；同构于空指标名问题），过滤后为空回退默认词表（既有设计语义），补回归测试；④ `real-batch-audit --todos` 补 R10 同款真实 ID 守卫（真实 ID 时产物改写 `*.local.*`）+ author 纳入 sqT 包裹；⑤ `dws-bridge` q() 补 `$` 转义与换行压平（双引号内 `$()/${}` 会被 bash 执行，展示行被复制即触发）；⑥ `isPlaceholderLike` 归一化全角尖括号后判定（混用形态 `<X＞`/内嵌换行变体不再绕过 --live 门禁），删除裸 PLACEHOLDER 常量；⑦ `output/live-evidence.md` 两处完整 openDingId 补中段打码（对齐同文件既有口径）。
+> - **执行（info×5 择要）**：`dws-bridge` hasRealIds 纳入 artifacts 条目级 authorUserId；产物路径锚定脚本目录 OUT（对齐 run-real/bench）；G5 三类 PII 打码断言锁定进单测（防打码回归致明文入库）；RELEASE-CHECKLIST 残留扫描命令修复（ERE `\|` 是字面管道致永不命中假绿 → 未转义 `|` 交替 + 旧 ID 特征正则）+ 4745 前缀改特征表达。
+> - **文件**：prototype/gates.mjs、gates.test.mjs（22 例）、real-batch-audit.mjs、dws-bridge.mjs、output/live-evidence.md、tools/syntax-check.mjs（新建）、tools/gate.mjs（+语法门）、tools/RELEASE-CHECKLIST.md、README.md、交接文档.md、prototype/configs/gatekeeper-self.json（0.15.6 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 六门禁全绿（含新语法门，1.8s）；`node tools/smoke.mjs` 六项全 PASS；`node --check real-batch-audit.mjs` 通过且实跑 xiyouji 口径正常出报告；sqT 端到端 bash -n 实证；`check-docs` 全部核心文档可发布。
+> - **状态**：已落地。SK-02 验收：**通过**（工具有效性实证——固化工作流在首次试运行即抓出上轮评审漏掉的 P1；固化结论入册交接文档「四」）。遗留（如实）：dws-bridge `--content-file` 相对路径为展示形态（README-DWS 已注明执行须绝对路径），维持现状。
+
+---
+
 ### v0.15.5（2026-10-04）：开发者工具 —— 门禁一键门卫 + 冒烟标准化 + 发布检查表（复盘 SK-01/03、A-02 落地）
 
 > **来源**：复盘报告（docs/工作复盘与优化分析报告-2026-10.md）W41 计划 1.1–1.3 开工：门禁一键化（SK-01）、冒烟标准化（SK-03）、发布检查表（SC-01）。

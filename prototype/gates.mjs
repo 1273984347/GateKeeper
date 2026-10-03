@@ -52,8 +52,12 @@ export function makeConfig(overrides = {}) {
         .filter((r) => r && typeof r === 'object' && Array.isArray(r.words) && r.words.length)
         .map((r) => ({
           cat: String(r.cat || '未分类'), level: LEVEL_SET.has(r.level) ? r.level : 'P2',
-          basis: String(r.basis || ''), words: r.words.map((w) => String(w)), fix: String(r.fix || ''),
-        }));
+          basis: String(r.basis || ''),
+          // 词条同样过滤空串/纯空白：空词条 isIncludes 恒真，会让 G4 对任意干净文本命中（同构于空指标名问题）
+          words: r.words.map((w) => String(w)).filter((w) => w.trim() !== ''),
+          fix: String(r.fix || ''),
+        }))
+        .filter((r) => r.words.length);
       if (!banned.length) { console.warn('[makeConfig] banned 过滤后为空，已回退默认词表'); banned = b.banned; }
     }
   }

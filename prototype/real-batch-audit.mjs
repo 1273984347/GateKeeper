@@ -150,7 +150,13 @@ console.log('\n[输出] prototype/output/' + outName);
 // —— 可选：导出「整改待办清单 + dws 命令计划（干跑·默认注释不执行）」——
 if (TODOS) {
   const dws = JSON.parse(readFileSync(join(PROTO, 'config.dws.json'), 'utf8'));
+  const PH = (v) => { const t = String(v ?? '').trim(); return !t || t.startsWith('<') || t.endsWith('>') || /[＜＞]/.test(t); };
+  const dwsRealIds = [dws.groupOpenConversationId, dws.authorUserId, dws.approverUserId, dws.reviewerOpenDingTalkId].some((v) => !PH(v));
   const author = dws.authorUserId || '<AUTHOR_USER_ID>';
+  // R10 同款防线（复扫 F04）：真实 ID 不得烘进被跟踪产物——改写 *.local.*（.gitignore 覆盖）
+  const planSuffix = dwsRealIds ? '-dws-plan.local.sh' : '-dws-plan.sh';
+  const todoSuffix = dwsRealIds ? '-整改待办.local.md' : '-整改待办.md';
+  if (dwsRealIds) console.log('🔒 检测到 config.dws.json 含真实 ID：干跑产物改写为 *.local.*（已被 .gitignore 覆盖，勿改名提交）。');
   const due = new Date(Date.now() + (dws.dueOffsetDays || 2) * 864e5).toISOString().slice(0, 10);
   const p1 = rows.filter((r) => r.p1);
   const missingOf = (m) => [!m.session && '核验状态/Session', !m.created && '创建日期', !m.source && '引用/来源'].filter(Boolean);
@@ -171,7 +177,7 @@ if (TODOS) {
   });
   T.push('');
   T.push(`> 诚实说明：这些是**该工程真实的元信息一致性缺口**（老文档有、新写的深化专题/合集/外传漏填），非门禁误判；是否整改属内容决策，GateKeeper 只负责如实点名。`);
-  writeFileSync(join(PROTO, 'output', base + '-整改待办.md'), T.join('\n'), 'utf8');
+  writeFileSync(join(PROTO, 'output', base + todoSuffix), T.join('\n'), 'utf8');
   // dws 计划 .sh（全部注释，默认不执行；去注释并确认 executors 后手动逐条跑）
   const S = [];
   S.push('#!/usr/bin/env bash');
@@ -184,11 +190,10 @@ if (TODOS) {
     const miss = missingOf(r.meta);
     const title = `[元信息整改] 补 ${r.name}：${miss.join('、')}`;
     // 标题来自被检文档（不可信）：单引号安全包裹，防 "; cmd; 注入（对齐 dws-bridge 的 sq 口径）
-    const sqT = (v) => `'` + String(v).replace(/[
-]+/g, ' ').replace(/'/g, `'\''`) + `'`;
-    S.push(`# dws todo task create --title ${sqT(title)} --executors ${author} --priority 20 --due ${due}`);
+    const sqT = (v) => "'" + String(v).replace(/[\r\n]+/g, ' ').replace(/'/g, "'\\''") + "'"; // 与 dws-bridge sq() 同构：压平换行 + 单引号转义（bash 安全序列 ''')
+    S.push(`# dws todo task create --title ${sqT(title)} --executors ${sqT(author)} --priority 20 --due ${due}`);
   });
-  writeFileSync(join(PROTO, 'output', base + '-dws-plan.sh'), S.join('\n'), 'utf8');
-  console.log(`[干跑输出] prototype/output/${base}-整改待办.md（${p1.length} 条）`);
-  console.log(`[干跑输出] prototype/output/${base}-dws-plan.sh（命令已注释，未执行任何真实待办）`);
+  writeFileSync(join(PROTO, 'output', base + planSuffix), S.join('\n'), 'utf8');
+  console.log(`[干跑输出] prototype/output/${base + todoSuffix}（${p1.length} 条）`);
+  console.log(`[干跑输出] prototype/output/${base + planSuffix}（命令已注释，未执行任何真实待办）`);
 }

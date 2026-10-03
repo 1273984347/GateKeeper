@@ -87,6 +87,11 @@ test('G5 身份证 P0 / 手机号 P1 / 邮箱 P2 / 内部成本 P2', () => {
   const g = gateOf(analyze(doc('身份证 110101199003071234，手机 13812345678，邮箱 zhang@example.com，内部成本约 800 元。')), 'G5');
   const lv = (l) => g.findings.filter((x) => x.level === l).length;
   assert.ok(lv('P0') >= 1 && lv('P1') >= 1 && lv('P2') >= 2);
+  // snip 引擎侧打码锁定（重扫 F02）：回执逐字引用 snip，明文 PII 不得出现在 finding 中
+  const allSnip = g.findings.map((x) => x.snip).join('|');
+  assert.ok(g.findings.every((x) => !x.snip.includes('110101199003071234')), '身份证 snip 必须打码');
+  assert.ok(!allSnip.includes('13812345678') && !allSnip.includes('zhang@example.com'), '手机号/邮箱 snip 必须打码');
+  assert.ok(allSnip.includes('****') || allSnip.includes('***'), '打码标记缺失');
 });
 test('G5 邮箱正则限界：118KB 无@ASCII 串不得 O(n²) 卡死（性能防线，审计回归）', () => {
   const big = 'QUJDREVGM0hJS0xNTk9QUVJTVFVW'.repeat(4200); // ≈118KB，数字游程最长 1
@@ -152,6 +157,12 @@ test('makeConfig：registry 深合并、banned 可整体替换/回退、allowTok
   assert.equal(makeConfig({ banned: [] }).banned, DEFAULT_CONFIG.banned, '空词表回退默认');
   assert.deepEqual(makeConfig({ allowTokens: ['n', 'x'] }).allowTokens, ['n', 'x']);
   assert.deepEqual(makeConfig({ allowTokens: ['n', 'n', 'x'] }).allowTokens, ['n', 'x'], '重复 token 应去重');
+  // banned 词条空串/纯空白过滤（重扫 F01 回归）：空词条 isIncludes 恒真会误判 P0
+  const emptyWordCfg = makeConfig({ banned: [{ cat: '空词条', level: 'P0', basis: 'b', words: ['', '   '], fix: 'f' }] });
+  assert.equal(emptyWordCfg.banned, DEFAULT_CONFIG.banned, '过滤后无有效词条应回退默认词表（makeConfig 设计语义）');
+  assert.equal(gateOf(analyze(doc('完全正常的一段文本。'), emptyWordCfg), 'G4').findings.length, 0, '空词条不得对干净文本命中');
+  const mixedCfg = makeConfig({ banned: [{ cat: '混', level: 'P2', basis: 'b', words: ['好词', ''], fix: 'f' }] });
+  assert.deepEqual(mixedCfg.banned[0].words, ['好词']);
   assert.deepEqual(makeConfig({ allowTokens: ['n'] }).allowTokens, ['n']);
 });
 test('flattenFindings 按级别排序且携带门禁名', () => {
