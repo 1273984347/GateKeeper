@@ -9,6 +9,21 @@
 
 ---
 
+### v0.14.1（2026-10-03）：四路并行审计修复 —— XSS 属性注入 / G5 正则 O(n²) / 引擎与解析加固 / 隐私脱敏 / 文档漂移
+
+> **来源**：用户圈选审计类 skill 清单（review-agent/critique/slop-scan/spec-compliance-check/null-safety-audit/css-audit/frontend-performance/privacy-scan/security-best-practices 等），执行"先审计后修复"：4 个并行只读审计（代码质量 / 前端健壮性与性能 / 安全隐私 / 文档-实现一致性）→ 汇总 P0 0 项、P1 8 项、P2 20+ 项 → 本条集中处置。全部修复保持样例五裁决与 bench 召回零回归。
+> - **执行（安全·P1）**：① 渲染层 `esc()` 补引号转义（`"→&quot;`、`'→&#39;`）——此前 `data-snip="${esc(...)}"` 属性上下文可被粘贴文本中的引号逃逸（DOM-XSS，攻击链经审计确认完整：粘贴文本 → G4 snip 原文切片 → 双引号属性），一处修复同时消掉"含引号片段定位失效"的伴生 bug；两 HTML 同步加固。② toast 调用点对文档名 `esc()`。
+> - **执行（健壮·P1）**：③ G5 邮箱正则本地段加 `{1,64}` 限界——原 `[A-Za-z0-9._%+-]+@` 在长 ASCII 无 `@` 串（base64/代码粘贴）上 O(n²) 回溯，100KB 输入即主线程秒级冻结；合法邮箱不受影响。④ G2 指标名先转义正则元字符再拼 RegExp——防 project-config 指标含 `C++`（SyntaxError 全页白屏）或 `转化率(CVR)`（捕获组被抢、一致性检测静默失效）。⑤ 健康环 stroke 改 `style.stroke`（presentation attribute 里的 `var()` 在 FF/Safari 有兼容退化风险）。⑥ `sync-configs` 注入标记缺失/破损时由"静默写盘报成功"改为 exit 1；`sync-gates` 的 replace 改函数形式（本条修复过程中实际踩坑：gates.mjs 新增的 `'\\$&'` 字面量被字符串版 replace 当 `$&` 特殊模式展开，引擎块被嵌套污染 34KB——已整体重建并把两个 sync 脚本的替换串都改为函数形式杜绝复发）；删 sync-gates 永不触达的一次性迁移死分支 + match 判空。
+> - **执行（诚实·P1）**：⑦ `human-baseline` 的"流水线同批 召回 100%"原为与样本集无关的写死文案，实测引擎对盲测集 B 仅 12/15（3 个新措辞不在 BANNED 词表）——改为按 `BLIND` 分支如实标注"B 集为词表外盲测样本，不作同批对照"，复制块同步。⑧ `bench` 表增**误报实测列**、结论改按实测值条件生成（原"零假阳性/召回 100%"为写死字符串，词表漂移时报告自相矛盾）。⑨ `selfcheck` R1 叙事列改读实测 `def_verdict/def_score`（原写死"阻断（G6 证据链 P1 命中）"，实测 6 份中 ROADMAP 默认裁决是"需修复"）、"7 份"改动态。⑩ `run-real`/`selfcheck` 元信息正则补 `\n` 排除（7e24eb5 同款 bugfix 漏改的两处，跨行吞键名致 G6 假缺失）。
+> - **执行（隐私·P1）**：⑪ `config.dws.json` 真实钉钉组织/账号 ID（群 cid / userId / openDingTalkId）占位符化——`dws-bridge` 的 PLACEHOLDER 检测天然支持，live 模式有明确拒绝提示；`live-evidence.md`/`dws-plan.sh`/西游记 `dws-plan.sh`/`整改待办`/`gatekeeper.html` EVIDENCE/交接文档中的**真实人名与 ID 中段打码**（回执锚点 taskId/nodeId 保留可核验）；新增 `.gitignore`（真实配置本地件/`*.bak` 等）；删除含旧品牌残留的 `gatekeeper.html.pre-font.bak`。如实声明：git 历史中仍有旧 ID，属作者本人演示组织账号、已公开存在，**历史重写不在本轮执行**（如需可后续 filter-repo + 作废旧群/账号）。
+> - **执行（文档一致性·P1/P2）**：⑫ `STRUCTURE.md` 版本行改引用式（v0.14.0 曾漏更它，一劳永逸）；`DESIGN.md` §5 视觉令牌改引用式（原整段为 M8 之前旧值、方向相反）；`Web端可扩展改造方案.md` 抬头"提案待确认"→"已实施（v0.12.0）"；README 补 `real-batch-audit` 必填参数示例、CHANGELOG 截图计数 8→9、CI 加 `permissions: contents: read` + 演示步骤名与实际一致 + 真实 ID 勿提交提醒。
+> - **执行（清理·P2 择要）**：`project-check` 删死函数 realScore + 引擎评分表第三份拷贝 recalc + 同文档重复 analyze（行为逐字等价，check-docs 复算 6/6 不变）；`dws-bridge` 删 send() 死参、步骤措辞去"@"（dws chat send 未接 @ 能力，文案不得虚标）、dueOffsetDays 兜底、报告版本号引 REGISTRY、import 归位；`verify.mjs` 补 B49/C17/D84 逐字断言（兑现"五裁决=回归红线"口径，现 13 项）；`bench`/`run-real` 等 output 相对路径问题记录未动（低危）；hover 粘滞/入场动画重放/手机号正则边界等评估后**有意保留**（见下"遗留"）。
+> - **文件**：prototype/gates.mjs（G2 转义 + G5 限界）、verify.mjs（+3 断言）、sync-gates.mjs / sync-configs.mjs（函数式 replace + 快速失败 + 死分支）、project-check.mjs / bench.mjs / run-real.mjs / selfcheck.mjs / dws-bridge.mjs（去死码 + 诚实化 + 加固）、gatekeeper.html（esc/环/守卫/生命周期/highlight/主题/样式）、human-baseline.html（诚实口径 + 加固）、config.dws.json + output 回执与计划（脱敏）、.gitignore（新建）、pre-font.bak（删除）、README.md / DESIGN.md / STRUCTURE.md / 交接文档.md / Web端可扩展改造方案.md / README-DWS.md / .github/workflows/gatekeeper.yml / 本文件。
+> - **验证**：`verify.mjs` 13 项红线全过（含新增 B/C/D 逐字断言，样例裁决零改动）；`bench` 召回 100% / 误报 0（20/200/2000 三规模实测，误报列如实为 0）；`sync-gates --check` + `sync-configs --check` 双绿；`check-docs` 全部核心文档可发布；`dws-bridge` dry-run 正常出计划（占位符形态）；全仓 grep 真实 ID/人名零残留；Playwright 冒烟见本轮收尾记录（0 error + 粘贴/toast/主题冒烟）。
+> - **状态**：已落地。遗留（如实评估后保留）：触屏 hover 粘滞未包 `@media(hover:hover)`（纯装饰性，桌面优先）；每次 render 门禁卡入场动画重放（视为"动作反馈"设计的一部分）；G5 手机号正则无边界（引擎红线内、现状裁决不变，仅记录）；git 历史含本人演示组织旧 ID（未重写历史）；`?set=Bxx` 已收紧、human-baseline 暗色模式维持明色专用。
+
+---
+
 ### v0.14.0（2026-10-03）：M8.3 控制台打磨 —— toast / 键盘导航 / 键盘可达 / 粘贴链路真回归修复
 
 > **来源**：用户指令「继续打磨所有的 HTML 文件内容，可以去 GitHub 上面借鉴学习」。两个 HTML（`gatekeeper.html` 治理控制台 + `human-baseline.html` 人工基线采集器）在既有设计系统（故宫纸色×Linear 密度）内精修；toast 模式借鉴 sonner/Base Web（role=status + hover 暂停自动关闭），键盘导航借鉴 Linear 单键直达 + `?` 速查。
@@ -16,7 +31,7 @@
 > - **执行（bugfix·真回归）**：Playwright 实测抓出——粘贴检测提交后展示的是文档 A 而非自定义内容。根因：M11 状态化改造后 `btnPaste` 先设 `state.custom` 再调 `goView('inspect')`，而 `goView` 复位 `state.custom=null`，粘贴结果被吞（v0.12.0 起存在，历次验证只覆盖了粘贴开箱与报错分支，未覆盖提交后渲染）。修复：粘贴链路直设 `state/view` 绕过 `goView` 的复位语义。
 > - **执行（human-baseline.html）**：设计令牌对齐（圆角三级/阴影两级/统一缓动/`:focus-visible`/`::selection`）；进度卡改 **sticky 悬浮**（计时器 + 已作答进度条始终可见，长页作答不丢秒表）；选项改胶囊、选中态按语义着色（有问题=朱砂/没问题=青玉）；结果页新增大数字结论行（召回率 46px 衬线 + 漏检/误报/耗时）；条目错峰入场动画（`prefers-reduced-motion` 全关）。数据数组与判分逻辑零改动。
 > - **执行（截图）**：`screenshots/` 全套重生成（ui-1280/1024/640、ui-light、ui-dark、01-dashboard、02-gates-A、02a-verdict、03-dws-E）；长页截图改「视口高=页高」规避 sticky 拼接痕迹。
-> - **文件**：prototype/gatekeeper.html（打磨层 CSS/JS + 粘贴 bugfix + 文案，引擎/配置块未动）、prototype/human-baseline.html（呈现层重写，逻辑零改动）、prototype/screenshots/*.png（8 张重生成）、UI升级方案.md（§10 打磨记录 + 量化验收）、README.md + 交接文档.md + ROADMAP.md（版本 v0.14.0 + 记录）、prototype/configs/gatekeeper-self.json（currentVersion→0.14.0 + 登记）、本文件。
+> - **文件**：prototype/gatekeeper.html（打磨层 CSS/JS + 粘贴 bugfix + 文案，引擎/配置块未动）、prototype/human-baseline.html（呈现层重写，逻辑零改动）、prototype/screenshots/*.png（9 张重生成）、UI升级方案.md（§10 打磨记录 + 量化验收）、README.md + 交接文档.md + ROADMAP.md（版本 v0.14.0 + 记录）、prototype/configs/gatekeeper-self.json（currentVersion→0.14.0 + 登记）、本文件。
 > - **验证**：Playwright（Chromium 1.60）实测——控制台/页面 **0 error**；命中项点击定位原文（details 展开 + sel 高亮）；阻断文档提交 → toast 出现；`4` 键切配置视图、`?` 呼出速查；`/` 开粘贴框 → 字数 24 → Ctrl+Enter → docHead=「自定义粘贴内容」· 阻断发布 26 分 · G4 命中 2 + G5 手机号脱敏；640px 无横向溢出；暗色 bodyBg=rgb(19,21,25)；采集器作答 3 条 → 进度 15% + 选中态着色 + 提交出分正常。`sync-gates --check` + `sync-configs --check` 双绿；`verify.mjs` 红线全过（样例裁决逐字不变）；`check-docs` 全部核心文档可发布。
 > - **状态**：已落地。遗留（如实）：趋势视图时间线仍待真实多批次数据（决策闸门不投空图）；human-baseline 暗色模式未做（工具页，明色专用，如需可复用控制台令牌方案）。
 

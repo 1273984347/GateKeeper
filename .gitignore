@@ -1,0 +1,6 @@
+# 本地真实配置与临时产物
+config.dws.local.json
+*.bak
+node_modules/
+.DS_Store
+Thumbs.db

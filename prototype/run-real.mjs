@@ -11,7 +11,7 @@ if (!files.length) { console.error('用法: node run-real.mjs <doc.md> ...'); pr
 function parseDoc(path) {
   const text = readFileSync(path, 'utf8');
   const meta = {};
-  const fm = [...text.matchAll(/^>\s*([^\uff1a:]+)[\uff1a:]\s*(.+)$/gm)];
+  const fm = [...text.matchAll(/^>\s*([^\uff1a:\n]+)[\uff1a:]\s*(.+)$/gm)]; // [^…\n] 防跨行吞键名（对齐 project-check/real-batch-audit 的同款修复）
   const kv = Object.fromEntries(fm.map((m) => [m[1].trim(), m[2].trim()]));
   meta.session = kv['Session'] || kv['会话'] || '';            // 西游记文档通常不内联 Session → 真实缺口
   meta.created = kv['创建日期'] || kv['更新'] || '';

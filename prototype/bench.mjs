@@ -54,7 +54,8 @@ function runScale(n, label) {
   // 召回：真值违规中被检出数
   let tp = 0; docs.forEach((d, i) => { if (d.gt && results[i]) tp++; });
   const recall = gtViol ? (tp / gtViol) * 100 : 100;
-  return { label, n, gtViol, detected, tp, recall, ms, perItemMs: ms / n };
+  const fp = detected - tp; // 干净条被误检数（此前算出未消费，结论写死"零假阳性"）
+  return { label, n, gtViol, detected, tp, fp, recall, ms, perItemMs: ms / n };
 }
 
 const runs = [runScale(20, '20 条（真实样例批次）'), runScale(200, '200 条'), runScale(2000, '2000 条')];
@@ -72,11 +73,14 @@ lines.push('- 流水线耗时为 `process.hrtime` 实测墙钟；人工基线为
 lines.push('');
 lines.push('## 一、流水线实测（真实测量）');
 lines.push('');
-lines.push('| 批次规模 | 植入违规(真值) | 检出违规 | 召回率 | 总耗时 | 单条均摊 |');
-lines.push('|---|---|---|---|---|---|');
-runs.forEach((r) => lines.push(`| ${r.n} | ${r.gtViol} | ${r.tp} | ${r.recall.toFixed(1)}% | ${r.ms.toFixed(1)} ms | ${r.perItemMs.toFixed(3)} ms |`));
+lines.push('| 批次规模 | 植入违规(真值) | 检出违规 | 误报 | 召回率 | 总耗时 | 单条均摊 |');
+lines.push('|---|---|---|---|---|---|---|');
+runs.forEach((r) => lines.push(`| ${r.n} | ${r.gtViol} | ${r.tp} | ${r.fp} | ${r.recall.toFixed(1)}% | ${r.ms.toFixed(1)} ms | ${r.perItemMs.toFixed(3)} ms |`));
 lines.push('');
-lines.push('结论：流水线对植入违规 **召回 100%**（确定性、可审计），且规模到 2000 条仍为毫秒级、单条均摊稳定不随批次膨胀。');
+const allRecall = runs.every((r) => r.recall === 100);
+const allFp0 = runs.every((r) => r.fp === 0);
+lines.push(`结论：流水线对植入违规召回 **${runs.map((r) => r.recall.toFixed(1) + '%').join(' / ')}**（按实测填，确定性、可审计），误报 **${runs.map((r) => r.fp).join(' / ')}**；规模到 2000 条仍为毫秒级、单条均摊稳定不随批次膨胀。`);
+if (!allRecall || !allFp0) lines.push('> ⚠️ 实测召回/误报偏离 100%/0：多半是 BANNED 词表或真值标注变动，先核对 bench 20 条与词表的一致性，不得改文案粉饰。');
 lines.push('');
 lines.push('## 二、人工 vs 流水线 端到端对照（20 条批次）');
 lines.push('');
@@ -94,7 +98,7 @@ lines.push('> 诚实口径：门禁扫描本身毫秒级；真实提效体现在
 lines.push('');
 lines.push('## 三、口径与诚实声明');
 lines.push('- 「扫描耗时」列为 `process.hrtime` 真实测量；「人工」列为业界单条人审 30–120s 的**假设区间**，未做真人秒表（单人无法自测人类基线）；「编排约 5–10s」为 DWS 网络往返的估算，提交前建议实测一次端到端总时长坐实。');
-lines.push('- 违规真值 = 20 条中 15 条含《广告法》禁止性表述；干净 5 条不误报（零假阳性）。');
+lines.push(`- 违规真值 = 20 条中 15 条含《广告法》禁止性表述；干净 5 条实测误报 ${runs[0].fp} 条（词表/真值变动时此数如实反映，不再写死零假阳性）。`);
 
 writeFileSync('output/bench-report.md', lines.join('\n'), 'utf8');
 console.log(lines.join('\n'));

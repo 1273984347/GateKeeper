@@ -26,27 +26,16 @@ const hasMarkers = html.includes(START);
 
 if (hasMarkers) {
   const re = new RegExp(`${escapeRe(START)}[\\s\\S]*?${escapeRe(END)}`);
-  const cur = html.match(re)[0];
+  const cur = html.match(re);
+  if (!cur) { console.error('✗ gatekeeper.html 引擎块标记闭合缺失，终止'); process.exit(2); }
+  const cur0 = cur[0];
   if (CHECK) {
-    if (cur !== block) { console.error('✗ 漂移：gatekeeper.html 引擎块与 gates.mjs 不一致。跑 `node sync-gates.mjs` 修复。'); process.exit(1); }
+    if (cur0 !== block) { console.error('✗ 漂移：gatekeeper.html 引擎块与 gates.mjs 不一致。跑 `node sync-gates.mjs` 修复。'); process.exit(1); }
     console.log('✓ 一致：gatekeeper.html 引擎块 == gates.mjs'); process.exit(0);
   }
-  html = html.replace(re, block);
+  // 替换串必须走函数形式：block 内容可能含 $&（如 escapeRe 的替换字面量），字符串形式的 replace 会把它当特殊模式展开
+  html = html.replace(re, () => block);
   writeFileSync(HTML, html, 'utf8');
   console.log('✓ 已从 gates.mjs 重新注入 HTML 引擎块');
-} else {
-  // 一次性重构：把手写引擎区替换为「标记块 + 保留的 DOCS + esc」
-  if (CHECK) { console.error('✗ 尚未注入标记，先跑 `node sync-gates.mjs`'); process.exit(1); }
-  const legacyStart = html.indexOf('/* ============ 配置与知识库');
-  const legacyEnd = html.indexOf('/* ============ 高亮原文命中的违禁词');
-  if (legacyStart < 0 || legacyEnd < 0) { console.error('✗ 找不到旧引擎区边界，终止'); process.exit(2); }
-  const legacy = html.slice(legacyStart, legacyEnd);
-  const docs = legacy.match(/const DOCS = \[[\s\S]*?\n\];/)[0];
-  const escFn = "function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}";
-  const replacement = `${block}\n\n/* ===== 样例产出物（脱敏模拟数据，HTML 演示专用）===== */\n${docs}\n\n/* ===== 前端展示层：DOM 转义 ===== */\n${escFn}\n\n`;
-  html = html.slice(0, legacyStart) + replacement + html.slice(legacyEnd);
-  writeFileSync(HTML, html, 'utf8');
-  console.log('✓ 一次性重构完成：引擎区已改为标记块（源=gates.mjs），DOCS/esc 保留');
 }
-
 function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }

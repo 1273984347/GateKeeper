@@ -46,7 +46,8 @@ function replaceBlock(html, start, end, block, label) {
     if (m[0] !== block) { console.error(`✗ 漂移：${label} 与 configs/ 不一致。跑 \`node sync-configs.mjs\` 修复。`); process.exit(1); }
     return { html, checked: true };
   }
-  return { html: html.replace(re, block), changed: true };
+  // 替换串必须走函数形式：配置 _why/数据可能含 $& 等字符，字符串形式的 replace 会当特殊模式展开
+  return { html: html.replace(re, () => block), changed: true };
 }
 
 let html = readFileSync(HTML, 'utf8');
@@ -58,6 +59,10 @@ if (CHECK) {
   process.exit(1);
 }
 
+if (r1.changed !== true || r2.changed !== true) {
+  console.error('✗ 注入失败（标记缺失或闭合破损），已放弃写盘。请检查 gatekeeper.html 的 GK-CONFIGS-SRC / GK-DATA-SRC 标记区。');
+  process.exit(1);
+}
 writeFileSync(HTML, r2.html, 'utf8');
 const nProj = JSON.parse(readFileSync(join(CONFIG_DIR, BATCH_FILE), 'utf8')).projects.length;
 const nCfg = Object.keys(readConfigs()).length;

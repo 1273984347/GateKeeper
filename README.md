@@ -5,7 +5,7 @@
 > Session：会话 ID 见 git 提交记录
 
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.14.0
+> **当前版本**：v0.14.1
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
 
 ![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)
@@ -37,7 +37,7 @@ node sync-configs.mjs      # 改完 configs/*.json 后跑：把配置/批次数�
 node verify.mjs            # 回归红线 + 换配置差异：环50/6P0/9P1/8P2/1可发布 + G4 抑制，全绿 exit 0
 node dws-bridge.mjs        # dry-run：打印将执行的真实 dws 命令 + 生成 output/dws-plan.sh
 node bench.mjs             # 省时实测：召回/误报/耗时 → output/bench-report.md
-node real-batch-audit.mjs  # 真实批次体检：对一批真实文档跑六道门禁 → 批次级报告（output/real-batch-*.md）
+node real-batch-audit.mjs --config audit-configs/xiyouji.json --glob "<真实文档目录>/**/*.md"  # 真实批次体检（--config 与 --glob/文件列表必填）→ output/real-batch-*.md
 node check-docs.mjs        # 提交前门禁：全部核心文档 self-config 体检，任一非「可发布」exit 1
 # 打开 gatekeeper.html 看治理控制台（总览/明细/编排/配置对照/趋势 五视图 + 五级下钻）；加 ?demo=1 进离线演示模式
 # --live 真实落地须由千问办公 Agent 直接调用 dws（见 README-DWS.md）
@@ -49,7 +49,7 @@ node check-docs.mjs        # 提交前门禁：全部核心文档 self-config �
 |---|---|
 | [DESIGN.md](DESIGN.md) | 设计方案：目标原则 / 三层架构 / 门禁契约 / 视觉系统 / 数据模型 / 取舍 |
 | [UI升级方案.md](UI升级方案.md) | 界面美化升级规格：量化验收标准 / 设计令牌 / 自检结论 |
-| [Web端可扩展改造方案.md](Web端可扩展改造方案.md) | web 端从单页报表→三层治理控制台改造规格：四痛点映射 / 分期 / 风险 / 待拍板项 |
+| [Web端可扩展改造方案.md](Web端可扩展改造方案.md) | web 端从单页报表→三层治理控制台改造规格：四痛点映射 / 分期 / 风险（v0.12.0 已全量实施） |
 | [ROADMAP.md](ROADMAP.md) | 后续发展与迭代路线图：短中长期 / 指标演进 / 决策闸门 |
 | [CHANGELOG.md](CHANGELOG.md) | 正向时间线，每条含「来源/执行/文件/验证/状态」四件套 |
 | [交接文档.md](交接文档.md) | 接手主入口：进度 / 下一步 / 方法论 / 雷区 |

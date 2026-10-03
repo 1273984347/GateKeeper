@@ -3,11 +3,11 @@
 //   node dws-bridge.mjs                       # dry-run（默认，仅打印将执行的 dws 命令）
 //   node dws-bridge.mjs --live                # 真实调用钉钉（需先登录 + 填 config.dws.json）
 //   node dws-bridge.mjs --artifacts x.json --config c.json
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { homedir, arch } from 'node:os';
 import { join } from 'node:path';
-import { analyze, flattenFindings } from './gates.mjs';
+import { analyze, flattenFindings, REGISTRY } from './gates.mjs';
 
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
@@ -62,8 +62,9 @@ function buildPlan(a) {
   const p0 = flat.filter((x) => x.level === 'P0');
   const p1 = flat.filter((x) => x.level === 'P1');
   const plan = [];
-  const send = (title, text, atUsers) => {
+  const send = (title, text) => {
     // 该组织机器人「AI小钉」非自定义群发模板（send-by-bot 报 400004），改用当前用户身份群发。
+    // 注：当前 dws chat message send 未接 @ 能力，步骤/文案不得宣称「@作者」（诚实口径）。
     const t = ['dws', 'chat', 'message', 'send', '--group', cfg.groupOpenConversationId || '<GROUP_ID>', '--title', title, '--text', text.replace(/\n/g, ' ')];
     return t;
   };
@@ -85,12 +86,12 @@ function buildPlan(a) {
     plan.push({ step: '建复核待办', note: '指派复核人二次确认后发布', cmd: todo(`复核发布 ${a.name}`, cfg.approverUserId || '<APPROVER_USER_ID>', 30, isoDue(1)) });
     plan.push({ step: 'DING 催办审批人', note: '本人身份 DING 强提醒复核人尽快审批', cmd: ding(`【GateKeeper 验收】《${a.name}》已通过六道门禁（健康分 ${a.score}），请审批是否发布。`) });
   } else if (a.verdict.k === 'fix') {
-    plan.push({ step: '建作者待办', note: `${p1.length} 项 P1 告警，修复后重跑`, cmd: todo(`[待修复] ${a.name} · ${flat.length}项`, author, 20, isoDue(cfg.dueOffsetDays)) });
-    plan.push({ step: '群提醒 @作者', note: '不自动发布，等待整改', cmd: send('⚠️ 需修复', `${a.name} 有 ${p1.length} 项 P1 / ${flat.length - p1.length} 项告警待修，修复后重跑门禁再发布。`, author) });
+    plan.push({ step: '建作者待办', note: `${p1.length} 项 P1 告警，修复后重跑`, cmd: todo(`[待修复] ${a.name} · ${flat.length}项`, author, 20, isoDue(cfg.dueOffsetDays || 2)) });
+    plan.push({ step: '群提醒作者', note: '不自动发布，等待整改（待办已指派作者）', cmd: send('⚠️ 需修复', `${a.name} 有 ${p1.length} 项 P1 / ${flat.length - p1.length} 项告警待修，修复后重跑门禁再发布。`) });
   } else { // block
     const brief = p0.slice(0, 3).map((x) => `${x.gate}:${x.issue}`).join('；') || '见验收报告';
-    plan.push({ step: '建作者待办(P0)', note: `${p0.length} 项 P0 阻断，最高优先级`, cmd: todo(`[门禁阻断] 修复 ${a.name} · ${p0.length}项P0`, author, 40, isoDue(cfg.dueOffsetDays)) });
-    plan.push({ step: '驳回告警 @作者', note: '自动驳回，禁止发布', cmd: send('🚫 门禁阻断', `${a.name} 命中 ${p0.length} 项 P0：${brief}。已驳回，禁止发布。`, author) });
+    plan.push({ step: '建作者待办(P0)', note: `${p0.length} 项 P0 阻断，最高优先级`, cmd: todo(`[门禁阻断] 修复 ${a.name} · ${p0.length}项P0`, author, 40, isoDue(cfg.dueOffsetDays || 2)) });
+    plan.push({ step: '驳回告警', note: '自动驳回，禁止发布（待办已指派作者）', cmd: send('🚫 门禁阻断', `${a.name} 命中 ${p0.length} 项 P0：${brief}。已驳回，禁止发布。`) });
     if (cfg.webhookToken && !PLACEHOLDER.test(cfg.webhookToken))
       plan.push({ step: 'Webhook 广播(可选)', note: '向治理群 @所有人 广播', cmd: ['dws', 'chat', 'message', 'send-by-webhook', '--token', cfg.webhookToken, '--title', '🚫 发布被阻断', '--text', `${a.name} P0 阻断，责任人请处理`, '--at-all'] });
   }
@@ -114,12 +115,11 @@ function writeReport(a, info) {
     lines.push('');
   });
   lines.push('---');
-  lines.push('> 由 GateKeeper 自动验收生成 · 数据源注册表 v' + '2.4.0');
+  lines.push('> 由 GateKeeper 自动验收生成 · 数据源注册表 v' + REGISTRY.currentVersion);
   writeFileSync(`output/accept-${a.id}.md`, lines.join('\n'), 'utf8');
 }
 
 // 主流程
-import { mkdirSync } from 'node:fs';
 mkdirSync('output', { recursive: true });
 
 const results = [];

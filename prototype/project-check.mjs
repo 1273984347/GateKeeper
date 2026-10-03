@@ -42,21 +42,14 @@ function parseDoc(path) {
   return { id: basename(path, '.md'), name: title, meta, text };
 }
 
-const LEVELS = { P0: 25, P1: 12, P2: 5, P3: 2 };
-function realScore(a) { return a.score; }
-function recalc(a) { // 按当前 gates 重算分与裁决（project-check 不依赖 analyze 内部实现细节之外的逻辑）
-  const s = Math.max(0, Math.min(100, 100 - a.gates.reduce((n, g) => n + g.findings.reduce((m, x) => m + (LEVELS[x.level] || 0), 0), 0)));
-  const hasP0 = a.gates.some((g) => g.findings.some((x) => x.level === 'P0'));
-  const hasP1 = a.gates.some((g) => g.findings.some((x) => x.level === 'P1'));
-  const v = (hasP0 || s < 55) ? '阻断发布' : (hasP1 || s < 85) ? '需修复后发布' : '可发布';
-  return { score: s, verdict: v };
-}
-
 const rows = files.map((f) => {
   const doc = parseDoc(f);
-  const withCfg = recalc(analyze(doc, cfg));
-  const base = compare ? recalc(analyze(doc)) : null; // 样例默认配置对照
-  const real = flattenFindings(analyze(doc, cfg).gates).filter((x) => ['G1', 'G2', 'G6'].includes(x.gate.split(' ')[0]) && x.level !== 'P3');
+  // analyze 已返回 score/verdict（引擎单一事实源），此处不再复刻评分/裁决逻辑；每文档每口径只跑一次
+  const aCfg = analyze(doc, cfg);
+  const aBase = compare ? analyze(doc) : null; // 样例默认配置对照
+  const withCfg = { verdict: aCfg.verdict.t, score: aCfg.score };
+  const base = aBase ? { verdict: aBase.verdict.t, score: aBase.score } : null;
+  const real = flattenFindings(aCfg.gates).filter((x) => ['G1', 'G2', 'G6'].includes(x.gate.split(' ')[0]) && x.level !== 'P3');
   return { name: doc.name, id: doc.id, withCfg, base, realGaps: real.length };
 });
 

@@ -3,7 +3,7 @@
 > 来源：AI 产出治理项目自审（自我深度审查）
 > Session：会话 ID 见 git 提交记录
 
-> 当前版本 v0.13.0（权威见 CHANGELOG）。本文件描述结构；文件计数用引用式表述（`ls`/`find` 实测为准），不硬编码易漂移数字。
+> 当前版本见 [CHANGELOG.md](CHANGELOG.md) 顶部（唯一权威，本文件不复制版本号）。本文件描述结构；文件计数用引用式表述（`ls`/`find` 实测为准），不硬编码易漂移数字。
 
 ## 顶层结构
 
@@ -46,19 +46,19 @@ prototype/
 ├── config.dws.json      真实 DWS 目标 ID（群/复核人/作者/审批人 openDingTalkId）
 ├── README-DWS.md        DWS 接入指南与执行模型
 ├── 人工实测对照表.md      人工审核耗时对照实测表（human-baseline 采集器的纸质兜底与判分口径）
-├── screenshots/         UI 截图（Playwright 真实截图，非 AI 生成；README 配图出处）
-│   ├── ui-1280/1024/640.png  控制台三档响应式截图
-│   ├── 01-dashboard.png 批次健康环
-│   ├── 02-gates-A.png   六道门禁明细（G4 亮红）
-│   ├── 02a-verdict.png  单份裁决条
-│   └── 03-dws-E.png     DWS 编排链路
+├── screenshots/         UI 截图（Playwright 真实截图，非 AI 生成；README 配图出处，共 11 张）
+│   ├── ui-1280/1024/640.png  控制台三档响应式全页
+│   ├── ui-light / ui-dark.png  明暗主题（demo 模式）
+│   ├── 01-dashboard.png 批次健康环 · 02-gates-A.png 六道门禁明细（G4 亮红）· 02a-verdict.png 单份裁决条 · 03-dws-E.png DWS 编排链
+│   └── ui-*-font.png    衬线字体嵌入验证截图（M8.2 存档）
 └── output/              运行产物（可由脚本重生成）
     ├── accept-A..E.md   每份验收报告（doc create 归档正文）
     ├── gate-report.json 批次裁决汇总
     ├── dws-plan.sh      生成的 dws 执行计划
     ├── live-evidence.md 真实 DWS 落地回执（含端到端计时锚点）· demo 模式结果态数据源
     ├── real-case-report.md 真实文档体检报告
-    └── bench-report.md  实测数据报告
+    ├── bench-report.md  实测数据报告
+    └── …等 20+ 项运行产物（project-check-* / real-batch-* / selfcheck 报告 / accept-* 验收报告 / dws-plan.sh / 整改待办 / 字体子集 woff2+used_chars）；woff2/used_chars 为 fontTools 一次性产物，非仓内脚本可重生成
 ```
 
 ## 命名规范

@@ -83,7 +83,9 @@ function g2(doc, cfg) {
       f.push({ level: vers.length > 1 ? 'P1' : 'P2', snip: `版本 ${v}`, issue: `出现版本 v${v}，不在版本注册表 [${allowVers.join(', ')}] 内`, basis: '版本漂移检测', fix: '统一为当前权威版本口径，或将该历史版本登记入版本注册表' });
   });
   REG.metrics.forEach((m) => {
-    const nums = [...c.matchAll(new RegExp(m + '[^0-9]{0,6}(\\d+(?:\\.\\d+)?%?)', 'g'))].map((x) => x[1]);
+    // 指标名来自 project-config（外部输入），先转义正则元字符再拼接：防 'C++' 抛 SyntaxError、'转化率(CVR)' 捕获组被抢导致一致性检测静默失效
+    const mEsc = m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const nums = [...c.matchAll(new RegExp(mEsc + '[^0-9]{0,6}(\\d+(?:\\.\\d+)?%?)', 'g'))].map((x) => x[1]);
     if (new Set(nums).size > 1)
       f.push({ level: 'P0', snip: `${m} = ${[...new Set(nums)].join(' / ')}`, issue: `同一指标 ${m} 出现多个不同取值`, basis: '数据一致性', fix: '核对真实数值，消除前后矛盾' });
   });
@@ -125,7 +127,8 @@ function g5(doc) {
   const f = []; const c = doc.text;
   (c.match(/\b\d{17}[\dXx]\b/g) || []).forEach((x) => f.push({ level: 'P0', snip: x.slice(0, 6) + '****', issue: '疑似身份证号明文出现', basis: '个人信息保护', fix: `脱敏为 ${x.slice(0, 6)}********${x.slice(14)}` }));
   [...new Set(c.match(/1[3-9]\d{9}/g) || [])].forEach((p) => f.push({ level: 'P1', snip: p.slice(0, 3) + '****' + p.slice(7), issue: '疑似手机号未脱敏', basis: '个人信息保护', fix: `脱敏为 ${p.slice(0, 3)}****${p.slice(7)}` }));
-  [...new Set(c.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [])].forEach((m) => f.push({ level: 'P2', snip: m, issue: '邮箱明文，建议脱敏', basis: '个人信息保护', fix: '替换为 z***@example.com' }));
+  // 本地段限界 {1,64}：防长 ASCII 无 @ 串（base64/代码）O(n²) 回溯拖死粘贴大文本；合法邮箱本地段 ≤64 不受影响
+  [...new Set(c.match(/[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [])].forEach((m) => f.push({ level: 'P2', snip: m, issue: '邮箱明文，建议脱敏', basis: '个人信息保护', fix: '替换为 z***@example.com' }));
   (c.match(/(内部成本|成本价|底价)[^。\n]{0,20}/g) || []).forEach((x) => f.push({ level: 'P2', snip: x.slice(0, 20), issue: '疑似内部成本 / 商业秘密', basis: '数据安全', fix: '删除或替换为对外口径' }));
   return pack('G5', '敏感信息与脱敏', '🛡', f);
 }

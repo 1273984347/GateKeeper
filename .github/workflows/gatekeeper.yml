@@ -12,6 +12,8 @@ on:
 jobs:
   gates:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read  # 只读令牌：本 workflow 无发布/评论动作
     defaults:
       run:
         working-directory: prototype
@@ -28,7 +30,8 @@ jobs:
         run: node verify.mjs
       - name: 核心治理文档体检（全部核心文档，任一非「可发布」exit 1）
         run: node check-docs.mjs
-      - name: 真实业务场景体检（西游记文档，产出报告）
+      # informational：换配置能力演示（xiyouji 口径代跑根文档），失败不作红线——红线在 verify/check-docs
+      - name: 换配置体检演示（informational）
         run: node project-check.mjs --config configs/xiyouji.json ../README.md ../DESIGN.md ../CHANGELOG.md --compare || true
       - name: 汇总验收状态
         if: always()
