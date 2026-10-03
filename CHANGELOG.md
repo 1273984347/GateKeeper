@@ -9,6 +9,19 @@
 
 ---
 
+### v0.14.0（2026-10-03）：M8.3 控制台打磨 —— toast / 键盘导航 / 键盘可达 / 粘贴链路真回归修复
+
+> **来源**：用户指令「继续打磨所有的 HTML 文件内容，可以去 GitHub 上面借鉴学习」。两个 HTML（`gatekeeper.html` 治理控制台 + `human-baseline.html` 人工基线采集器）在既有设计系统（故宫纸色×Linear 密度）内精修；toast 模式借鉴 sonner/Base Web（role=status + hover 暂停自动关闭），键盘导航借鉴 Linear 单键直达 + `?` 速查。
+> - **执行（gatekeeper.html · 全 additive，引擎/配置注入块零改动）**：① 3 处原生 `alert()` → 右下角 toast 组件（语义色左边条、`role="status"` 不抢焦点、4.5s 自动消失、hover 暂停、点击即关、至多 3 条堆叠）；② 键盘快捷键——`1–5` 切五视图、`/` 开粘贴检测并聚焦、`T` 明暗主题、`Esc` 收起粘贴框、`?` 呼出快捷键速查，输入态自动让位，vtab/顶栏按钮补 `title` 提示；③ 键盘可达——可点 div（命中项/产出物列表/项目卡/面包屑）补 `tabindex=0+role=button+Enter/Space`，统一 `:focus-visible` 朱砂描边；④ 粘贴检测——字数实时计数 + `Ctrl/Cmd+Enter` 快速体检；⑤ 细节——原文折叠摘要加旋转箭头、命中跳转提示改「点击定位原文」、锚点 `scroll-margin-top:140px` 让位 sticky 顶栏、总览面包屑改显批次名（消除与视图标题文字重复）、趋势视图口径文案改「跨项目健康分对比（时间线待真实批次，无真实数据不投空图）」。
+> - **执行（bugfix·真回归）**：Playwright 实测抓出——粘贴检测提交后展示的是文档 A 而非自定义内容。根因：M11 状态化改造后 `btnPaste` 先设 `state.custom` 再调 `goView('inspect')`，而 `goView` 复位 `state.custom=null`，粘贴结果被吞（v0.12.0 起存在，历次验证只覆盖了粘贴开箱与报错分支，未覆盖提交后渲染）。修复：粘贴链路直设 `state/view` 绕过 `goView` 的复位语义。
+> - **执行（human-baseline.html）**：设计令牌对齐（圆角三级/阴影两级/统一缓动/`:focus-visible`/`::selection`）；进度卡改 **sticky 悬浮**（计时器 + 已作答进度条始终可见，长页作答不丢秒表）；选项改胶囊、选中态按语义着色（有问题=朱砂/没问题=青玉）；结果页新增大数字结论行（召回率 46px 衬线 + 漏检/误报/耗时）；条目错峰入场动画（`prefers-reduced-motion` 全关）。数据数组与判分逻辑零改动。
+> - **执行（截图）**：`screenshots/` 全套重生成（ui-1280/1024/640、ui-light、ui-dark、01-dashboard、02-gates-A、02a-verdict、03-dws-E）；长页截图改「视口高=页高」规避 sticky 拼接痕迹。
+> - **文件**：prototype/gatekeeper.html（打磨层 CSS/JS + 粘贴 bugfix + 文案，引擎/配置块未动）、prototype/human-baseline.html（呈现层重写，逻辑零改动）、prototype/screenshots/*.png（8 张重生成）、UI升级方案.md（§10 打磨记录 + 量化验收）、README.md + 交接文档.md + ROADMAP.md（版本 v0.14.0 + 记录）、prototype/configs/gatekeeper-self.json（currentVersion→0.14.0 + 登记）、本文件。
+> - **验证**：Playwright（Chromium 1.60）实测——控制台/页面 **0 error**；命中项点击定位原文（details 展开 + sel 高亮）；阻断文档提交 → toast 出现；`4` 键切配置视图、`?` 呼出速查；`/` 开粘贴框 → 字数 24 → Ctrl+Enter → docHead=「自定义粘贴内容」· 阻断发布 26 分 · G4 命中 2 + G5 手机号脱敏；640px 无横向溢出；暗色 bodyBg=rgb(19,21,25)；采集器作答 3 条 → 进度 15% + 选中态着色 + 提交出分正常。`sync-gates --check` + `sync-configs --check` 双绿；`verify.mjs` 红线全过（样例裁决逐字不变）；`check-docs` 全部核心文档可发布。
+> - **状态**：已落地。遗留（如实）：趋势视图时间线仍待真实多批次数据（决策闸门不投空图）；human-baseline 暗色模式未做（工具页，明色专用，如需可复用控制台令牌方案）。
+
+
+
 ### v0.13.0（2026-10-03）：通用化转向 —— 移除参赛期材料，统一更名 GateKeeper
 
 > **来源**：用户指令「不参赛了，改成通用的」。项目从"参赛作品"转向**通用工具**：AI 批量产出的文档质量门禁 + 钉钉办公面（DWS）编排，换团队/换行业改配置即复用。参赛期专属材料（蓝图/答辩套件/社媒/录屏/报名）随之失去维护意义，经确认删除；项目名统一为 **GateKeeper**。

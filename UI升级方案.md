@@ -124,3 +124,19 @@ Playwright（见 /tmp/uiverify.cjs 思路）断言：
    回滚备份：`gatekeeper.html.pre-font.bak`（嵌入前版本）。
 
 > 结论：方案可实施、符合实际、已通过全部量化验收；原 3 项可选优化已全部落地（1、2 于 M8.1，3 于 M8.2），Inter 经实测论证后明确不嵌（无可见收益）。
+
+---
+
+## 10. M8.3 控制台打磨（v0.14.0 · 2026-10-03 实测）
+
+> 定位：在既有设计系统内**精修**，不改色彩令牌/字体栈/既有类名（全 additive），参考 GitHub 成熟模式（toast 借鉴 sonner/Base Web 的 role=status + hover 暂停自动关闭；键盘导航借鉴 Linear 单键直达 + `?` 速查）。
+
+| # | 项 | 内容 | 验证（Playwright 1.60 实测） |
+|---|---|---|---|
+| 1 | Toast 组件 | 3 处原生 `alert()` 替换为右下角 toast（语义色左边条：通过=青玉/警示=橙/阻断=朱砂；`role="status"` 不抢焦点；4.5s 自动消失、hover 暂停、点击即关、至多 3 条堆叠） | 阻断文档点「提交发布审批」→ toast 出现且文案含文档名 |
+| 2 | 键盘快捷键 | `1–5` 切五视图 · `/` 开粘贴检测并聚焦 · `T` 明暗主题 · `Esc` 收起粘贴框 · `?` 呼出快捷键速查 toast；输入态（input/textarea/select）自动让位；vtab/顶栏按钮加 `title` 提示 | 按 `4` → `view-config` active；按 `?` → 速查 toast |
+| 3 | 键盘可达 | 可点 div（.finding/.item/.projcard/面包屑）补 `tabindex=0 + role=button + Enter/Space`；上述元素统一 `:focus-visible` 朱砂描边 | 命中项 Enter 触发定位 |
+| 4 | 粘贴检测 | 字数实时计数 + `Ctrl/Cmd+Enter` 快速体检（窄屏隐藏 meta 行）；**修复真回归**：M11 起 `goView` 复位 `state.custom`，粘贴结果被吞成文档 A——改为直设状态绕过 | Ctrl+Enter → docHead=「自定义粘贴内容」· 阻断发布 26 分 · G4/G5 命中、手机号脱敏 |
+| 5 | 细节 | 原文折叠摘要加旋转箭头（`details[open]` 旋转 180°）；命中跳转提示改「点击定位原文」；`#docBody/#cards/.doc-head` 加 `scroll-margin-top:140px` 让位 sticky；总览面包屑改显批次名（消除与视图标题的文字重复）；趋势视图口径文案改「跨项目健康分对比（时间线待真实批次，无真实数据不投空图）」 | 截图留档 screenshots/（明暗双态 + 三档响应式重生成） |
+
+**量化验收（2026-10-03）**：控制台/页面 0 error；640px 无横向溢出；暗色 bodyBg=`rgb(19,21,25)`；`sync-gates --check`/`sync-configs --check` 双绿；verify 红线全过（引擎零改动）。human-baseline.html 同步打磨：设计令牌对齐（圆角/阴影/缓动/focus-visible/selection）、进度卡 sticky 悬浮（计时+进度条始终可见）、选项改胶囊并按语义着色（有问题=朱砂/没问题=青玉）、结果页加大数字结论行（召回率 46px 衬线 + 漏检/误报/耗时）、条目错峰入场动画（reduced-motion 全关）。
