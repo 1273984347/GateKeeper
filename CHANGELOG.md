@@ -9,6 +9,19 @@
 
 ---
 
+### v0.16.0（2026-10-04）：M13 渲染层可测化 —— 渲染纯函数单一事实源第三链 + node 单测
+
+> **来源**：复盘 A-04 拍板立项为 M13（W43 实施）。「渲染层逻辑只能靠 Playwright 冒烟事后验证」的结构性缺口收敛：esc/highlight/scoreColor 抽为纯函数模块，node:test 直测。
+> - **执行（抽离）**：新建 `prototype/render-core.mjs`——`esc`（五类字符含引号）/`highlight`（单遍替换 + 长词优先）/`scoreColor`（85/55 阈值）三个纯函数自 gatekeeper.html 渲染层**逐字迁移**（行为零变化）；highlight 对 BANNED 的依赖显式 `import { BANNED } from './gates.mjs'`（浏览器侧由先注入的引擎块提供同名全局）。
+> - **执行（第三注入链）**：新建 `prototype/sync-render.mjs`——与 sync-gates/sync-configs 完全同构：函数式 replace（防 $&）、`</` 逃逸、剥离 import/export、缺标记 fail-closed；`--check` 作**第三道漂移门禁**。gatekeeper.html 删除三处旧定义、插入 RENDER-SRC 标记块（位于 GATES-SRC 之后，保证 BANNED 先于 highlight 可用）。
+> - **执行（接线）**：`tools/gate.mjs` 增渲染漂移门 + 单测并入（`node --test gates.test.mjs render-core.test.mjs`）；CI workflow 增 `sync-render --check` 与渲染单测两步。
+> - **执行（单测）**：新建 `prototype/render-core.test.mjs`——**9 例**：esc 五类字符/幂等/data-snip 属性不可逃逸（XSS 修复回归锁定）；highlight 默认词表长词优先/防标记改写/无命中纯 esc/自定义词表/正则元字符字面命中/与 BANNED 同源；scoreColor 三段阈值。
+> - **文件**：prototype/render-core.mjs、sync-render.mjs、render-core.test.mjs（均新建）、gatekeeper.html（三链注入）、tools/gate.mjs、.github/workflows/gatekeeper.yml、STRUCTURE.md、README.md、交接文档.md、prototype/configs/gatekeeper-self.json（0.16.0 + 登记）、本文件。
+> - **验证**：三道漂移门禁全绿（引擎/配置/渲染）；`render-core.test` 9/9、`gates.test` 20/20；`node tools/gate.mjs` 七门禁全绿 1.9s；`node tools/smoke.mjs` 六项全 PASS（渲染行为零回归实证）；`check-docs` 全部核心文档可发布。
+> - **状态**：已落地。约束守住：gatekeeper.html 仍为单文件离线可跑（注入块模式，与引擎块同构）。遗留（如实）：sevChip 等 DOM 标记函数未抽（产出含 HTML 结构，收益低）；human-baseline.html 的 esc 副本未收敛（独立工具页，W44 择机）。
+
+---
+
 ### v0.15.6（2026-10-04）：SK-02 试运行收敛 —— real-batch-audit 语法坏文件修复 + 重扫残留 13 条全处置
 
 > **来源**：SK-02 固化的 `rescan-audit` saved workflow 首次试运行（对 HEAD，追加核验 v0.15.4–v0.15.5 新增面）。21 候选 → 面板确认 13 条（1 P1 / 5 P2 / 7 info，去重后 11 独立项）。**试运行价值实证**：R1–R12 核验 11/12 落地，但抓出 R9 在姊妹脚本落坏的 1 个 P1——`real-batch-audit.mjs` 自 v0.15.3 起整文件语法损坏（sqT 正则字符类被写入真实换行字节），而五道门禁/CI 均不加载该文件，**绿灯掩盖损坏**；同函数转义串反斜杠丢失，即使修好语法转义也不生效（双重错误）。全部处置如下。

@@ -5,7 +5,7 @@
 > Session：会话 ID 见 git 提交记录
 
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.15.6
+> **当前版本**：v0.16.0
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
 
 ![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)
@@ -70,6 +70,7 @@ gates.mjs        六道门禁引擎（纯逻辑，前后端共用的唯一规则
 cd prototype
 node sync-gates.mjs        # 改完 gates.mjs 后跑：把引擎逻辑重新注入 HTML（--check 可作提交前门禁）
 node sync-configs.mjs      # 改完 configs/*.json 后跑：把配置/批次数据注入 HTML（--check 作第二道漂移门禁）
+node sync-render.mjs       # 改完 render-core.mjs 后跑：把渲染纯函数注入 HTML（--check 作第三道漂移门禁）
 node verify.mjs            # 回归红线 + 换配置差异：环50/6P0/9P1/8P2/1可发布 + G4 抑制，全绿 exit 0
 node --test gates.test.mjs # 引擎单元/负样本测试（20 例：门禁行为/配置合并/畸形配置/正则防线/五裁决冗余）
 node dws-bridge.mjs        # dry-run：打印将执行的真实 dws 命令 + 生成 output/dws-plan.sh

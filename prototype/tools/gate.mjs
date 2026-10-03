@@ -11,8 +11,9 @@ const FULL = process.argv.includes('--full');
 const gates = [
   { name: '漂移门禁 · 引擎块 == gates.mjs', cmd: ['node', 'sync-gates.mjs', '--check'] },
   { name: '漂移门禁 · 注入块 == configs/', cmd: ['node', 'sync-configs.mjs', '--check'] },
+  { name: '漂移门禁 · 渲染块 == render-core.mjs', cmd: ['node', 'sync-render.mjs', '--check'] },
   { name: '回归红线 verify（13 项）', cmd: ['node', 'verify.mjs'] },
-  { name: '引擎单测 node --test', cmd: ['node', '--test', 'gates.test.mjs'] },
+  { name: '引擎单测 node --test（引擎+渲染）', cmd: ['node', '--test', 'gates.test.mjs', 'render-core.test.mjs'] },
   { name: '语法检查 node --check 全部 .mjs', cmd: ['node', 'tools/syntax-check.mjs'] },
   { name: '核心文档体检 check-docs', cmd: ['node', 'check-docs.mjs'] },
   ...(FULL ? [

@@ -31,6 +31,9 @@ prototype/
 ├── gates.test.mjs       引擎单元/负样本测试（node:test 零依赖；含 O(n²) 正则性能防线，CI 接入）
 ├── sync-gates.mjs       把 gates.mjs 注入 HTML 引擎块 + `--check` 漂移门禁
 ├── sync-configs.mjs     把 configs/*.json + 批次数据注入 HTML 配置/数据块 + `--check` 第二道漂移门禁
+├── render-core.mjs      渲染纯函数（esc/highlight/scoreColor；单一事实源第三链）
+├── sync-render.mjs      把 render-core.mjs 注入 HTML 渲染块 + `--check` 第三道漂移门禁
+├── render-core.test.mjs 渲染纯函数单测（9 例；与 gates.test.mjs 同栈）
 ├── verify.mjs           回归红线 + 换配置差异统一验收（本地 / CI 共用）
 ├── real-batch-audit.mjs 真实批次体检（对一批真实文档跑门禁→批次级报告·M9 实效证据）
 ├── human-baseline.html  人工基线采集器（自计时+自动判分；?set=B 作者盲测新样本集）
