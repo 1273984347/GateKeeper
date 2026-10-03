@@ -1,7 +1,7 @@
-# 配置切换 Demo · 验收官（一夫当关）
+# 配置切换 Demo · GateKeeper
 > 创建日期：2026-08-31
-> 来源：验收官项目自审（M10 project-config 交付）
-> Session：本次会话 ID 见提交表单留档
+> 来源：AI 产出治理项目自审（M10 project-config 交付）
+> Session：会话 ID 见 git 提交记录
 
 > 一句话：**同一套门禁引擎，换一份 project-config，就换一个项目的正确口径**——这是"改配置即复制到任意团队/行业"的可执行实证，不是 PPT。
 > 复跑入口：`cd prototype && node project-check.mjs --config configs/<name>.json <文档...>`，末尾加 `--compare` 可对照样例默认配置
@@ -32,19 +32,19 @@ M8.5 自我 DRL 暴露：引擎默认配置是为**脱敏样例**调的（权威
 
 ## 二、三套配置 · 三种各自正确的结论
 
-### 配置 A：`gatekeeper-self.json`（验收官体检自己 9 份核心文档）
+### 配置 A：`gatekeeper-self.json`（GateKeeper 体检自己的核心文档）
 ```
-node project-check.mjs --config configs/gatekeeper-self.json <9份文档> --compare
+node check-docs.mjs
 ```
 - 样例默认配置：大量「阻断 / 需修复」（版本 2.4.0 误判、广告法误命中）。
-- **换成自身配置：9/9「可发布」**（蓝图 95 留一处自指 P2、其余满分）。
+- **换成自身配置：全部核心文档「可发布」**（权威值随版本见 `check-docs.mjs` 实跑输出）。
 - 这是"专查证据链的工具，补齐自己证据链、按自己口径复检通过"的闭环。
 
-### 配置 B：`ecommerce-marketing.json`（把同一批文档当营销物料）
+### 配置 B：`ecommerce-marketing.json`（把营销文案当对外投放物料）
 ```
-node project-check.mjs --config configs/ecommerce-marketing.json ../答辩速查卡.md ../01-参赛蓝图.md
+node project-check.mjs --config configs/ecommerce-marketing.json ../prototype/人工实测对照表.md ../配置切换Demo.md
 ```
-- 结果：**0/2「阻断发布」**——因为 G4 广告法被真实点亮，"全网第一 / 100% 有效 / 唯一"按营销口径全部拦截。
+- 结果：**「阻断发布」**——因为 G4 广告法被真实点亮，文中引用的"全网第一 / 100% 有效 / 唯一"等极限词按营销口径全部拦截（详单以实跑输出为准）。
 - 证明：渠道开关是**真能再激活**的，self-config 关掉它不是因为规则坏了，而是"这些是内部治理文档、不是投放物料"。放到真实电商团队，这套配置就会把它们拦下——**这正是可推广性的另一面。**
 
 ### 配置 C：`xiyouji.json`（换到一个完全不同的项目）
@@ -57,7 +57,7 @@ node project-check.mjs --config configs/xiyouji.json D:/1/xiyouji/docs/02-人物
 
 ---
 
-## 三、给评委的 60 秒话术
+## 三、30 秒介绍话术
 
 「这不是一个写死规则的工具。六道门禁里，合规硬伤——引用造假、隐私泄露——永远拦；而**语境维度**（是不是营销、追哪些指标、版本口径、元信息字段）全在一份 JSON 配置里。所以换团队、换行业、换文档类型，**改配置不改代码**：你看，同一份文档，我套电商配置它是『阻断』，套治理配置它是『可发布』；我甚至换到西游记项目，改一份字段映射就能体检它的文档。这就是『可推广性』的硬证据。」
 

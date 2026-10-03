@@ -88,7 +88,7 @@ const withGaps = rows.filter((r) => r.realGaps > 0).sort((a, b) => (b.p1 - a.p1)
 const now = new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
 
 const L = [];
-L.push(`# 验收官 · 真实批次体检报告 —— ${TITLE}`);
+L.push(`# GateKeeper · 真实批次体检报告 —— ${TITLE}`);
 L.push('');
 L.push(`> 配置：\`${basename(cfgPath)}\`（权威版本 v${cfg.registry.currentVersion} · G4 广告法渠道=${cfg.channel.adLaw ? '开' : '关'} · 来源提示=${cfg.channel.sourceHint === false ? '关' : '开'}）`);
 L.push(`> 扫描 ${n} 篇真实文档 · 生成 ${now} · 引擎 gates.mjs 六道门禁 · 全部结论可回溯到具体文档原文核验`);

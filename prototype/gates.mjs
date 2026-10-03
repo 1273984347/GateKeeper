@@ -1,4 +1,4 @@
-// gates.mjs — 验收官 六道门禁引擎（单一事实源，浏览器与 DWS 编排后端共用）
+// gates.mjs — GateKeeper 六道门禁引擎（单一事实源，浏览器与 DWS 编排后端共用）
 // 纯逻辑，无 DOM、无 import。规则可通过 project-config 覆盖；默认配置 = 脱敏样例基线（不改任何既有裁决）。
 // 修改规则只改这里，改后跑 `node sync-gates.mjs` 重新注入 HTML，`--check` 作漂移门禁。
 

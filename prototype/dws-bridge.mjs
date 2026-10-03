@@ -36,7 +36,7 @@ function isoDue(days) {
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T18:00:00+08:00`;
 }
-// 命令 token 数组 → 可打印字符串（相对形式 dws ...，供展示 / 录屏）
+// 命令 token 数组 → 可打印字符串（相对形式 dws ...，供展示 / 演示）
 function q(v) { v = String(v); return /[\s%&<>|^"]/.test(v) ? '"' + v.replace(/"/g, '\\"') + '"' : v; }
 function toStr(tokens) { return tokens.map(q).join(' '); }
 

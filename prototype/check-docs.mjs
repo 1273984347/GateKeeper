@@ -8,11 +8,10 @@ import { dirname, join } from 'node:path';
 const PROTO = dirname(fileURLToPath(import.meta.url));
 const ROOT = dirname(PROTO);
 
-// 权威核心文档清单（新增/删除核心文档时改这里；与 答辩交付清单.md、CHANGELOG 口径对齐）
+// 权威核心文档清单（新增/删除核心文档时改这里；与 STRUCTURE.md、CHANGELOG 口径对齐）
 const CORE_DOCS = [
-  '01-参赛蓝图.md', 'README.md', 'DESIGN.md', 'ROADMAP.md', '交接文档.md',
-  'STRUCTURE.md', '录屏脚本与提交清单.md', '答辩问答预演.md', '答辩速查卡.md',
-  '配置切换Demo.md', '答辩交付清单.md',
+  'README.md', 'DESIGN.md', 'ROADMAP.md', '交接文档.md',
+  'STRUCTURE.md', '配置切换Demo.md',
 ];
 const CONFIG = join('configs', 'gatekeeper-self.json');
 

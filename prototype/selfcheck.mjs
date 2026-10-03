@@ -1,6 +1,6 @@
 // [退役注记 · M10] 体检请用 project-check.mjs + configs/*.json（声明式配置，勿再运行时手改 REGISTRY）。
 //          本脚本保留作 M8.5 三段式 Self-DRL 叙事的历史产物。
-// selfcheck.mjs — 验收官用自己的六道门禁给自己做深度审查（自我 DRL），并演示 project-config 收敛
+// selfcheck.mjs — GateKeeper 用自己的六道门禁给自己做深度审查（自我 DRL），并演示 project-config 收敛
 // 用法：node selfcheck.mjs [文档1.md ...]   缺省对 7 份核心文档自检
 // 诚实原则：三段式收敛——R1 默认样例配置(基线，另存 self-check-report.md) → R2-fix 补证据链 → R2-config 配自身 project-config。
 //          不把"配置后转绿"伪装成"零问题"：G1/G4 属语境残留，显式分类并说明渠道开关，禁止状态通货膨胀。
@@ -13,7 +13,7 @@ const PROTO_DIR = dirname(fileURLToPath(import.meta.url));
 const BASE = dirname(PROTO_DIR);
 const OUT_DIR = join(PROTO_DIR, 'output');
 const DEFAULT_DOCS = [
-  '01-参赛蓝图.md', 'README.md', 'DESIGN.md', 'ROADMAP.md', '交接文档.md', 'STRUCTURE.md', '录屏脚本与提交清单.md',
+  'README.md', 'DESIGN.md', 'ROADMAP.md', '交接文档.md', 'STRUCTURE.md', '配置切换Demo.md',
 ].map((f) => join(BASE, f));
 const files = process.argv.slice(2).filter((a) => !a.startsWith('-'));
 const targets = files.length ? files : DEFAULT_DOCS;
@@ -78,9 +78,9 @@ parsed.forEach((doc, i) => {
 });
 
 const lines = [
-  '# 验收官 · 自我深度审查（Self-DRL）报告',
+  '# GateKeeper · 自我深度审查（Self-DRL）报告',
   '',
-  '> 用验收官自己的六道门禁体检验收官自己的核心文档。三段式收敛，全程不粉饰。',
+  '> 用 GateKeeper 自己的六道门禁体检自己的核心文档。三段式收敛，全程不粉饰。',
   '',
   '## 收敛曲线',
   '',
@@ -95,7 +95,7 @@ lines.push('');
 lines.push('## 残留分类（诚实标注，非全绿假象）');
 lines.push(`- **已闭合的真实治理债**：G6 证据链完整性——7 份文档 R1 全部缺失元信息（Session/创建日期/来源），R2-fix 补齐后 G6 命中 **7 → 0**。这是"专查证据链的工具自己没证据链"的硬债，已还。`);
 lines.push(`- **配置类残留（靠 project-config 消解，非 bug）**：G2 版本漂移源于样例 REGISTRY.currentVersion=2.4.0 不等于项目真实 v${SELF_VERSION}；且版本正则会把 \`0.07ms/16.2ms\` 这类测量值误读为版本号——本次自我 DRL 发现的**真实 bug**，R3 已把版本正则收紧为"须带 v 前缀"修复（样例裁决与 bench 召回零回归，见下条复利经验）；残留少数版本项是正文合理引用的 v0.7.0 等真实历史版本，属 project-config 精度，路由 M10。`);
-lines.push(`- **语境类残留（渠道开关消解）**：G1 命中正文里作示例的 \`[n]/[x]\`（登记为占位 token）；G4「全网第一/100%有效」命中全是蓝图**引用它要抓的违规原词**，属内部文档语境误报，对外营销物料发布时须开启 G4 渠道。`);
+lines.push(`- **语境类残留（渠道开关消解）**：G1 命中正文里作示例的 \`[n]/[x]\`（登记为占位 token）；G4「全网第一/100%有效」命中全是被检文档**引用它要抓的违规原词**，属内部文档语境误报，对外营销物料发布时须开启 G4 渠道。`);
 lines.push('');
 lines.push('## 判定');
 lines.push(`- 真实缺口闭合：G6 7→0 ✅；配置/语境残留经 project-config + 渠道开关消解后，${rows.length - stillBlocked.length}/${rows.length} 份文档达「可发布」。`);

@@ -62,7 +62,7 @@ const rows = files.map((f) => {
 
 const green = rows.filter((r) => r.withCfg.verdict === '可发布').length;
 const L = [];
-L.push(`# 验收官 · 项目体检报告 —— ${cfg.name}`);
+L.push(`# GateKeeper · 项目体检报告 —— ${cfg.name}`);
 L.push('');
 L.push(`> 配置：\`${basename(argv[cfgIdx + 1])}\`　权威版本 v${cfg.registry.currentVersion}　` +
   `G4 广告法渠道=${cfg.channel.adLaw ? '开' : '关(非对外营销)'}　追踪指标=[${cfg.registry.metrics.join(',') || '无'}]　` +

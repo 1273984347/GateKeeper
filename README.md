@@ -1,17 +1,18 @@
-# 验收官 · GateKeeper
+# GateKeeper
 [![GateKeeper CI 状态](https://github.com/1273984347/GateKeeper/actions/workflows/gatekeeper.yml/badge.svg)](https://github.com/1273984347/GateKeeper/actions/workflows/gatekeeper.yml)
 > 创建日期：2026-08-31
-> 来源：验收官项目自审（自我深度审查）
-> Session：本次会话 ID 见提交表单留档
+> 来源：AI 产出治理项目自审（自我深度审查）
+> Session：会话 ID 见 git 提交记录
 
-> **队名**：一夫当关　｜　**作品名**：验收官（代号 GateKeeper）
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.12.1　｜　**赛事**：千问办公 AI 生产力竞赛（初赛截止 2026-09-20）
+> **当前版本**：v0.13.0
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
+
+![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)
 
 ## 这是什么
 
-把企业里"AI 生成内容/文档之后的质量验收"从人肉抽查，变成一套可配置的**六道门禁**自动化流水线，并接进钉钉真实办公面（DWS）：验收通过自动归档文档、群播报、建审批待办、DING 催办；命中 P0 严重问题则条件分支驳回并 @ 责任人。
+把企业里"AI 生成内容/文档之后的质量验收"从人肉抽查，变成一套可配置的**六道门禁**自动化流水线，并接进钉钉真实办公面（DWS）：验收通过自动归档文档、群播报、建审批待办、DING 催办；命中 P0 严重问题则条件分支驳回并 @ 责任人。换团队/换行业/换文档类型，改一份 project-config 即可，不改代码。
 
 ## 架构（三层，单一事实源）
 
@@ -36,6 +37,7 @@ node sync-configs.mjs      # 改完 configs/*.json 后跑：把配置/批次数�
 node verify.mjs            # 回归红线 + 换配置差异：环50/6P0/9P1/8P2/1可发布 + G4 抑制，全绿 exit 0
 node dws-bridge.mjs        # dry-run：打印将执行的真实 dws 命令 + 生成 output/dws-plan.sh
 node bench.mjs             # 省时实测：召回/误报/耗时 → output/bench-report.md
+node real-batch-audit.mjs  # 真实批次体检：对一批真实文档跑六道门禁 → 批次级报告（output/real-batch-*.md）
 node check-docs.mjs        # 提交前门禁：全部核心文档 self-config 体检，任一非「可发布」exit 1
 # 打开 gatekeeper.html 看治理控制台（总览/明细/编排/配置对照/趋势 五视图 + 五级下钻）；加 ?demo=1 进离线演示模式
 # --live 真实落地须由千问办公 Agent 直接调用 dws（见 README-DWS.md）
@@ -45,7 +47,6 @@ node check-docs.mjs        # 提交前门禁：全部核心文档 self-config �
 
 | 文档 | 作用 |
 |---|---|
-| [01-参赛蓝图.md](01-参赛蓝图.md) | 初赛提交正文（Demo简介/痛点/方案/实践/实测/自检/排期/红线） |
 | [DESIGN.md](DESIGN.md) | 设计方案：目标原则 / 三层架构 / 门禁契约 / 视觉系统 / 数据模型 / 取舍 |
 | [UI升级方案.md](UI升级方案.md) | 界面美化升级规格：量化验收标准 / 设计令牌 / 自检结论 |
 | [Web端可扩展改造方案.md](Web端可扩展改造方案.md) | web 端从单页报表→三层治理控制台改造规格：四痛点映射 / 分期 / 风险 / 待拍板项 |
@@ -53,14 +54,13 @@ node check-docs.mjs        # 提交前门禁：全部核心文档 self-config �
 | [CHANGELOG.md](CHANGELOG.md) | 正向时间线，每条含「来源/执行/文件/验证/状态」四件套 |
 | [交接文档.md](交接文档.md) | 接手主入口：进度 / 下一步 / 方法论 / 雷区 |
 | [STRUCTURE.md](STRUCTURE.md) | 目录结构与命名/单一事实源/归档约定 |
+| [配置切换Demo.md](配置切换Demo.md) | 同一引擎换三套配置体检三类项目——"改配置不改代码"的可执行实证 |
 | [prototype/README-DWS.md](prototype/README-DWS.md) | DWS 接入指南与执行模型 |
-| [社媒分享文案.md](社媒分享文案.md) | 1000 积分社媒任务材料 |
-| [prototype/人工实测对照表.md](prototype/人工实测对照表.md) | 同事实测人工耗时的对照表 |
-| [录屏脚本与提交清单.md](录屏脚本与提交清单.md) | Demo 录屏逐镜脚本 + 报名/提交核对清单 |
+| [prototype/人工实测对照表.md](prototype/人工实测对照表.md) | 人工审核耗时对照实测表（含 human-baseline 采集器使用说明） |
 
 ## 核心指标（引用式，权威值见 CHANGELOG / bench-report）
 
-六道门禁（G1 引用溯源 · G2 版本一致 · G3 格式 · G4 广告法 · G5 敏感信息 · G6 证据链）；对 20 条埋 15 处违规的样例批次，流水线**召回 100%、零误报、扫描毫秒级**；已在真实钉钉组织跑通待办/群消息/文档归档/DING 四类 DWS 动作。详见 `prototype/output/bench-report.md`、`prototype/output/live-evidence.md`。
+六道门禁（G1 引用溯源 · G2 版本一致 · G3 格式 · G4 广告法 · G5 敏感信息 · G6 证据链）；对 20 条埋 15 处违规的样例批次，流水线**召回 100%、零误报、扫描毫秒级**；对 216 篇真实文档批次体检 173 可发布(80%)、218 真实缺口、506 文学误报经配置抑制；已在真实钉钉组织跑通待办/群消息/文档归档/DING 四类 DWS 动作。详见 `prototype/output/bench-report.md`、`prototype/output/live-evidence.md`。
 
 ## 授权与免责
 

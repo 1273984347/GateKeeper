@@ -1,6 +1,5 @@
 # GateKeeper 门禁 CI —— 把「六道门禁 + 单一事实源漂移」从 web 一个端扩到 CI 端
-# 说明：本仓库作为独立 repo 发布时，.github/workflows 即生效（参赛作品抽出即自包含）。
-#       在共享大仓内不触发，属设计交付物，用于演示「同一引擎进 CI、PR 自动跑验收」。
+# 说明：独立 repo 直接生效；在共享大仓内不触发，属设计交付物，用于演示「同一引擎进 CI、PR 自动跑验收」。
 name: gatekeeper-gates
 
 on:
@@ -27,13 +26,13 @@ jobs:
         run: node sync-configs.mjs --check
       - name: 功能回归红线 + 换配置差异
         run: node verify.mjs
-      - name: 核心治理文档体检（11 份，任一非「可发布」exit 1）
+      - name: 核心治理文档体检（全部核心文档，任一非「可发布」exit 1）
         run: node check-docs.mjs
       - name: 真实业务场景体检（西游记文档，产出报告）
         run: node project-check.mjs --config configs/xiyouji.json ../README.md ../DESIGN.md ../CHANGELOG.md --compare || true
       - name: 汇总验收状态
         if: always()
         run: |
-          echo "## 验收官 GateKeeper · CI 门禁" >> "$GITHUB_STEP_SUMMARY"
+          echo "## GateKeeper · CI 门禁" >> "$GITHUB_STEP_SUMMARY"
           echo "- 漂移双门禁 + 回归红线 + 文档体检 全部通过则本 job 绿" >> "$GITHUB_STEP_SUMMARY"
           echo "- 规则源 gates.mjs / 配置源 configs/*.json 单一事实源，前端不硬编码" >> "$GITHUB_STEP_SUMMARY"

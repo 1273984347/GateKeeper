@@ -1,5 +1,5 @@
 {
-  "batchName": "验收官 · 多项目对照批次",
+  "batchName": "GateKeeper · 多项目对照批次",
   "batchId": "B-2026-0915",
   "timestamp": "2026-09-15T10:00:00+08:00",
   "disclaimer": "全部为脱敏模拟数据，不含真实个人信息或商业秘密。用于演示同一引擎换不同 project-config 体检不同项目。",

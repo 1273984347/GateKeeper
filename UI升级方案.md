@@ -1,4 +1,4 @@
-# UI 全面美化升级方案 · 验收官（gatekeeper.html）
+# UI 全面美化升级方案 · GateKeeper（gatekeeper.html）
 
 > 版本：v0.8.0（M8）｜对象文件：`prototype/gatekeeper.html` 的 `<style>` 设计系统
 > 本方案为**可独立执行的规格**：所有条目给出精确值与验证方式，其他 Agent 无需额外解释即可实施与验收。

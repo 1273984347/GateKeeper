@@ -45,18 +45,18 @@ gates.mjs  ── 六道门禁引擎（单一事实源，纯逻辑）
 ```bash
 cd prototype
 
-# 演练：打印将执行的真实命令序列，并生成 output/dws-plan.sh（录屏用这个）
+# 演练：打印将执行的真实命令序列，并生成 output/dws-plan.sh（现场演示用这个）
 node dws-bridge.mjs
 
 # 生成执行计划（--live 不再由脚本 spawn 执行，见下）
 node dws-bridge.mjs --live
 ```
 
-> **执行模型（关键）**：在千问办公里，`dws` 的宿主端执行由 Bash 工具的 PostToolUse 钩子触发——**只有 Agent 直接调用 `dws` 才会真正落到钉钉**；被 Node 子进程 spawn 时钩子不激活，只返回 `pending-post-tool-use` 占位符。所以正确闭环是：`dws-bridge` 生成计划 → **Agent 按 `output/dws-plan.sh` 逐条直接调用 dws**。这恰好就是赛制所述"通过 Agent 调用 DWS"。
+> **执行模型（关键）**：在千问办公里，`dws` 的宿主端执行由 Bash 工具的 PostToolUse 钩子触发——**只有 Agent 直接调用 `dws` 才会真正落到钉钉**；被 Node 子进程 spawn 时钩子不激活，只返回 `pending-post-tool-use` 占位符。所以正确闭环是：`dws-bridge` 生成计划 → **Agent 按 `output/dws-plan.sh` 逐条直接调用 dws**。这就是"通过 Agent 调用 DWS"的标准执行模型。
 
 **已真实跑通**（回执见 `output/live-evidence.md`）：样例批次判定 可发布 1 / 需修复 1 / 阻断 3，经 Agent 直接调用，在 GateKeeper 组织真实创建了 **5 条待办**、发送 **5 条群消息**、归档 **1 篇钉钉文档**。每份产出物生成 `output/accept-*.md` 验收报告，可直接作为 `doc create --content-file` 的归档正文。
 
-## 录屏分镜（这段 DWS 编排，约 60 秒）
+## 现场演示分镜（这段 DWS 编排，约 60 秒）
 
 1. （8s）打开 `gatekeeper.html`，点「运行全量验收」→ 顶部健康环 + P0/P1/P2 计数刷新。
 2. （8s）点样例 A「智能客服文案」→ G4 广告法合规亮红，原文「全网第一 / 100%有效」被高亮，附法条与改写建议。
