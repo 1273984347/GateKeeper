@@ -90,7 +90,7 @@ Playwright（见 /tmp/uiverify.cjs 思路）断言：
 1. 备份 `gatekeeper.html` → `gatekeeper.html.bak`。
 2. 仅替换 `<style>…</style>` 为 §2–§5 规格对应 CSS（保留 §6 全部类名）。
 3. 跑 §7 两条验证；任一不达标回滚备份并定位。
-4. 截图 1280/1024/640 三档存 `prototype/social/ui-*.png` 作视觉留档。
+4. 截图 1280/1024/640 三档存作视觉留档（目录 v0.13.0 起更名 `prototype/screenshots/`）。
 5. 治理登记：CHANGELOG 加 M8 四件套；README/交接文档/STRUCTURE 版本行同步 v0.8.0。
 
 ## 9. 自检结论（2026-08-29 实测，真实数据）
@@ -121,7 +121,7 @@ Playwright（见 /tmp/uiverify.cjs 思路）断言：
    | 栈顺序 | `--serif:"GKSerif","Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif`（嵌入族优先，保证跨机像素一致；未命中仍优雅降级） |
    | 体积代价 | HTML 65KB → **394KB**（本地 file:// 打开无感，无网络依赖） |
    | 验证 | `document.fonts` → `GKSerif:loaded`；canvas 宽度 87.9 vs 系统 serif 86.1（证明确实启用嵌入字体）；0 控制台报错；功能回归通过（环50 / A阻断0分 / E可发布100分）；暗色下字体同样生效 |
-   回滚备份：`gatekeeper.html.pre-font.bak`（嵌入前版本）。
+   回滚备份：`gatekeeper.html.pre-font.bak`（嵌入前版本；已随 v0.14.1 清理删除，需要时从 git 历史取回）。
 
 > 结论：方案可实施、符合实际、已通过全部量化验收；原 3 项可选优化已全部落地（1、2 于 M8.1，3 于 M8.2），Inter 经实测论证后明确不嵌（无可见收益）。
 

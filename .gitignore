@@ -1,5 +1,6 @@
 # 本地真实配置与临时产物
 config.dws.local.json
+dws-plan.local.sh
 *.bak
 node_modules/
 .DS_Store

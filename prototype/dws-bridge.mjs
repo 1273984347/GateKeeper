@@ -3,9 +3,8 @@
 //   node dws-bridge.mjs                       # dry-run（默认，仅打印将执行的 dws 命令）
 //   node dws-bridge.mjs --live                # 真实调用钉钉（需先登录 + 填 config.dws.json）
 //   node dws-bridge.mjs --artifacts x.json --config c.json
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { homedir, arch } from 'node:os';
-import { join } from 'node:path';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path'; // join 供 CONFIG/产物路径使用；existsSync/homedir/arch 随 runCmd 删除一并清理
 import { analyze, flattenFindings, REGISTRY } from './gates.mjs';
 
 const args = process.argv.slice(2);
@@ -59,7 +58,7 @@ function buildPlan(a) {
   if (!SAFE_ID.test(String(a.id))) {
     throw new Error(`artifacts 条目 id 含非法字符（仅允许字母/数字/下划线/连字符）：${JSON.stringify(String(a.id).slice(0, 40))}`);
   }
-  const author = a.authorUserId && !PLACEHOLDER.test(a.authorUserId) ? a.authorUserId : (cfg.authorUserId || '<AUTHOR_USER_ID>');
+  const author = a.authorUserId && !isPlaceholderLike(a.authorUserId) ? a.authorUserId : (cfg.authorUserId || '<AUTHOR_USER_ID>');
   const flat = flattenFindings(a.gates);
   const p0 = flat.filter((x) => x.level === 'P0');
   const p1 = flat.filter((x) => x.level === 'P1');
@@ -82,8 +81,8 @@ function buildPlan(a) {
   if (a.verdict.k === 'ok') {
     const reportPath = `output/accept-${a.id}.md`;
     const docCmd = ['dws', 'doc', 'create', '--name', `[验收通过·${a.id}] ${a.name}`, '--content-file', reportPath];
-    if (cfg.archiveFolderId && !PLACEHOLDER.test(cfg.archiveFolderId)) docCmd.push('--folder', cfg.archiveFolderId);
-    plan.push({ step: '归档知识库/文档', note: '验收通过的产出物落库留痕' + (cfg.archiveFolderId && !PLACEHOLDER.test(cfg.archiveFolderId) ? '' : '（默认落到我的文档根目录）'), cmd: docCmd });
+    if (cfg.archiveFolderId && !isPlaceholderLike(cfg.archiveFolderId)) docCmd.push('--folder', cfg.archiveFolderId);
+    plan.push({ step: '归档知识库/文档', note: '验收通过的产出物落库留痕' + (cfg.archiveFolderId && !isPlaceholderLike(cfg.archiveFolderId) ? '' : '（默认落到我的文档根目录）'), cmd: docCmd });
     plan.push({ step: '群机器人播报', note: '通知发布群：已通过并进入审批', cmd: send('✅ 验收通过', `${a.name} 通过六道门禁（健康分 ${a.score}），已归档，进入发布审批。`) });
     plan.push({ step: '建复核待办', note: '指派复核人二次确认后发布', cmd: todo(`复核发布 ${a.name}`, cfg.approverUserId || '<APPROVER_USER_ID>', 30, isoDue(1)) });
     plan.push({ step: 'DING 催办审批人', note: '本人身份 DING 强提醒复核人尽快审批', cmd: ding(`【GateKeeper 验收】《${a.name}》已通过六道门禁（健康分 ${a.score}），请审批是否发布。`) });
@@ -94,7 +93,7 @@ function buildPlan(a) {
     const brief = p0.slice(0, 3).map((x) => `${x.gate}:${x.issue}`).join('；') || '见验收报告';
     plan.push({ step: '建作者待办(P0)', note: `${p0.length} 项 P0 阻断，最高优先级`, cmd: todo(`[门禁阻断] 修复 ${a.name} · ${p0.length}项P0`, author, 40, isoDue(cfg.dueOffsetDays || 2)) });
     plan.push({ step: '驳回告警', note: '自动驳回，禁止发布（待办已指派作者）', cmd: send('🚫 门禁阻断', `${a.name} 命中 ${p0.length} 项 P0：${brief}。已驳回，禁止发布。`) });
-    if (cfg.webhookToken && !PLACEHOLDER.test(cfg.webhookToken))
+    if (cfg.webhookToken && !isPlaceholderLike(cfg.webhookToken))
       plan.push({ step: 'Webhook 广播(可选)', note: '向治理群 @所有人 广播', cmd: ['dws', 'chat', 'message', 'send-by-webhook', '--token', cfg.webhookToken, '--title', '🚫 发布被阻断', '--text', `${a.name} P0 阻断，责任人请处理`, '--at-all'] });
   }
   return { plan, p0: p0.length, p1: p1.length, total: flat.length };
@@ -147,7 +146,7 @@ for (const raw of artifacts) {
 }
 // P1 修复（复扫 F09）：真实 ID 会被烘进计划脚本，而 output/dws-plan.sh 是被 git 跟踪的文件——
 // 任何一次 dry-run 都会把真实 ID 写进版本库（历史泄露即同款机制）。检测到非占位符 ID 时改写本地路径。
-const hasRealIds = [cfg.groupOpenConversationId, cfg.approverUserId, cfg.authorUserId, cfg.reviewerOpenDingTalkId, cfg.webhookToken]
+const hasRealIds = [cfg.groupOpenConversationId, cfg.approverUserId, cfg.authorUserId, cfg.reviewerOpenDingTalkId, cfg.webhookToken, cfg.archiveFolderId]
   .some((v) => !isPlaceholderLike(v));
 const planPath = hasRealIds ? 'output/dws-plan.local.sh' : 'output/dws-plan.sh';
 if (hasRealIds) {

@@ -57,8 +57,9 @@ export function makeConfig(overrides = {}) {
       if (!banned.length) { console.warn('[makeConfig] banned 过滤后为空，已回退默认词表'); banned = b.banned; }
     }
   }
-  // registry 覆盖键存在时必须以净化值落定（无效 → []）：裸展开会让 'refs: x' 这类原始值漏进引擎
-  const regOverrides = overrides.registry || {};
+  // registry 覆盖键存在时必须以净化值落定（无效 → []）：裸展开会让 'refs: x' 这类原始值漏进引擎；
+  // 外层容器本身畸形（registry 为字符串等）时降级为 {}，与"不崩引擎"注释一致
+  const regOverrides = (overrides.registry && typeof overrides.registry === 'object' && !Array.isArray(overrides.registry)) ? overrides.registry : {};
   const cleanReg = { ...b.registry, ...regOverrides };
   if ('metrics' in regOverrides) cleanReg.metrics = metrics !== null ? metrics : [];
   if ('refs' in regOverrides) cleanReg.refs = refs !== null ? refs : [];

@@ -1,5 +1,6 @@
 // [退役注记 · M10] 体检请用 project-check.mjs + configs/*.json（声明式配置，勿再运行时手改 REGISTRY）。
-//          本脚本保留作 M8.5 三段式 Self-DRL 叙事的历史产物。
+//          本脚本保留作 M8.5 三段式 Self-DRL 叙事的历史产物（重跑仅更新 output/selfcheck-report.md；
+//          output/self-check-report.md 为 v0.10.0 时点手工清洗过的 R1 历史快照，不再由脚本生成）。
 // selfcheck.mjs — GateKeeper 用自己的六道门禁给自己做深度审查（自我 DRL），并演示 project-config 收敛
 // 用法：node selfcheck.mjs [文档1.md ...]   缺省对核心文档自检（清单见 DEFAULT_DOCS）
 // 诚实原则：三段式收敛——R1 默认样例配置(基线，另存 self-check-report.md) → R2-fix 补证据链 → R2-config 配自身 project-config。

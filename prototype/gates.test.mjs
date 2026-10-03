@@ -30,7 +30,10 @@ test('G1 注册表内引用 [1] 放行；allowTokens 放行占位 [n]', () => {
 });
 test('G1 sourceHint=false 关闭来源提示(P3)，断链 P1 保留', () => {
   const cfg = makeConfig({ channel: { sourceHint: false } });
-  const g = gateOf(analyze(doc('准确率 92% 环比上升；另有断链 [9]。'), cfg), 'G1');
+  const text = '准确率 92% 环比上升。\n另有断链 [9]。'; // 拆两行：同含 [token] 的行会被 G1 抑制 P3，拆行后断言才真实钉住渠道开关
+  const on = gateOf(analyze(doc(text)), 'G1');
+  assert.equal(on.findings.filter((x) => x.level === 'P3').length >= 1, true, '前置自证：开关默认开时应有 P3');
+  const g = gateOf(analyze(doc(text), cfg), 'G1');
   assert.equal(g.findings.filter((x) => x.level === 'P3').length, 0);
   assert.equal(g.findings.filter((x) => x.level === 'P1').length, 1);
 });
@@ -148,6 +151,7 @@ test('makeConfig：registry 深合并、banned 可整体替换/回退、allowTok
   assert.deepEqual(makeConfig({ banned: customBanned }).banned, customBanned);
   assert.equal(makeConfig({ banned: [] }).banned, DEFAULT_CONFIG.banned, '空词表回退默认');
   assert.deepEqual(makeConfig({ allowTokens: ['n', 'x'] }).allowTokens, ['n', 'x']);
+  assert.deepEqual(makeConfig({ allowTokens: ['n', 'n', 'x'] }).allowTokens, ['n', 'x'], '重复 token 应去重');
   assert.deepEqual(makeConfig({ allowTokens: ['n'] }).allowTokens, ['n']);
 });
 test('flattenFindings 按级别排序且携带门禁名', () => {
