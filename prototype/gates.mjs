@@ -157,7 +157,11 @@ function g5(doc) {
   (c.match(/\b\d{17}[\dXx]\b/g) || []).forEach((x) => f.push({ level: 'P0', snip: x.slice(0, 6) + '****', issue: '疑似身份证号明文出现', basis: '个人信息保护', fix: `脱敏为 ${x.slice(0, 6)}********${x.slice(14)}` }));
   [...new Set(c.match(/1[3-9]\d{9}/g) || [])].forEach((p) => f.push({ level: 'P1', snip: p.slice(0, 3) + '****' + p.slice(7), issue: '疑似手机号未脱敏', basis: '个人信息保护', fix: `脱敏为 ${p.slice(0, 3)}****${p.slice(7)}` }));
   // 本地段限界 {1,64}：防长 ASCII 无 @ 串（base64/代码）O(n²) 回溯拖死粘贴大文本；合法邮箱本地段 ≤64 不受影响
-  [...new Set(c.match(/[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [])].forEach((m) => f.push({ level: 'P2', snip: m, issue: '邮箱明文，建议脱敏', basis: '个人信息保护', fix: '替换为 z***@example.com' }));
+  // snip 引擎侧打码（对齐同函数身份证/手机号口径）：回执会逐字引用 snip，明文邮箱不得写入产物
+  [...new Set(c.match(/[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [])].forEach((m) => {
+    const masked = m.length <= 8 ? m.slice(0, 1) + '***' : m.replace(/^(.{1,2}).*(@.*)$/, '$1***$2');
+    f.push({ level: 'P2', snip: masked, issue: '邮箱明文，建议脱敏', basis: '个人信息保护', fix: '替换为 z***@example.com' });
+  });
   (c.match(/(内部成本|成本价|底价)[^。\n]{0,20}/g) || []).forEach((x) => f.push({ level: 'P2', snip: x.slice(0, 20), issue: '疑似内部成本 / 商业秘密', basis: '数据安全', fix: '删除或替换为对外口径' }));
   return pack('G5', '敏感信息与脱敏', '🛡', f);
 }

@@ -42,7 +42,7 @@ function isoDue(days) {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T18:00:00+08:00`;
 }
 // 命令 token 数组 → 可打印字符串（相对形式 dws ...，供展示 / 演示）
-function q(v) { v = String(v); return /[\s%&<>|^"]/.test(v) ? '"' + v.replace(/"/g, '\\"') + '"' : v; }
+function q(v) { v = String(v); return /[\s%&<>|^"'`]/.test(v) ? '"' + v.replace(/"/g, '\\"').replace(/`/g, '\\`') + '"' : v; } // 补 ` 与 ' ：展示行被复制进 bash 时防命令替换
 function toStr(tokens) { return tokens.map(q).join(' '); }
 
 // bash 单引号安全包裹（供生成 dws-plan.sh）

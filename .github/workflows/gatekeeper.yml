@@ -6,7 +6,7 @@ on:
   push:
     paths: ['prototype/**', '.github/workflows/gatekeeper.yml']
   pull_request:
-    paths: ['prototype/**']
+    paths: ['prototype/**', '.github/workflows/gatekeeper.yml']
   workflow_dispatch:
 
 jobs:
@@ -18,8 +18,9 @@ jobs:
       run:
         working-directory: prototype
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # pin 到完整 SHA（v4.2.2 / v4.4.0，git ls-remote 实测）：可变 tag 被劫持时 CI 不至执行非预期代码
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
       - name: 单一事实源漂移门禁（引擎块 == gates.mjs）

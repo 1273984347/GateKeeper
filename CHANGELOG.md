@@ -9,6 +9,17 @@
 
 ---
 
+### v0.15.2（2026-10-03）：安全收尾 —— 邮箱 snip 引擎侧打码 + 5 条 info 清零
+
+> **来源**：v0.15.1 重扫描遗留项收尾——1 条面板未达票但人工复核成立的邮箱明文回显，及 5 条 info。用户指令「修」。
+> - **执行（隐私）**：`gates.mjs` G5 邮箱 finding 的 snip 引擎侧打码（本地段前 1–2 字符 + `***` + 域名，短邮箱整体截断）——对齐同函数身份证/手机号的既有打码口径；finding 经 flattenFindings 逐字落入 output 回执，原实现每次跑真实文档都会把明文邮箱写进产物。
+> - **执行（info×5）**：`bench.mjs`/`run-real.mjs` 产物路径改脚本目录锚定（`join(dirname(fileURLToPath…),'output')` + mkdirSync recursive，消除 CWD 依赖与散落 output/；bench 原本缺 mkdir）；`dws-bridge` 的 `q()` 展示转义补反引号与单引号（展示行被复制进 bash 时防命令替换）；`gatekeeper.html` 四处动态 id 插值（option value/data-crumb/data-pid/data-id）补 `esc()`，对齐本文件"esc 用于属性上下文"自身约定；CI 两个 action pin 到完整 SHA（`actions/checkout@11bd719…` v4.2.2、`actions/setup-node@49933ea…` v4.4.0，SHA 经 `git ls-remote` 从官方仓库实测取得，非凭记忆转录）；`pull_request` 触发 paths 补 workflow 自身（仅改 CI 配置的 PR 不再绕过全部门禁）。
+> - **文件**：prototype/gates.mjs、bench.mjs、run-real.mjs、dws-bridge.mjs、gatekeeper.html（sync 重注入）、.github/workflows/gatekeeper.yml、README.md、交接文档.md、prototype/configs/gatekeeper-self.json（0.15.2 + 登记）、本文件。
+> - **验证**：打码实测——`zhang@example.com → zh***@example.com`、短邮箱 `a@b.cn → a***`，本地段不可还原；`sync-gates/sync-configs --check` 双绿；`verify` 红线全过；`node --test` 20/20；`bench`/`run-real`/`dws-bridge` dry-run 全正常（含从仓库根运行，路径锚定生效）；`check-docs` 全部核心文档可发布。
+> - **状态**：已落地。重扫描 16 条独立发现至此全部处置完毕（3 P1 + 7 P2 于 v0.15.1，1 条复核成立 + 5 info 于本条，被面板否决 1 条维持否决）。遗留（如实）：CI SHA 后续升级需手动更新（可配 Dependabot）；git 历史旧 ID 仍为已知接受项。
+
+---
+
 ### v0.15.1（2026-10-03）：安全重扫描修复 —— G1 正则 O(n²) / dws 计划注入 / 真实 ID 回流拦截 / 引擎配置校验
 
 > **来源**：claude-security 等价工作流整仓重扫描（7 路研究员 + 三镜头面板 2/3 计票，21 候选确认 20/去重 16 条：3 P1 / 7 P2 / 6 info）。用户指令修掉全部 P1+P2。v0.14.1 七项修复经优先核验全部落地有效。验证方式为本会话组装的动态工作流等价实现（插件官方流水线在本环境不可注册），报告已如实标注。

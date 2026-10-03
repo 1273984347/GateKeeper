@@ -2,7 +2,11 @@
 // 真实测：流水线在 20/200/2000 条批次的墙钟耗时 + 对「已知植入违规」的召回率。
 // 人工基线：不假装秒表，用业界「单条广告合规人审 30–120s」的透明假设区间换算对照，并标注为估算。
 import { analyze } from './gates.mjs';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const OUT = join(dirname(fileURLToPath(import.meta.url)), 'output'); // 产物锚定脚本目录，不随 CWD 漂移
 
 // 20 条样例：15 条含《广告法》违规（ground truth），5 条干净。violation 标记为植入真值。
 const BASE = [
@@ -100,5 +104,6 @@ lines.push('## 三、口径与诚实声明');
 lines.push('- 「扫描耗时」列为 `process.hrtime` 真实测量；「人工」列为业界单条人审 30–120s 的**假设区间**，未做真人秒表（单人无法自测人类基线）；「编排约 5–10s」为 DWS 网络往返的估算，提交前建议实测一次端到端总时长坐实。');
 lines.push(`- 违规真值 = 20 条中 15 条含《广告法》禁止性表述；干净 5 条实测误报 ${runs[0].fp} 条（词表/真值变动时此数如实反映，不再写死零假阳性）。`);
 
-writeFileSync('output/bench-report.md', lines.join('\n'), 'utf8');
+mkdirSync(OUT, { recursive: true });
+writeFileSync(join(OUT, 'bench-report.md'), lines.join('\n'), 'utf8');
 console.log(lines.join('\n'));
