@@ -4,7 +4,6 @@
 //   node dws-bridge.mjs --live                # 真实调用钉钉（需先登录 + 填 config.dws.json）
 //   node dws-bridge.mjs --artifacts x.json --config c.json
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { homedir, arch } from 'node:os';
 import { join } from 'node:path';
 import { analyze, flattenFindings, REGISTRY } from './gates.mjs';
@@ -21,9 +20,15 @@ const artifacts = JSON.parse(readFileSync(ART_FILE, 'utf8'));
 
 // 占位符检测：live 模式下若关键 ID 未填则拒绝执行
 const PLACEHOLDER = /^<.*>$/;
+// 占位符判定统一入口：trim 空白、拒绝全角尖括号变体（' <X>'、'＜X＞' 均不放行为真实 ID）
+function isPlaceholderLike(v) {
+  const s = String(v ?? '').trim();
+  return !s || PLACEHOLDER.test(s) || /^[＜＜].*[＞＞]$/.test(s);
+}
 function missingConfig() {
-  const need = LIVE ? ['robotCode', 'groupOpenConversationId', 'approverUserId', 'authorUserId'] : [];
-  return need.filter((k) => !cfg[k] || PLACEHOLDER.test(cfg[k]));
+  // robotCode 从未被生成命令引用，不校验；reviewerOpenDingTalkId 在 ding() 实际使用，必须纳入
+  const need = LIVE ? ['groupOpenConversationId', 'approverUserId', 'authorUserId', 'reviewerOpenDingTalkId'] : [];
+  return need.filter((k) => isPlaceholderLike(cfg[k]));
 }
 if (LIVE && missingConfig().length) {
   console.error(`[live 中止] config.dws.json 以下字段仍是占位符：${missingConfig().join(', ')}`);
@@ -40,23 +45,20 @@ function isoDue(days) {
 function q(v) { v = String(v); return /[\s%&<>|^"]/.test(v) ? '"' + v.replace(/"/g, '\\"') + '"' : v; }
 function toStr(tokens) { return tokens.map(q).join(' '); }
 
-// 真实执行：直接用 argv 数组调用 dws 底层 shim exe（不经 cmd.exe，避免中文/emoji/%/引号转义问题）
-// ⚠️ 运行时限制：在千问办公内，dws 的宿主端执行由 Bash 工具的 PostToolUse 钩子触发；
-//    被本脚本 spawn 时钩子不激活，只会返回 "pending-post-tool-use" 占位符（并非真正执行）。
-//    因此 --live 的正确用法是：由 Agent 逐条「直接」调用下方打印/生成的 dws 命令。
-const SHIM = join(homedir(), '.qwenworkcn', 'bin', 'ext', arch() === 'arm64' ? 'cli-common-shim-windows-arm64.exe' : 'cli-common-shim-windows-amd64.exe');
-function runCmd(tokens) {
-  const exe = existsSync(SHIM) ? SHIM : 'dws';
-  const argv = existsSync(SHIM) ? tokens.slice(1) : tokens; // tokens[0]==='dws'
-  const opts = { encoding: 'utf8', env: { ...process.env, QWORK_SHIM_ROUTE: 'dws' } };
-  if (existsSync(SHIM)) opts.shell = false; else opts.shell = true; // 回退：走 PATH 上的 dws
-  return spawnSync(exe, argv, opts);
-}
 // bash 单引号安全包裹（供生成 dws-plan.sh）
-function sq(v) { return "'" + String(v).replace(/'/g, "'\\''") + "'"; }
+function sq(v) {
+  // 换行压平：单引号内的换行虽是 bash 字面量，但会让计划脚本出现"视觉活命令行"，逐行消费的执行器也不安全
+  return "'" + String(v).replace(/[\r\n]+/g, ' ').replace(/'/g, "'\\''") + "'";
+}
 function toBash(tokens) { return tokens.map(sq).join(' '); }
 
+// 产出物 id 白名单：id 直接拼进写盘路径与归档命令，来自不可信 artifacts，须为安全字符
+const SAFE_ID = /^[A-Za-z0-9_-]+$/;
+
 function buildPlan(a) {
+  if (!SAFE_ID.test(String(a.id))) {
+    throw new Error(`artifacts 条目 id 含非法字符（仅允许字母/数字/下划线/连字符）：${JSON.stringify(String(a.id).slice(0, 40))}`);
+  }
   const author = a.authorUserId && !PLACEHOLDER.test(a.authorUserId) ? a.authorUserId : (cfg.authorUserId || '<AUTHOR_USER_ID>');
   const flat = flattenFindings(a.gates);
   const p0 = flat.filter((x) => x.level === 'P0');
@@ -133,7 +135,8 @@ for (const raw of artifacts) {
 
   const badge = { ok: '✅', fix: '⚠️ ', block: '🚫' }[a.verdict.k];
   console.log(`${badge} [${a.id}] ${a.name}  →  ${a.verdict.t}（${a.score} 分，命中 ${info.total}：P0×${info.p0} P1×${info.p1}）`);
-  planLines.push(`# [${a.id}] ${a.name} → ${a.verdict.t}`);
+  // 注释内容必须压平换行：id/name 来自不可信 artifacts，含 \n 即可向计划脚本注入活命令行
+  planLines.push(`# [${String(a.id).replace(/[\r\n]+/g, ' ')}] ${String(a.name).replace(/[\r\n]+/g, ' ')} → ${a.verdict.t}`);
   info.plan.forEach((p, i) => {
     console.log(`     ${i + 1}. ${p.step} — ${p.note}`);
     console.log(`        $ ${toStr(p.cmd)}`);
@@ -142,11 +145,19 @@ for (const raw of artifacts) {
   planLines.push('');
   console.log('');
 }
-writeFileSync('output/dws-plan.sh', planLines.join('\n'), 'utf8');
+// P1 修复（复扫 F09）：真实 ID 会被烘进计划脚本，而 output/dws-plan.sh 是被 git 跟踪的文件——
+// 任何一次 dry-run 都会把真实 ID 写进版本库（历史泄露即同款机制）。检测到非占位符 ID 时改写本地路径。
+const hasRealIds = [cfg.groupOpenConversationId, cfg.approverUserId, cfg.authorUserId, cfg.reviewerOpenDingTalkId, cfg.webhookToken]
+  .some((v) => !isPlaceholderLike(v));
+const planPath = hasRealIds ? 'output/dws-plan.local.sh' : 'output/dws-plan.sh';
+if (hasRealIds) {
+  console.log(`🔒 检测到 config.dws.json 含真实 ID：计划已写入本地文件 ${planPath}（已被 .gitignore 覆盖，勿改名提交）。`);
+}
+writeFileSync(planPath, planLines.join('\n'), 'utf8');
 
 writeFileSync('output/gate-report.json', JSON.stringify({ mode: LIVE ? 'live-plan' : 'dry-run', generatedAt: new Date().toISOString(), results }, null, 2), 'utf8');
 console.log(`—— 汇总 ——`);
 console.log(`可发布 ${results.filter((r) => r.verdict.k === 'ok').length} ｜ 需修复 ${results.filter((r) => r.verdict.k === 'fix').length} ｜ 阻断 ${results.filter((r) => r.verdict.k === 'block').length}`);
-console.log(`产物：output/gate-report.json、output/accept-*.md、output/dws-plan.sh`);
+console.log(`产物：output/gate-report.json、output/accept-*.md、${planPath}`);
 if (LIVE) console.log(`\n⚠️ 千问办公运行时中 dws 需由 Agent 直接调用才会真正执行（spawn 不触发宿主钩子）。\n   本次已按此计划由 Agent 直接落地，真实回执见 output/live-evidence.md。`);
-else console.log(`\n（当前为 dry-run。真实执行：由 Agent 按 output/dws-plan.sh 逐条直接调用 dws。）`);
+else console.log(`\n（当前为 dry-run。真实执行：由 Agent 按 ${planPath} 逐条直接调用 dws。）`);

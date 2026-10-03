@@ -30,15 +30,44 @@ export const DEFAULT_CONFIG = {
   allowTokens: []                  // G1 视为合法占位的引用 token（如正文示例 [n]/[x]）
 };
 
+// —— 配置形状校验：project-config 来自外部 JSON（手写/他人提供），畸形输入宁可降级放行默认也不崩引擎或静默失效 ——
+function safeStrArray(v, label) {
+  if (v === undefined || v === null) return null;              // 未提供 → 调用方走默认
+  if (!Array.isArray(v)) { console.warn(`[makeConfig] ${label} 应为数组，已忽略该覆盖项：`, v); return null; }
+  return v.map((x) => String(x)).filter((x) => x.trim() !== ''); // 元素强转字符串 + 丢弃空串（空指标名会使 G2 匹配全文任意数字、误判 P0）
+}
+const LEVEL_SET = new Set(['P0', 'P1', 'P2', 'P3']);
+
 // 项目配置覆盖默认（浅合并；registry / channel 深合并，banned 可整体替换或留空回退）
 export function makeConfig(overrides = {}) {
   const b = DEFAULT_CONFIG;
+  const metrics = safeStrArray(overrides.registry && overrides.registry.metrics, 'registry.metrics');
+  const refs = safeStrArray(overrides.registry && overrides.registry.refs, 'registry.refs');
+  // banned：整体替换或回退；逐规则校验 cat/level/words，越界 level 归 P2（防止命中在 sev/评分/裁决中静默失效）
+  let banned = b.banned;
+  if (overrides.banned !== undefined && overrides.banned !== null) {
+    if (!Array.isArray(overrides.banned)) { console.warn('[makeConfig] banned 应为数组，已回退默认词表'); }
+    else {
+      banned = overrides.banned
+        .filter((r) => r && typeof r === 'object' && Array.isArray(r.words) && r.words.length)
+        .map((r) => ({
+          cat: String(r.cat || '未分类'), level: LEVEL_SET.has(r.level) ? r.level : 'P2',
+          basis: String(r.basis || ''), words: r.words.map((w) => String(w)), fix: String(r.fix || ''),
+        }));
+      if (!banned.length) { console.warn('[makeConfig] banned 过滤后为空，已回退默认词表'); banned = b.banned; }
+    }
+  }
+  // registry 覆盖键存在时必须以净化值落定（无效 → []）：裸展开会让 'refs: x' 这类原始值漏进引擎
+  const regOverrides = overrides.registry || {};
+  const cleanReg = { ...b.registry, ...regOverrides };
+  if ('metrics' in regOverrides) cleanReg.metrics = metrics !== null ? metrics : [];
+  if ('refs' in regOverrides) cleanReg.refs = refs !== null ? refs : [];
   return {
     name: overrides.name || b.name,
-    registry: { ...b.registry, ...(overrides.registry || {}) },
-    banned: overrides.banned && overrides.banned.length ? overrides.banned : b.banned,
+    registry: cleanReg,
+    banned,
     channel: { ...b.channel, ...(overrides.channel || {}) },
-    allowTokens: [...new Set([...(b.allowTokens || []), ...(overrides.allowTokens || [])])]
+    allowTokens: [...new Set([...(b.allowTokens || []), ...(safeStrArray(overrides.allowTokens, 'allowTokens') || [])])]
   };
 }
 
@@ -64,7 +93,7 @@ function g1(doc, cfg) {
   });
   content.split(/\n/).forEach((line) => {
     if (cfg.channel.sourceHint === false) return;
-    if (/\d+(\.\d+)?%/.test(line) && !/\[[a-zA-Z0-9\-]+\]/.test(line))
+    if (/\d{1,9}(?:\.\d{1,9})?%/.test(line) && !/\[[a-zA-Z0-9\-]+\]/.test(line)) // 数字游程限界：防长数字串起始位置全量回溯 O(n²)（对合法百分比零行为变化）
       f.push({ level: 'P3', snip: line.trim().slice(0, 34), issue: '含数据但本行未挂来源', basis: '数据可溯源（建议）', fix: '为关键数字补充来源编号 [n]' });
   });
   return pack('G1', '引用可溯源', '🔗', f);

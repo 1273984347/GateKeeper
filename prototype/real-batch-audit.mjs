@@ -183,7 +183,9 @@ if (TODOS) {
   p1.forEach((r) => {
     const miss = missingOf(r.meta);
     const title = `[元信息整改] 补 ${r.name}：${miss.join('、')}`;
-    S.push(`# dws todo task create --title "${title}" --executors ${author} --priority 20 --due ${due}`);
+    // 标题来自被检文档（不可信）：单引号安全包裹，防 "; cmd; 注入（对齐 dws-bridge 的 sq 口径）
+    const sqT = (v) => `'` + String(v).replace(/'/g, `'\''`) + `'`;
+    S.push(`# dws todo task create --title ${sqT(title)} --executors ${author} --priority 20 --due ${due}`);
   });
   writeFileSync(join(PROTO, 'output', base + '-dws-plan.sh'), S.join('\n'), 'utf8');
   console.log(`[干跑输出] prototype/output/${base}-整改待办.md（${p1.length} 条）`);

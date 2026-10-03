@@ -86,11 +86,22 @@ test('G5 身份证 P0 / 手机号 P1 / 邮箱 P2 / 内部成本 P2', () => {
   assert.ok(lv('P0') >= 1 && lv('P1') >= 1 && lv('P2') >= 2);
 });
 test('G5 邮箱正则限界：118KB 无@ASCII 串不得 O(n²) 卡死（性能防线，审计回归）', () => {
-  const big = 'QUJDREVGM0hJS0xNTk9QUVJTVFVW'.repeat(4200); // ≈118KB
+  const big = 'QUJDREVGM0hJS0xNTk9QUVJTVFVW'.repeat(4200); // ≈118KB，数字游程最长 1
   const t0 = process.hrtime.bigint();
   analyze(doc(big));
   const ms = Number(process.hrtime.bigint() - t0) / 1e6;
   assert.ok(ms < 2000, `长串扫描 ${ms.toFixed(0)}ms 超 2s 阈值——邮箱正则限界可能被改回`);
+});
+test('G1 百分比正则限界：200KB 纯数字游程不得 O(n²)（性能防线，重扫 F01 回归）', () => {
+  const big = '9'.repeat(200000); // 长数字游程：命中 G1 百分比正则的回溯形态（无 % 结尾）
+  const t0 = process.hrtime.bigint();
+  analyze(doc(big));
+  const ms = Number(process.hrtime.bigint() - t0) / 1e6;
+  assert.ok(ms < 2000, `数字游程扫描 ${ms.toFixed(0)}ms 超 2s 阈值——G1 百分比正则限界可能被改回`);
+});
+test('G1 合法百分比仍检出（限界不误伤行为）', () => {
+  const a = analyze(doc('准确率 92.5%，成本下降 30%。'));
+  assert.equal(gateOf(a, 'G1').findings.filter((x) => x.level === 'P3').length >= 1, true);
 });
 
 // ---------- G6 证据链 ----------
@@ -111,12 +122,30 @@ test('五裁决基线：A0阻断 / B49阻断 / C17阻断 / D84需修复 / E100�
   assert.equal(by.D.score + '/' + by.D.verdict.t, '84/需修复后发布');
   assert.equal(by.E.score + '/' + by.E.verdict.t, '100/可发布');
 });
+test('makeConfig 畸形外部配置不崩不静默失效（重扫 F03 回归）', () => {
+  // banned 非数组 → 回退默认词表（原实现放行字符串，g4 forEach TypeError）
+  assert.equal(makeConfig({ banned: 'abc' }).banned, DEFAULT_CONFIG.banned);
+  // 规则缺 words / 非对象 → 过滤；越界 level 归 P2（原实现命中静默失效）
+  const custom = makeConfig({ banned: [{ cat: '坏', level: 'P9', basis: 'b', words: ['测试词'], fix: 'f' }, null, { cat: '缺words' }] });
+  assert.equal(custom.banned.length, 1);
+  assert.equal(custom.banned[0].level, 'P2');
+  const hit = analyze(doc('这里出现测试词。'), custom);
+  assert.ok(gateOf(hit, 'G4').findings.length >= 1, 'P9 归 P2 后命中必须仍生效');
+  // metrics 含非字符串/空串 → 强转与过滤（空指标名原实现匹配全文任意数字、误判 P0）
+  const mcfg = makeConfig({ registry: { metrics: [123, ''] } });
+  assert.deepEqual(mcfg.registry.metrics, ['123']);
+  assert.equal(gateOf(analyze(doc('a 3 b 5 c 7'), mcfg), 'G2').findings.length, 0, '空指标名不得产生 P0 误判');
+  // refs/allowTokens 非数组 → 忽略覆盖走默认（safeStrArray 仅接受数组）
+  assert.deepEqual(makeConfig({ allowTokens: 'n' }).allowTokens, []);
+  assert.deepEqual(makeConfig({ registry: { refs: 'x' } }).registry.refs, []);
+});
 test('makeConfig：registry 深合并、banned 可整体替换/回退、allowTokens 并集去重', () => {
   const c1 = makeConfig({ registry: { currentVersion: '9.9.9' } });
   assert.equal(c1.registry.currentVersion, '9.9.9');
   assert.deepEqual(c1.registry.refs, DEFAULT_CONFIG.registry.refs, '未覆盖字段应继承默认');
   const customBanned = [{ cat: '测试', level: 'P2', basis: 'b', words: ['测试词'], fix: 'f' }];
-  assert.equal(makeConfig({ banned: customBanned }).banned, customBanned);
+  // 归一化后返回新对象（level 防越界校验），断言改结构相等
+  assert.deepEqual(makeConfig({ banned: customBanned }).banned, customBanned);
   assert.equal(makeConfig({ banned: [] }).banned, DEFAULT_CONFIG.banned, '空词表回退默认');
   assert.deepEqual(makeConfig({ allowTokens: ['n', 'x'] }).allowTokens, ['n', 'x']);
   assert.deepEqual(makeConfig({ allowTokens: ['n'] }).allowTokens, ['n']);

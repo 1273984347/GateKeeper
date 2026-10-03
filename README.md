@@ -5,7 +5,7 @@
 > Session：会话 ID 见 git 提交记录
 
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.15.0
+> **当前版本**：v0.15.1
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
 
 ![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)
@@ -15,6 +15,42 @@
 把企业里"AI 生成内容/文档之后的质量验收"从人肉抽查，变成一套可配置的**六道门禁**自动化流水线，并接进钉钉真实办公面（DWS）：验收通过自动归档文档、群播报、建审批待办、DING 催办；命中 P0 严重问题则条件分支驳回并 @ 责任人。换团队/换行业/换文档类型，改一份 project-config 即可，不改代码。
 
 ## 架构（三层，单一事实源）
+
+```mermaid
+flowchart TB
+    subgraph src["📐 规则层 · 单一事实源（唯一可改处）"]
+        GATES["⚙️ gates.mjs ｜ 六道门禁引擎（纯逻辑）"]
+        CFG["⚙️ configs/*.json ｜ project-config 项目口径"]
+    end
+
+    subgraph sync["🔁 生成与漂移门禁"]
+        SYNC["🔄 sync-gates / sync-configs<br/>注入 HTML + --check 防漂移"]
+    end
+
+    subgraph web["🖥️ 呈现层"]
+        HTML["📊 gatekeeper.html 治理控制台<br/>五视图 · 五级下钻 · 换配置 diff · ?demo=1"]
+    end
+
+    subgraph cli["🧪 验收层（本地 / CI 同一套）"]
+        TOOLS["✅ verify 回归红线 · gates.test 单测<br/>bench 实测 · check-docs 文档门禁<br/>real-batch-audit 真实批次体检"]
+    end
+
+    subgraph dws["📮 编排层 · 钉钉 DWS"]
+        BRIDGE["🚀 dws-bridge.mjs<br/>裁决 → dws 命令计划"]
+        DWS["📋 待办 · 📣 群播报 · 📄 文档归档 · 🔔 DING 催办"]
+    end
+
+    GATES --> SYNC
+    CFG --> SYNC
+    SYNC --> HTML
+    GATES --> TOOLS
+    GATES --> BRIDGE
+    CFG --> BRIDGE
+    TOOLS -- "验收通过 / 驳回" --> BRIDGE
+    BRIDGE --> DWS
+```
+
+文件级明细：
 
 ```
 gates.mjs        六道门禁引擎（纯逻辑，前后端共用的唯一规则源）

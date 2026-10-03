@@ -9,6 +9,18 @@
 
 ---
 
+### v0.15.1（2026-10-03）：安全重扫描修复 —— G1 正则 O(n²) / dws 计划注入 / 真实 ID 回流拦截 / 引擎配置校验
+
+> **来源**：claude-security 等价工作流整仓重扫描（7 路研究员 + 三镜头面板 2/3 计票，21 候选确认 20/去重 16 条：3 P1 / 7 P2 / 6 info）。用户指令修掉全部 P1+P2。v0.14.1 七项修复经优先核验全部落地有效。验证方式为本会话组装的动态工作流等价实现（插件官方流水线在本环境不可注册），报告已如实标注。
+> - **执行（P1×3）**：① `gates.mjs` G1 百分比正则加数字游程限界 `\d{1,9}(?:\.\d{1,9})?%`——原 `\d+(\.\d+)?%` 对长数字串起始位置全量回溯，实测 400KB 数字串卡死引擎 64 秒（v0.14.1 只堵了同类邮箱正则，此条漏网；合法百分比零行为变化）；`gates.test.mjs` 性能防线补 200KB 纯数字游程 payload（原 base64 payload 数字游程最长 1 字符锁不住此形态）。② `dws-bridge.mjs` 计划注释行压平换行 + `sq()` 换行压平——artifacts 的 id/name 含换行即可向被逐条执行的 `dws-plan.sh` 注入活命令行（面板 PoC 实证）。③ 真实 ID 回流拦截：检测到 config.dws.json 含非占位符 ID 时，计划自动改写 `output/dws-plan.local.sh`（.gitignore 已覆盖）并在产物清单中如实提示——原实现任何一次 dry-run 都会把真实 ID 烘进被 git 跟踪的 `output/dws-plan.sh`（历史泄露即同款机制）。
+> - **执行（P2×7）**：`makeConfig` 形状校验（banned 非数组回退默认/规则逐条校验/越界 level 归 P2/空指标名过滤/registry 覆盖键净化——畸形外部配置不再 TypeError 崩溃或让任意文档误判 P0 或命中静默失效）；`sync-configs`/`sync-gates` 注入块 `<`/`>`/U+2028/2029 转义（堵 `</script>` 逃逸的存储型 XSS 面，当前数据无 `<` 故零行为变化）；`sync-gates --check` 标记缺失改 fail-closed（原静默 exit 0，CI 门禁形同虚设；对齐 sync-configs 口径）；`real-batch-audit --todos` 文档标题 sq() 转义（第三方文档标题可注入待执行命令）；dws-bridge 占位符守卫补 reviewerOpenDingTalkId + trim/全角变体 + 删 robotCode 死校验；accept-id 白名单 `[A-Za-z0-9_-]+`（堵路径穿越，对齐姊妹脚本消毒口径）；toast() 内部统一 esc（渲染层最后一个未转义 HTML 汇点，速查文案经 allowHtml 显式豁免）。
+> - **执行（顺手清理）**：删 dws-bridge 的 runCmd 死代码（含 shell:true 危险回退分支，防复活即注入面）；CI pull_request paths 补 workflow 自身（info 项择要）。
+> - **文件**：prototype/gates.mjs、gates.test.mjs（20 例）、sync-configs.mjs、sync-gates.mjs、dws-bridge.mjs、real-batch-audit.mjs、gatekeeper.html、README.md、交接文档.md、prototype/configs/gatekeeper-self.json、本文件。
+> - **验证**：`node --test gates.test.mjs` **20/20**（新增数字游程性能防线 / 畸形配置 / 合法百分比不误伤三组回归）；dws-bridge 冒烟实证——真实 ID 配置 → 计划写 .local.sh 且被跟踪文件零真实 ID、`../evil` id 被拒、换行 name 注入行压平且 `bash -n` 语法通过；`sync-gates/sync-configs --check` 双绿；`verify` 红线全过；`bench` 召回 100% 误报 0；`check-docs` 全部核心文档可发布；Playwright 冒烟 0 error（toast/快捷键/粘贴/暗色/640 全过）。
+> - **状态**：已落地。遗留（如实）：6 条 info 中剩余 5 条（bench/run-real 相对路径、q() 展示转义、动态 id 插值、CI action pin SHA）择机处理；邮箱 snip 明文回显（面板未达 2/3 票）经人工复核成立、下轮随引擎侧脱敏口径一并修。
+
+---
+
 ### v0.15.0（2026-10-03）：引擎测试基建 —— node:test 单元/负样本套件接入本地与 CI
 
 > **来源**：v0.14.1 四路审计把 XSS 属性注入、G5 邮箱正则 O(n²)、G2 指标正则注入等真问题钉在引擎上——但当时只有 verify.mjs 集成红线兜底，缺单元层防线。按用户圈选的 test-driven-development 方向补齐：给 `gates.mjs` 建一套零依赖单测，把本轮修复逐条变成防回归断言。

@@ -19,6 +19,15 @@ const C_END = '/* ==== GK-CONFIGS-SRC-END ==== */';
 const D_START = '/* ==== GK-DATA-SRC-START ==== 由 sync-configs.mjs 从 configs/batches.sample.json 生成，勿手改 ==== */';
 const D_END = '/* ==== GK-DATA-SRC-END ==== */';
 
+// JSON 注入 <script> 上下文的转义：JSON.stringify 不转义 </ 与行分隔符，配置/批次数据含
+// "</script><img onerror=…>" 即成单文件产品的存储型 XSS（--check 纯文本比对拦不住）。
+function jsonForInlineScript(v) {
+  return JSON.stringify(v)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
 function buildConfigsBlock() {
   const configs = {};
   for (const f of readdirSync(CONFIG_DIR)) {
@@ -26,12 +35,12 @@ function buildConfigsBlock() {
     const id = basename(f, '.json');
     configs[id] = JSON.parse(readFileSync(join(CONFIG_DIR, f), 'utf8'));
   }
-  return `${C_START}\nconst GK_CONFIGS = ${JSON.stringify(configs)};\n${C_END}`;
+  return `${C_START}\nconst GK_CONFIGS = ${jsonForInlineScript(configs)};\n${C_END}`;
 }
 
 function buildDataBlock() {
   const data = JSON.parse(readFileSync(join(CONFIG_DIR, BATCH_FILE), 'utf8'));
-  return `${D_START}\nconst GK_DATA = ${JSON.stringify(data)};\n${D_END}`;
+  return `${D_START}\nconst GK_DATA = ${jsonForInlineScript(data)};\n${D_END}`;
 }
 
 function replaceBlock(html, start, end, block, label) {

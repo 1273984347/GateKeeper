@@ -16,7 +16,8 @@ const END = '/* ==== GATES-SRC-END ==== */';
 
 // 由 gates.mjs 生成注入块：去掉 export 前缀（浏览器经典脚本用全局），首行注释保留无害
 function buildBlock() {
-  const src = readFileSync(GATES, 'utf8').replace(/^export /gm, '');
+  // 注入 <script> 上下文：引擎源码含字符串字面量（如 '</script>' 示例或正则）时同样需防标签逃逸
+  const src = readFileSync(GATES, 'utf8').replace(/^export /gm, '').replace(/<\//g, '<\\/');
   return `${START}\n${src.trim()}\n${END}`;
 }
 
@@ -37,5 +38,11 @@ if (hasMarkers) {
   html = html.replace(re, () => block);
   writeFileSync(HTML, html, 'utf8');
   console.log('✓ 已从 gates.mjs 重新注入 HTML 引擎块');
+} else {
+  // fail-closed（对齐 sync-configs）：标记缺失（合并冲突误删等）时 --check 必须红灯而非静默 exit 0
+  const msg = '✗ gatekeeper.html 缺少 GATES-SRC 标记块（可能被误删），单一事实源漂移门禁无法校验。';
+  if (CHECK) { console.error(msg + ' 先恢复标记或跑 `node sync-gates.mjs` 重新注入。'); process.exit(1); }
+  console.error(msg + '（当前为注入模式，未发现标记，已终止；请勿在无标记的 HTML 上盲写）');
+  process.exit(2);
 }
 function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
