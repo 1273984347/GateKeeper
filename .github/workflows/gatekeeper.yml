@@ -28,6 +28,8 @@ jobs:
         run: node sync-configs.mjs --check
       - name: 功能回归红线 + 换配置差异
         run: node verify.mjs
+      - name: 引擎单元/负样本测试（node:test）
+        run: node --test gates.test.mjs
       - name: 核心治理文档体检（全部核心文档，任一非「可发布」exit 1）
         run: node check-docs.mjs
       # informational：换配置能力演示（xiyouji 口径代跑根文档），失败不作红线——红线在 verify/check-docs

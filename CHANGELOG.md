@@ -9,6 +9,17 @@
 
 ---
 
+### v0.15.0（2026-10-03）：引擎测试基建 —— node:test 单元/负样本套件接入本地与 CI
+
+> **来源**：v0.14.1 四路审计把 XSS 属性注入、G5 邮箱正则 O(n²)、G2 指标正则注入等真问题钉在引擎上——但当时只有 verify.mjs 集成红线兜底，缺单元层防线。按用户圈选的 test-driven-development 方向补齐：给 `gates.mjs` 建一套零依赖单测，把本轮修复逐条变成防回归断言。
+> - **执行（测试套件）**：新建 `prototype/gates.test.mjs`（node:test，17 例）——① 每道门禁的正/负样本（G1 markdown 链接不误报、allowTokens 放行、sourceHint 渠道；G2 v 前缀约定/版本注册表/多值 P0；G4 渠道开关与词库结构；G5 四类敏感信息；G6 缺项三态）；② **审计加固回归断言**：`C++`/`转化率(CVR)` 指标名转义后不炸不失效、118KB 无@ASCII 串 <2s 性能防线（实测 18ms，修复前秒级冻结）、G1 引号转义依赖的属性安全由渲染层 esc 单测位（HTML 内）另查；③ 五裁决基线 A0/B49/C17/D84/E100 冗余防线（与 verify 互备）；④ makeConfig 深合并/词表替换/allowTokens 并集；flattenFindings 排序契约。
+> - **执行（接线）**：CI workflow 在 verify 后新增 `node --test gates.test.mjs` 步骤；README 快速开始、STRUCTURE 树、交接文档索引同步。
+> - **文件**：prototype/gates.test.mjs（新建）、.github/workflows/gatekeeper.yml、README.md、STRUCTURE.md、交接文档.md、prototype/configs/gatekeeper-self.json（0.15.0 + 登记）、本文件。
+> - **验证**：`node --test gates.test.mjs` **17/17 全绿**；`sync-gates --check` + `sync-configs --check` 双绿；`verify.mjs` 13 项红线全过；`check-docs` 全部核心文档可发布。
+> - **状态**：已落地。遗留（如实）：渲染层（gatekeeper.html 内 esc/highlight/路由）仍靠 Playwright 冒烟脚本人工触发，未进自动断言（单文件 HTML 无模块导出，抽取测试需先做结构拆分，留长期）。
+
+---
+
 ### v0.14.1（2026-10-03）：四路并行审计修复 —— XSS 属性注入 / G5 正则 O(n²) / 引擎与解析加固 / 隐私脱敏 / 文档漂移
 
 > **来源**：用户圈选审计类 skill 清单（review-agent/critique/slop-scan/spec-compliance-check/null-safety-audit/css-audit/frontend-performance/privacy-scan/security-best-practices 等），执行"先审计后修复"：4 个并行只读审计（代码质量 / 前端健壮性与性能 / 安全隐私 / 文档-实现一致性）→ 汇总 P0 0 项、P1 8 项、P2 20+ 项 → 本条集中处置。全部修复保持样例五裁决与 bench 召回零回归。
