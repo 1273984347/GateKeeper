@@ -27,6 +27,7 @@
 | **M10** | project-config ✅（真实岗位批次待做） | 已完成：声明式 project-config（版本注册表+metaMap 字段映射+adLaw/sourceHint 渠道开关+引用注册表）+ `project-check.mjs` + 三套对照配置；待做：选 1 目标岗位配 config 跑端到端真实批次 | 实用性 / 可推广 |
 | **M11** | 完整编排能力 ✅（部分） | **① `?demo=1` 工程级演示模式·零外部依赖 ✅**；**③ 多产出物批量 ✅ + ⑤ web 治理控制台 ✅**：五视图 + 五级下钻 + 换配置 diff + `sync-configs` 配置数据外置 + CI 门禁（`.github/workflows`）；② 接真实钉钉审批（业务系统发起实例→`oa approval approve/reject` 驱动）⏳；④ 结果回写知识库/日志 ⏳ | 完成度 |
 | **M12** | 推广与落地材料 | 演示脚本打磨、可推广性证据（换团队/换行业改配置即复用）、指标看板 | 综合 |
+| **M13** | 渲染层可测化（已拍板立项，W43 实施） | esc/highlight 等渲染纯函数抽到 render-core.mjs，经 sync 第三注入块进 HTML（保持单文件离线约束），`node --test` 直测渲染逻辑 | 完成度 / 可测性 |
 
 ## 4. 中期路线（产品化）
 
