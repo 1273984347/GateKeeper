@@ -39,6 +39,10 @@ prototype/
 ├── dws-bridge.mjs       裁决 → dws 命令编排（dry-run / --live 生成 dws-plan.sh）
 ├── project-check.mjs    换 project-config 体检真实文档（--compare 对照默认配置）
 ├── check-docs.mjs       提交前门禁：全部核心文档 self-config 体检，任一非可发布 exit 1
+├── tools/               开发工具（复盘报告 SK-01/03 沉淀）
+│   ├── gate.mjs         门禁一键门卫：五门禁串行+汇总+失败定位（--full 追加 bench/dry-run）
+│   ├── smoke.mjs        前端冒烟标准化：六项清单（0 error/暗色/640/toast/快捷键/粘贴）
+│   └── RELEASE-CHECKLIST.md  发布闭环检查表（9 项，周期事故反向成表）
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
 ├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）
 ├── configs/             声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）

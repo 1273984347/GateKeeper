@@ -1,0 +1,73 @@
+// smoke.mjs — SK-03 前端冒烟标准化：六项清单（复盘报告 §5 SC-03）
+// 用法：node tools/smoke.mjs [gatekeeper.html 路径]
+// 六项：①加载 0 error ②暗色 bodyBg ③640 无横向溢出 ④阻断文档 toast ⑤快捷键切视图 ⑥粘贴全链路
+// 依赖 playwright（本机全局安装）；未命中时按提示设置 NODE_PATH。
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { existsSync } from 'node:fs';
+
+const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
+const TARGET = process.argv[2] ? join(process.cwd(), process.argv[2]) : join(PROTO, 'gatekeeper.html');
+if (!existsSync(TARGET)) { console.error(`✗ 找不到被测文件：${TARGET}`); process.exit(2); }
+const URL = 'file:///' + TARGET.replace(/\\/g, '/');
+
+let chromium;
+try {
+  chromium = createRequire(import.meta.url)('playwright').chromium;
+} catch {
+  const guess = join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright');
+  try { chromium = createRequire(import.meta.url)(join(guess, 'index.js')).chromium; }
+  catch { console.error('✗ 未找到 playwright。设置 NODE_PATH 指向全局 node_modules 后重试（或 npm i -g playwright && npx playwright install chromium）。'); process.exit(2); }
+}
+
+const checks = [];
+const record = (name, ok, detail) => { checks.push({ name, ok, detail }); console.log(`${ok ? '✓' : '✗'} ${name}${detail ? '  ' + detail : ''}`); };
+
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const errors = [];
+page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+page.on('pageerror', (e) => errors.push(e.message));
+
+try {
+  // ① 加载 0 error
+  await page.goto(URL); await page.waitForTimeout(1200);
+  record('① 加载 0 error', errors.length === 0, errors.length ? errors[0].slice(0, 80) : '');
+
+  // ⑥ 粘贴全链路（在亮色/默认口径下先做，避免主题切换干扰）
+  await page.keyboard.press('/'); await page.waitForTimeout(200);
+  await page.keyboard.type('本产品全网第一，客服微信 13800001234');
+  await page.keyboard.press('Control+Enter'); await page.waitForTimeout(700);
+  const docHead = await page.evaluate(() => document.getElementById('docHead').textContent);
+  record('⑥ 粘贴全链路（/ → Ctrl+Enter → 自定义文档）', docHead.includes('自定义粘贴内容'), docHead.replace(/\s+/g, ' ').slice(0, 40));
+
+  // ⑤ 快捷键切视图
+  await page.keyboard.press('4'); await page.waitForTimeout(400);
+  const activeView = await page.evaluate(() => document.querySelector('.view.active').id);
+  record('⑤ 快捷键 4 → 配置对照视图', activeView === 'view-config', activeView);
+
+  // ④ 阻断文档 toast（明细视图选首样例 A → 提交发布审批）
+  await page.click('.vtab[data-view="inspect"]'); await page.waitForTimeout(400);
+  await page.click('#list .item:first-child'); await page.waitForTimeout(500);
+  await page.click('#btnApprove'); await page.waitForTimeout(400);
+  const toastCnt = await page.locator('.toast').count();
+  record('④ 阻断文档提交 → toast', toastCnt >= 1, `toast×${toastCnt}`);
+
+  // ② 暗色 bodyBg
+  await page.click('#btnTheme'); await page.waitForTimeout(500);
+  const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  record('② 暗色 bodyBg = rgb(19, 21, 25)', bg === 'rgb(19, 21, 25)', bg);
+
+  // ③ 640 无横向溢出
+  await page.setViewportSize({ width: 640, height: 900 }); await page.waitForTimeout(600);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  record('③ 640px 无横向溢出', !overflow, overflow ? 'scrollWidth 超出' : '');
+} catch (e) {
+  record('执行异常', false, String(e).slice(0, 120));
+}
+
+await browser.close();
+const fail = checks.filter((c) => !c.ok).length;
+console.log(`\n===== 冒烟 ${fail === 0 ? '✅ 六项全 PASS' : `❌ ${fail} 项 FAIL`} / ${checks.length} =====`);
+process.exit(fail === 0 ? 0 : 1);

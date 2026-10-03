@@ -9,6 +9,18 @@
 
 ---
 
+### v0.15.5（2026-10-04）：开发者工具 —— 门禁一键门卫 + 冒烟标准化 + 发布检查表（复盘 SK-01/03、A-02 落地）
+
+> **来源**：复盘报告（docs/工作复盘与优化分析报告-2026-10.md）W41 计划 1.1–1.3 开工：门禁一键化（SK-01）、冒烟标准化（SK-03）、发布检查表（SC-01）。
+> - **执行（SK-01）**：新建 `prototype/tools/gate.mjs`——五门禁串行+耗时汇总+失败输出尾 20 行定位，任一红 exit 1；`--full` 追加 bench/dws dry-run。实测：6 命令→1 命令，全绿合计 **0.8s**（验收目标 ≤30s）。
+> - **执行（SK-03）**：新建 `prototype/tools/smoke.mjs`——六项清单（加载 0 error/暗色 bodyBg/640 无溢出/阻断 toast/快捷键/粘贴全链路），Playwright 全局解析失败时给出安装指引。**上线首跑即抓出真 Papercut 并修复**：粘贴提交后焦点滞留 textarea，单键快捷键（1-5/T/Esc）被吞——`btnPaste` 成功路径补 `pasteTa.blur()`。
+> - **执行（SC-01）**：新建 `prototype/tools/RELEASE-CHECKLIST.md`——9 项发布闭环检查表（本周期事故反向成表，每项带命令与出处）。
+> - **文件**：prototype/tools/gate.mjs、smoke.mjs、RELEASE-CHECKLIST.md（新建）、prototype/gatekeeper.html（blur 修复）、STRUCTURE.md（tools/ 入树）、README.md（快速开始 + 版本）、交接文档.md（版本）、prototype/configs/gatekeeper-self.json（0.15.5 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 全绿 0.8s（工具自身即验收载体）；`node tools/smoke.mjs` 六项全 PASS（含修复后快捷键恢复）；`gate --check` 双门禁仍绿（blur 不涉引擎/配置块）；`check-docs` 全部核心文档可发布。
+> - **状态**：已落地。遗留（如实）：smoke 依赖全局 playwright（缺页有安装指引）；SK-02 工作流固化待所有者授权 token（W42D4）。
+
+---
+
 ### v0.15.4（2026-10-04）：过程治理 —— 工作复盘与优化分析报告入档 docs/
 
 > **来源**：用户指令按《工作复盘与优化分析系统提示词》对 v0.13.0–v0.15.3 工作周期（7 提交，+1,167/−1,853 行）做全面复盘，报告落盘 `docs/`。

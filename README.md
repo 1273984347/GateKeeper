@@ -5,7 +5,7 @@
 > Session：会话 ID 见 git 提交记录
 
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.15.4
+> **当前版本**：v0.15.5
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
 
 ![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)
@@ -76,6 +76,7 @@ node dws-bridge.mjs        # dry-run：打印将执行的真实 dws 命令 + 生
 node bench.mjs             # 省时实测：召回/误报/耗时 → output/bench-report.md
 node real-batch-audit.mjs --config audit-configs/xiyouji.json --glob "<真实文档目录>/**/*.md"  # 真实批次体检（--config 与 --glob/文件列表必填）→ output/real-batch-*.md
 node check-docs.mjs        # 提交前门禁：全部核心文档 self-config 体检，任一非「可发布」exit 1
+node tools/gate.mjs        # ↑五门禁一键串行+汇总（--full 追加 bench/dry-run）；node tools/smoke.mjs 跑前端冒烟六项
 # 打开 gatekeeper.html 看治理控制台（总览/明细/编排/配置对照/趋势 五视图 + 五级下钻）；加 ?demo=1 进离线演示模式
 # --live 真实落地须由千问办公 Agent 直接调用 dws（见 README-DWS.md）
 ```
