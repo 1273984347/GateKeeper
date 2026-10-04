@@ -10,6 +10,7 @@
 ```
 GateKeeper/
 ├── README.md            项目门面（双读者：使用者 / 接手 Agent）
+├── CLAUDE.md            AI 代理速查（8 条必守/常用命令/环境注意；M14-T3，已入 check-docs CORE_DOCS）
 ├── DESIGN.md            设计方案（设计层：目标/架构/门禁契约/视觉/数据模型/取舍）
 ├── UI升级方案.md         界面美化升级规格（量化验收/设计令牌/自检结论）
 ├── Web端可扩展改造方案.md  web 端三层治理控制台改造规格（四痛点/分期/风险/待拍板）
@@ -45,7 +46,8 @@ prototype/
 ├── tools/               开发工具（复盘报告 SK-01/03 沉淀）
 │   ├── gate.mjs         门禁一键门卫：五门禁串行+汇总+失败定位（--full 追加 bench/dry-run）
 │   ├── smoke.mjs        前端冒烟标准化：六项清单（0 error/暗色/640/toast/快捷键/粘贴）
-│   └── RELEASE-CHECKLIST.md  发布闭环检查表（9 项，周期事故反向成表）
+│   ├── RELEASE-CHECKLIST.md  发布闭环检查表（10 项，周期事故反向成表；第 10 项=视觉验收）
+│   └── VISUAL-ACCEPTANCE.md  视觉验收闭环（五步/验收 Prompt 模板/像素采样；M14-T1，UI 变更必走）
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
 ├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）
 ├── configs/             声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）

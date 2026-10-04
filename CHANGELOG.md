@@ -9,6 +9,18 @@
 
 ---
 
+### v0.17.0（2026-10-04）：M14 内部协作仓经验移植 —— 视觉验收闭环 + 雷区结构化 + AI 速查层
+
+> **来源**：用户复盘"查看 (本地路径) 有哪些值得学习参考借鉴的地方"后拍板的 M14（规格见 [内部协作仓经验移植方案.md](../内部协作仓经验移植方案.md)，当日立项当日落地）。移植方法=逐项对照 GateKeeper 现状：已有机制（正向红线/单一事实源/四件套）明确不移植，只立经核实的 3 个缺口（T1 视觉验收闭环 / T2 雷区结构化 / T3 AI 速查层）。
+> - **执行（T1）**：新建 `prototype/tools/VISUAL-ACCEPTANCE.md`——四要素（五步闭环定义/验收 Prompt 模板/像素采样法含 reduced_motion 仿真/三道关分工：smoke 运行时行为→UI升级方案 §7 设计规格→本闭环视觉判定）；RELEASE-CHECKLIST 追加第 10 项"视觉验收闭环"；试运行留证：控制台三档截图（1280/640/暗色）逐页判定 3 pass、must_fix 空（`output/visual-accept-trial.md`）。
+> - **执行（T2）**：交接文档「六、已知雷区」结构化为 7 列登记表——存量 4 条零丢失迁移 + 新增 6 条逐条实证出处（goView 复位吞粘贴 v0.14.0／粘贴焦点滞留 v0.15.5／门禁盲区假绿 v0.15.6／管道吞退出码 d540b1c／G2 版本正则误判测量值 v0.10.0／nul 保留名卡 add v0.15.1）；「四、待办事项」勾选清单转表格并增"触发/解锁条件"列（15 行全保留）。
+> - **执行（T3）**：新增根目录 `CLAUDE.md`（42 行：8 条必守规则带"详见"权威指针 / 常用命令 / 环境注意逐条实证——Playwright 须全局 NODE_PATH 经有/无对照实测证实）并纳入 check-docs CORE_DOCS（6→7 文档：新文档进门禁覆盖面，防"全绿"声明过期）。
+> - **文件**：prototype/tools/VISUAL-ACCEPTANCE.md（新建）、tools/RELEASE-CHECKLIST.md、output/visual-accept-trial.md（新建）、交接文档.md、CLAUDE.md（新建）、prototype/check-docs.mjs、ROADMAP.md、STRUCTURE.md、README.md、prototype/configs/gatekeeper-self.json（0.17.0 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 七门禁全绿（check-docs 扫描 7 核心文档含 CLAUDE.md）；T1 试运行 3 页 pass/0 must_fix；T2 雷区表 10 行出处 100% 可回查、存量信息零丢失；T3 CLAUDE.md 42 行 ≤60、规则指针逐条命中、NODE_PATH 对照实测通过。
+> - **状态**：已落地。M14 四 commit：437c841 立项 / 2b828ca T1 / cf639ea T2 / 21a112c T3。非目标守住：gates.mjs 引擎零改动、gatekeeper.html 零改动、零新增依赖。遗留（如实）：试运行记录的 3 条轻微视觉瑕疵（环形图中心副标题与描边轻微叠压、640 档栅格换行留空）未修——非阻断，留作下次 UI 迭代的「本轮修复点」输入。
+
+---
+
 ### v0.16.0（2026-10-04）：M13 渲染层可测化 —— 渲染纯函数单一事实源第三链 + node 单测
 
 > **来源**：复盘 A-04 拍板立项为 M13（W43 实施）。「渲染层逻辑只能靠 Playwright 冒烟事后验证」的结构性缺口收敛：esc/highlight/scoreColor 抽为纯函数模块，node:test 直测。
