@@ -54,7 +54,9 @@ prototype/
 │   ├── doc-sync.mjs      文档口径体检：代码真值反拍文档当前态声明（M15-T1，门序列第八门；--json 供 CI）
 │   ├── test-docsync.mjs  doc-sync 纯函数自测 36 例（正反例含豁免标记）
 │   ├── lint-links.mjs    全仓链接体检：站内存在性+越仓即红（M16-T1，门序列第九门；行级豁免标记）
-│   └── test-lint-links.mjs lint-links 纯函数自测 15 例
+│   ├── test-lint-links.mjs lint-links 纯函数自测 15 例
+│   ├── lint-workspace.mjs 工作区体检：垃圾文件/STRUCTURE 树声明/gitignore 覆盖（门序列第十门）
+│   └── test-lint-workspace.mjs lint-workspace 纯函数自测 13 例
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
 ├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）
 ├── configs/             声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）
@@ -65,12 +67,16 @@ prototype/
 ├── README-DWS.md        DWS 接入指南与执行模型
 ├── 人工实测对照表.md      人工审核耗时对照实测表（human-baseline 采集器的纸质兜底与判分口径）
 ├── screenshots/         UI 截图（Playwright 真实截图，非 AI 生成；README 配图出处，共 11 张）
-│   ├── ui-1280/1024/640.png  控制台三档响应式全页
-│   ├── ui-light / ui-dark.png  明暗主题（demo 模式）
+│   ├── ui-1280.png      控制台桌面全页（1280 档）
+│   ├── ui-1024.png      控制台 1024 档
+│   ├── ui-640.png       控制台移动全页（640 档）
+│   ├── ui-light.png     明暗主题亮色（demo 模式）
+│   ├── ui-dark.png      明暗主题暗色（demo 模式）
 │   ├── 01-dashboard.png 批次健康环 · 02-gates-A.png 六道门禁明细（G4 亮红）· 02a-verdict.png 单份裁决条 · 03-dws-E.png DWS 编排链
-│   └── ui-*-font.png    衬线字体嵌入验证截图（M8.2 存档）
+│   ├── ui-light-font.png 衬线字体亮色嵌入验证（M8.2 存档）
+│   └── ui-dark-font.png  衬线字体暗色嵌入验证（M8.2 存档）
 └── output/              运行产物（可由脚本重生成）
-    ├── accept-A..E.md   每份验收报告（doc create 归档正文）
+    ├── accept-A..E.md   每份验收报告（doc create 归档正文） <!--lint-workspace:exempt 区间记法非字面路径，实存 accept-A.md~accept-E.md 共 5 份-->
     ├── gate-report.json 批次裁决汇总
     ├── dws-plan.sh      生成的 dws 执行计划
     ├── live-evidence.md 真实 DWS 落地回执（含端到端计时锚点）· demo 模式结果态数据源

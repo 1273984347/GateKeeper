@@ -9,6 +9,15 @@
 
 ---
 
+### v0.19.1（2026-10-05）：工作区体检 lint-workspace —— 文件清单漂移防线（门序列第十门）
+
+> **来源**：M16 review 提出文件清单漂移缺口（nul 卡 add 人工查/内部协作仓 pyc 扫入邻仓事故/STRUCTURE 纯手工无核对），用户拍板方案 A（轻量三查，否决大白名单制）。
+> - **执行**：新建 `prototype/tools/lint-workspace.mjs` 三查——①未跟踪垃圾（git status `??` 条目命中 10 类垃圾模式）；②STRUCTURE 树声明→存在（单向核对，围栏裸根标签语义+`<!--lint-workspace:exempt-->` 行级豁免）；③.gitignore 覆盖探针（10 代表路径 git check-ignore）；+ `tools/test-lint-workspace.mjs` 13 例；门序列九→十门 + CI + CLAUDE 常用命令。
+> - **首跑 53 FAIL 全处置**：STRUCTURE 三行压缩/通配写法（7 个真实截图文件被 3 行替代）展开为逐文件条目；accept-A..E.md 区间记法豁免保记法；.gitignore 补 7 类覆盖。解析器修 3 bug（裸根标签未入栈/8 字符缩进深度公式/根标签同名仓库根特判），留证 `output/lint-workspace-first-run.md`。
+> - **文件**：prototype/tools/lint-workspace.mjs（新建）、tools/test-lint-workspace.mjs（新建）、tools/gate.mjs（十门）、.github/workflows/gatekeeper.yml、CLAUDE.md、STRUCTURE.md、.gitignore、output/lint-workspace-first-run.md（新建）、prototype/configs/gatekeeper-self.json（0.19.1 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 十门全绿；test-lint-workspace 13/13；真文件负样本——gitignore 注释+debug.log 双层齐抓 exit 1/还原 exit 0，mv 已声明文件 STRUCTURE 缺失 exit 1/还原 exit 0。
+> - **状态**：已落地。遗留（如实）：①未跟踪非垃圾 WIP 文件为 INFO 不阻断（工作属性使然）；②docs/ 子目录（方法论/档案）未逐文件入树声明，第十门只核对到 docs/ 目录层。
+
 ### v0.19.0（2026-10-05）：M16 西游记经验移植 —— 链接体检 + 禁改契约 + 启动Prompt + 方法论文档化 + 改动面审计
 
 > **来源**：用户拍板"全部都可做"（五项全移），方案《西游记经验移植方案.md》当日立项当日落地。源仓=详解西游记（本仓方法论祖仓），此为第三轮跨仓移植（M14 内部协作仓、M15 竞赛、M16 西游记）。

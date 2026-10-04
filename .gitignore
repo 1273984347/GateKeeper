@@ -5,3 +5,12 @@ dws-plan.local.sh
 node_modules/
 .DS_Store
 Thumbs.db
+
+# 垃圾文件防线（lint-workspace 探针清单）
+nul
+*.log
+*.tmp
+*.pyc
+*.pyo
+__pycache__/
+desktop.ini
