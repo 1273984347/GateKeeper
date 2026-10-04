@@ -9,6 +9,18 @@
 
 ---
 
+### v0.19.0（2026-10-05）：M16 西游记经验移植 —— 链接体检 + 禁改契约 + 启动Prompt + 方法论文档化 + 改动面审计
+
+> **来源**：用户拍板"全部都可做"（五项全移），方案《西游记经验移植方案.md》当日立项当日落地。源仓=详解西游记（本仓方法论祖仓），此为第三轮跨仓移植（M14 内部协作仓、M15 竞赛、M16 西游记）。
+> - **执行（T1 lint-links）**：新建 `prototype/tools/lint-links.mjs`（git ls-files 只扫跟踪文件；md/HTML 站内链接存在性、`../` 越仓即红、`lint-links:exempt` 行级豁免）+ `tools/test-lint-links.mjs` 15 例 + 门序列八→九门 + CI。**首跑 6 FAIL 全为例证非真断链**：CHANGELOG v0.12.1 段"G1 假阳性案例"历史引文（当年被误判的链接样子被新门禁再抓出，豁免保原文）+ 本方案自身规格示例 3 行（讲检查器的文档触发检查器）；站内实检 46 条零真实断链；负样本断链/越仓 exit1→还原 exit0。
+> - **执行（T2 禁改契约）**：AGENTS.md 新「禁改清单」（7 对象带误改后果与例外通道）与「治理文档维护契约」（结构性编辑/就地替换去重/状态即时更新/150 行膨胀警戒/冲突序五条）；CLAUDE.md 必守第 11 条。
+> - **执行（T3 启动Prompt）**：新建《新Agent启动Prompt.md》（39 行五段骨架 payload）+ 纳入 CORE_DOCS（8→9）；**落地即被 check-docs 实拦一次**——元信息块加粗合并行不被 `> 键：值` 提取契约识别（G6 P1），改三行逐行格式并记入 SOP-4 第 5 步（提取契约成文）。
+> - **执行（T4 方法论文档化）**：新建 docs/方法论/ 8 篇四段式（来源事故/规则/验证方法/出处，出处含 commit hash 与雷区编号可回查）+ 索引 README；交接文档「三」9 条带锚点（6 既有 + 3 新条）。
+> - **执行（T5 改动面审计）**：CLAUDE.md 必守第 12 条 + 启动 Prompt 同步 12 条 + AGENTS「变更与版本约定」锚定；**验收实证一次**：注入垃圾行 → `git diff --name-only` 捕获 → restore 回退后 0 残留。
+> - **文件**：prototype/tools/lint-links.mjs（新建）、tools/test-lint-links.mjs（新建）、tools/gate.mjs（九门）、.github/workflows/gatekeeper.yml、check-docs.mjs（CORE_DOCS 8→9）、新Agent启动Prompt.md（新建）、docs/方法论/（新建 9 文件）、AGENTS.md、CLAUDE.md、STRUCTURE.md、交接文档.md、output/lint-links-first-run.md（新建）、ROADMAP.md、西游记经验移植方案.md、prototype/configs/gatekeeper-self.json（0.19.0 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 九门全绿；lint-links 0 FAIL + 断链/越仓负样本必红恢复必绿（退出码直取）；test-lint-links 15/15；check-docs 九文档全绿（Prompt 的 G6 实拦→修复→转绿闭环）；改动面审计实证 0 残留。
+> - **状态**：已落地。M16 六 commit：d4d1bae 立项 / ef25b17 T1 / 2f7f490 T2 / 7156af3 T3 / 8df7e73 T4 / dd8c0d1 T5。遗留（如实）：①lint-links v1 不做外链探测与 --fix；②docs/方法论 不入 CORE_DOCS（受链接体检覆盖）；③CI 纯文档提交不触发（paths 设计），由本地九门覆盖。
+
 ### v0.18.0（2026-10-05）：M15 竞赛经验移植 —— 文档口径体检 + verify 自洽锁 + 批次编号对齐表
 
 > **来源**：用户 userselect 拍板移植竞赛仓三项治理机制（doc-sync 口径体检 > GATE_TOTAL 自洽锁 > 批次编号对齐表），方案《竞赛经验移植方案.md》当日立项当日落地。方向说明：竞赛仓 M104 已从本仓移植治理模式（其 CLAUDE.md 第 11 条即本仓写作纪律），本批为反向回流第一轮。

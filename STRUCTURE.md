@@ -10,8 +10,9 @@
 ```
 GateKeeper/
 ├── README.md            项目门面（双读者：使用者 / 接手 Agent）
-├── CLAUDE.md            AI 代理速查（10 条必守/常用命令/环境注意；M14-T3 立项、M15-T3 增第 10 条，已入 check-docs CORE_DOCS）
-├── AGENTS.md            维护者操作手册（SOP-1..5 标准流程：引擎/发布/视觉/文档/接手；已入 CORE_DOCS）
+├── CLAUDE.md            AI 代理速查（12 条必守/常用命令/环境注意；M14-T3 立项、M15-T3 第 10 条、M16-T2/T5 第 11/12 条，已入 CORE_DOCS）
+├── AGENTS.md            维护者操作手册（SOP-1..5 + 禁改清单 + 治理文档维护契约；已入 CORE_DOCS）
+├── 新Agent启动Prompt.md  跨工具/人工操作场景的可复制 payload（五段骨架；M16-T3，已入 CORE_DOCS）
 ├── DESIGN.md            设计方案（设计层：目标/架构/门禁契约/视觉/数据模型/取舍）
 ├── UI升级方案.md         界面美化升级规格（量化验收/设计令牌/自检结论）
 ├── Web端可扩展改造方案.md  web 端三层治理控制台改造规格（四痛点/分期/风险/待拍板）
@@ -21,7 +22,7 @@ GateKeeper/
 ├── STRUCTURE.md         本文件
 ├── 配置切换Demo.md       三配置三结论可推广性 demo + 介绍话术
 ├── .github/workflows/   gatekeeper.yml —— CI 门禁（漂移双检 + verify + check-docs + project-check）
-├── docs/                过程治理文档（时点分析快照如工作复盘报告；档案/批次编号对齐表=M15-T3 并发会话对账唯一依据）
+├── docs/                过程治理文档（时点分析快照如工作复盘报告；档案/批次编号对齐表=M15-T3 对账唯一依据；方法论/=M16-T4 经验文档库 8 篇）
 └── prototype/           可运行原型与编排
 ```
 
@@ -50,7 +51,9 @@ prototype/
 │   ├── RELEASE-CHECKLIST.md  发布闭环检查表（10 项，周期事故反向成表；第 10 项=视觉验收）
 │   ├── VISUAL-ACCEPTANCE.md  视觉验收闭环（五步/验收 Prompt 模板/像素采样；M14-T1，UI 变更必走）
 │   ├── doc-sync.mjs      文档口径体检：代码真值反拍文档当前态声明（M15-T1，门序列第八门；--json 供 CI）
-│   └── test-docsync.mjs  doc-sync 纯函数自测 36 例（正反例含豁免标记）
+│   ├── test-docsync.mjs  doc-sync 纯函数自测 36 例（正反例含豁免标记）
+│   ├── lint-links.mjs    全仓链接体检：站内存在性+越仓即红（M16-T1，门序列第九门；行级豁免标记）
+│   └── test-lint-links.mjs lint-links 纯函数自测 15 例
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
 ├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）
 ├── configs/             声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）
