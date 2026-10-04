@@ -4,7 +4,7 @@
 
 | # | 检查项 | 命令/动作 | 本次事故出处 |
 |---|---|---|---|
-| 1 | 五道门禁全绿 | `node tools/gate.mjs`（或 `--full`） | P-01/P-02 |
+| 1 | 全量门禁全绿 | `node tools/gate.mjs`（或 `--full`） | P-01/P-02 |
 | 2 | CHANGELOG 四件套（来源/执行/文件/验证），「文件」行与 `git show --stat` 对齐 | 通读新条目 | v0.15.0 漏列 gatekeeper.html |
 | 3 | 版本三处一致：CHANGELOG 顶部 = README 抬头 = 交接文档「一」 | `grep -n "当前版本\|**版本" README.md 交接文档.md` | P-12（第 4 次改A漏B） |
 | 4 | 版本三段式 `vX.Y.Z`（禁 `vX.Y.x`），registry currentVersion+versions 已登记 | grep 新版本号 | P-02（check-docs 拦过 2 次） |

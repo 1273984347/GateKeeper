@@ -45,7 +45,7 @@ prototype/
 ├── project-check.mjs    换 project-config 体检真实文档（--compare 对照默认配置）
 ├── check-docs.mjs       提交前门禁：全部核心文档 self-config 体检，任一非可发布 exit 1
 ├── tools/               开发工具（复盘报告 SK-01/03 沉淀）
-│   ├── gate.mjs         门禁一键门卫：五门禁串行+汇总+失败定位（--full 追加 bench/dry-run）
+│   ├── gate.mjs         门禁一键门卫：全量门禁串行+汇总+失败定位（--full 追加 bench/dry-run；项数以源内 gates 数组为准）
 │   ├── smoke.mjs        前端冒烟标准化：六项清单（0 error/暗色/640/toast/快捷键/粘贴）
 │   ├── RELEASE-CHECKLIST.md  发布闭环检查表（10 项，周期事故反向成表；第 10 项=视觉验收）
 │   └── VISUAL-ACCEPTANCE.md  视觉验收闭环（五步/验收 Prompt 模板/像素采样；M14-T1，UI 变更必走）

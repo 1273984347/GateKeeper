@@ -1,6 +1,7 @@
 // gate.mjs — SK-01 门禁一键门卫：串行跑全链门禁，任一红即 exit 1（复盘报告 §7 A-01）
 // 用法：node tools/gate.mjs [--full]    （--full 追加 bench 与 dws-bridge dry-run）
-// 五门禁 = 漂移双检（sync-gates/sync-configs --check）+ verify 回归红线 + 引擎单测 + check-docs 文档体检
+// 全量门禁 = 漂移三检（sync-gates/sync-configs/sync-render --check）+ verify 回归红线 + 引擎单测
+//          + 语法检查 + check-docs 文档体检 + doc-sync 文档口径体检（项数以源内 gates 数组为准）
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -16,6 +17,7 @@ const gates = [
   { name: '引擎单测 node --test（引擎+渲染）', cmd: ['node', '--test', 'gates.test.mjs', 'render-core.test.mjs'] },
   { name: '语法检查 node --check 全部 .mjs', cmd: ['node', 'tools/syntax-check.mjs'] },
   { name: '核心文档体检 check-docs', cmd: ['node', 'check-docs.mjs'] },
+  { name: '文档口径体检 doc-sync', cmd: ['node', 'tools/doc-sync.mjs'] },
   ...(FULL ? [
     { name: '省时实测 bench', cmd: ['node', 'bench.mjs'] },
     { name: 'DWS 编排 dry-run', cmd: ['node', 'dws-bridge.mjs'] },

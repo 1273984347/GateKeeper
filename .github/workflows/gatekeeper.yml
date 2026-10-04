@@ -37,6 +37,8 @@ jobs:
         run: node --test render-core.test.mjs
       - name: 核心治理文档体检（全部核心文档，任一非「可发布」exit 1）
         run: node check-docs.mjs
+      - name: 文档口径体检（代码真值 → 文档当前态声明，任一漂移 exit 1）
+        run: node tools/doc-sync.mjs
       # informational：换配置能力演示（xiyouji 口径代跑根文档），失败不作红线——红线在 verify/check-docs
       - name: 换配置体检演示（informational）
         run: node project-check.mjs --config configs/xiyouji.json ../README.md ../DESIGN.md ../CHANGELOG.md --compare || true
