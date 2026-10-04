@@ -13,5 +13,6 @@
 | 7 | 无 `nul` 垃圾文件（Windows 保留名卡 git add） | `ls nul 2>/dev/null` | v0.15.1 提交受阻 |
 | 8 | 行尾 LF（.gitattributes eol=lf，批量写文件后归一化） | `grep -qU $'\r' <改动文件>` | v0.13.0 CRLF 警告 |
 | 9 | 工作区干净、提交信息规范（`type(scope): 描述 (vX.Y.Z)`） | `git status --short` | — |
+| 10 | 视觉验收闭环（涉及 UI/截图变更时）：渲染→逐页判定→修复→复检→像素采样五步走完，判定 JSON 落 `output/visual-accept-*.md` | 按 [VISUAL-ACCEPTANCE.md](VISUAL-ACCEPTANCE.md) 执行；纯后端/纯文档改动可豁免并注明 | M14-T1 立项（闭环缺口，无单次事故） |
 
 **每条修复的附加项**（安全/逻辑修复时）：针对性冒烟 PoC 复现→修复→复测 3/3 通过（E-02）；修复声明由未参与修复的代理复核（E-03）。
