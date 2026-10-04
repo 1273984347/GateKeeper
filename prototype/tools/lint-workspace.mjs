@@ -12,7 +12,7 @@
  *       node tools/lint-workspace.mjs --check
  *       node tools/lint-workspace.mjs --json
  */
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join, resolve, dirname as pd } from 'node:path';
@@ -108,7 +108,7 @@ function main() {
 
   // 2) STRUCTURE 树声明 → 存在
   const structText = readFileSync(join(ROOT, 'STRUCTURE.md'), 'utf8');
-  const r = parseStructureTree(structText);
+  const r = parseStructureTree(structText, existsSync, 'GateKeeper');
   sources.declaredPaths = r.declared.length;
   for (const miss of r.missing) fail('STRUCTURE 声明缺失', `${miss}（树中声明但仓库不存在——移动/删除后未同步 STRUCTURE）`);
 
