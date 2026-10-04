@@ -11,7 +11,7 @@ const ROOT = dirname(PROTO);
 // 权威核心文档清单（新增/删除核心文档时改这里；与 STRUCTURE.md、CHANGELOG 口径对齐）
 const CORE_DOCS = [
   'README.md', 'DESIGN.md', 'ROADMAP.md', '交接文档.md',
-  'STRUCTURE.md', '配置切换Demo.md', 'CLAUDE.md', 'AGENTS.md',
+  'STRUCTURE.md', '配置切换Demo.md', 'CLAUDE.md', 'AGENTS.md', '新Agent启动Prompt.md',
 ];
 const CONFIG = join('configs', 'gatekeeper-self.json');
 
