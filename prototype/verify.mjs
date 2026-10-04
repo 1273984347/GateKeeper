@@ -10,7 +10,10 @@ const dir = dirname(fileURLToPath(import.meta.url));
 const D = JSON.parse(readFileSync(join(dir, 'configs/batches.sample.json'), 'utf8'));
 const cfgOf = (ref) => (ref ? makeConfig(JSON.parse(readFileSync(join(dir, 'configs', ref + '.json'), 'utf8'))) : undefined);
 const fails = [];
-const ok = (label, cond, detail) => { console.log(`${cond ? '✓' : '✗'} ${label}${detail ? '  ' + detail : ''}`); if (!cond) fails.push(label); };
+// 自洽锁（M15-T2）：声明断言总数须与实际 ok() 执行数一致，增删断言不同步本常量即「实跑≠声明」exit 1
+const VERIFY_TOTAL = 12;
+let ran = 0;
+const ok = (label, cond, detail) => { ran++; console.log(`${cond ? '✓' : '✗'} ${label}${detail ? '  ' + detail : ''}`); if (!cond) fails.push(label); };
 
 // 1) 样例批回归红线：环 50 / 6P0 / 9P1 / 8P2(含P3) / 1 可发布 / A 阻断0分4×P0 / E 可发布100
 const sample = D.projects.find((p) => p.id === 'sample');
@@ -43,6 +46,14 @@ ok('换配置抑制 G4（默认>0 → 项目=0）', g4b > 0 && g4c === 0, `${g4b
 // 3) 引擎契约不变：六道门禁 ID 稳定
 const ids = docs[0].gates.map((g) => g.id).join(',');
 ok('六道门禁 ID = G1..G6', ids === 'G1,G2,G3,G4,G5,G6', ids);
+
+// 4) 自洽锁：实跑断言数 == 声明 VERIFY_TOTAL（本检查不计入 ran，避免自指）
+if (ran !== VERIFY_TOTAL) {
+  console.log(`✗ 自洽：实跑断言数 ${ran} ≠ 声明 VERIFY_TOTAL ${VERIFY_TOTAL}（增删 ok() 未同步常量）`);
+  fails.push(`实跑断言数 ${ran} ≠ 声明 VERIFY_TOTAL ${VERIFY_TOTAL}`);
+} else {
+  console.log(`✓ 自洽：实跑断言数 = 声明 VERIFY_TOTAL = ${VERIFY_TOTAL}`);
+}
 
 console.log(fails.length ? `\n✗ 验收失败 ${fails.length} 项：${fails.join(' / ')}` : '\n✅ 全部红线通过');
 process.exit(fails.length ? 1 : 0);
