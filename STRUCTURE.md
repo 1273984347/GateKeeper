@@ -22,6 +22,7 @@ GateKeeper/
 ├── STRUCTURE.md         本文件
 ├── 配置切换Demo.md       三配置三结论可推广性 demo + 介绍话术
 ├── .github/workflows/   gatekeeper.yml —— CI 门禁（漂移双检 + verify + check-docs + project-check）
+├── .agents/skills/      项目技能 4 个（gk-release/gk-port/gk-review/gk-newgate；M16 review 移植内部协作仓 .agents 模式）
 ├── docs/                过程治理文档（时点分析快照如工作复盘报告；档案/批次编号对齐表=M15-T3 对账唯一依据；方法论/=M16-T4 经验文档库 8 篇）
 └── prototype/           可运行原型与编排
 ```
