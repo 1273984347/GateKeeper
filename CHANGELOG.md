@@ -9,6 +9,16 @@
 
 ---
 
+### v0.18.0（2026-10-05）：M15 竞赛经验移植 —— 文档口径体检 + verify 自洽锁 + 批次编号对齐表
+
+> **来源**：用户 userselect 拍板移植竞赛仓三项治理机制（doc-sync 口径体检 > GATE_TOTAL 自洽锁 > 批次编号对齐表），方案《竞赛经验移植方案.md》当日立项当日落地。方向说明：竞赛仓 M104 已从本仓移植治理模式（其 CLAUDE.md 第 11 条即本仓写作纪律），本批为反向回流第一轮。
+> - **执行（T1 doc-sync）**：新建 `prototype/tools/doc-sync.mjs`——机器读代码真值（registry 版本 / gate.mjs 门数 / node --test 单测数 / CORE_DOCS 清单从 check-docs.mjs 源码运行时解析、解析失败即 FAIL）反向对拍文档当前态声明；四规则=三类版本当前态句 + 陈旧门数词（五门禁恒过期）+「N 门全绿」+「测试 N 例」；`<!--doc-sync:exempt-->` 行级豁免标记承载"历史不改写"；+ `tools/test-docsync.mjs` 自测 36 例；接入门序列（七→八门）与 CI。**首跑抓出 9 处"五门禁"存量漂移**（方案盘点 7 处——门禁比人工盘点全）：8 处改写为引用式当前态、历史时点事实打豁免标记（`output/doc-sync-first-run.md` 留证）；负样本：README 版本行改 v0.17.1 → exit 1 点名、还原 exit 0。
+> - **执行（T2 自洽锁）**：verify.mjs 增 `VERIFY_TOTAL=12` + ok() 计数 + 实跑≠声明即红；**落地即抓出 gate.mjs 标签"verify（13 项）"漂移并修正（实为 12）**；既有 12 项断言逐字未动（样例五裁决 A0/B49/C17/D84/E100 零变化）；负样本：注释一条断言 →「实跑 11 ≠ 声明 12」exit 1、恢复 exit 0。
+> - **执行（T3 对齐表）**：新建 `docs/档案/批次编号对齐表.md`——M1..M15 全行回填、hash 逐行 git 实证；**如实标注历史事实：仓库共 33 提交，M1–M8.2 时期无逐版提交、压缩入基线快照 3c01179**；规则三句（登记认领/不另起编号/不改他方行）+ CLAUDE.md 必守第 10 条 + AGENTS.md「变更与版本约定」对账锚定。
+> - **文件**：prototype/tools/doc-sync.mjs（新建）、tools/test-docsync.mjs（新建）、tools/gate.mjs、tools/RELEASE-CHECKLIST.md、.github/workflows/gatekeeper.yml、verify.mjs、README.md、CLAUDE.md、AGENTS.md、STRUCTURE.md、交接文档.md、docs/档案/批次编号对齐表.md（新建）、output/doc-sync-first-run.md（新建）、ROADMAP.md、竞赛经验移植方案.md、prototype/configs/gatekeeper-self.json（0.18.0 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 八门全绿（doc-sync 门 314ms）；test-docsync 36/36；doc-sync 0 FAIL + 负样本必红恢复必绿（退出码直取；R-08 管道吞退出码在落地当天复发两次、均已直取重取并入留证文件）；verify 负样本 11≠12 必红；对齐表 hash 逐行回查成立。
+> - **状态**：已落地。M15 四 commit：860856a 立项 / 86beaa8 T1 / f6328de T2 / f6c4056 T3。遗留（如实）：①doc-sync 单测句式规则当前"武装待命"（受检文档暂无「测试 N 例」当前态句）；②M12 尚未立项、编号保留；③CI 对纯文档提交不触发（paths 过滤设计如此），doc-sync 由本地八门覆盖。
+
 ### v0.17.2（2026-10-04）：CLAUDE.md 增必守规则第 9 条 —— 写作可验证纪律成文
 
 > **来源**：用户拍板"只加 CLAUDE.md"——把项目一贯执行的写作标准（从实际情况出发/表述明确具体/消除模糊措辞/可量化可验证/跨 Agent 与跨 session 读者无需额外解释）从口头纪律固化为必守规则。放置位置经三层分工论证：always-on 写作纪律归速查层（宿主自动加载，动笔即在上下文），不复制进 AGENTS.md（SOP 操作层），防双头漂移——单一事实源，其他文件按需锚定引用。
