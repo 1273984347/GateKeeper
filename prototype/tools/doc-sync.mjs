@@ -48,9 +48,9 @@ export function parseGateCount(src) {
   return n > 0 ? n : null;
 }
 
-/** 从 node --test 输出解析总测试数（tap「# tests N」或 spec「ℹ tests N」） */
+/** 从 node --test 输出解析总测试数（tap「# tests N」或任意行尾「tests N」形如 spec 报告） */
 export function parseTapTests(out) {
-  const m = out.match(/^#\s*tests\s+(\d+)/m) || out.match(/ℕ?\s*tests\s+(\d+)/) || out.match(/tests\s+(\d+)$/m);
+  const m = out.match(/^#\s*tests\s+(\d+)/m) || out.match(/tests\s+(\d+)$/m);
   return m ? Number(m[1]) : null;
 }
 
@@ -132,7 +132,6 @@ else {
     const abs = join(ROOT, rel);
     if (!existsSync(abs)) { fail(rel, 0, '缺文件', 'CORE_DOCS 声明的文档不存在', ''); continue; }
     const text = readFileSync(abs, 'utf8');
-    const lines = () => text;
 
     // 版本当前态（仅三类句式各归其文件；CHANGELOG 取最新段标题）
     if (rel === 'README.md' || rel === '交接文档.md' || rel === 'CHANGELOG.md') {
