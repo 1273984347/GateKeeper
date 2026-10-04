@@ -9,6 +9,14 @@
 
 ---
 
+### v0.17.1（2026-10-04）：新增 AGENTS.md 操作手册层 —— SOP-1..5 标准流程固化
+
+> **来源**：用户指令"增加 AGENTS.md"。M14 已移植速查层（CLAUDE.md）与雷区登记制（交接文档「六」），本条补齐内部协作仓模式的第三层——把散落在方法论沉淀/雷区出处/发布检查表里的周期性操作固化为编号 SOP。三层分工定稿：CLAUDE.md=速查 / AGENTS.md=操作 / 交接文档=状态与方法论。
+> - **执行**：①新建根目录 `AGENTS.md`——SOP-1 改引擎规则 / SOP-2 版本发布 / SOP-3 UI 视觉变更 / SOP-4 治理文档新增 / SOP-5 新 session 接手，每条带出处锚点（雷区编号/检查表行号/commit hash），只锚定不复制既有内容；②纳入 check-docs CORE_DOCS（7→8 文档）；③STRUCTURE 顶层树、交接文档「五」文件索引、CLAUDE.md「接手导航」三处同步登记。
+> - **文件**：AGENTS.md（新建）、prototype/check-docs.mjs、STRUCTURE.md、CLAUDE.md、交接文档.md、README.md、prototype/configs/gatekeeper-self.json（0.17.1 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 七门禁全绿（check-docs 扫描 8 核心文档含 AGENTS.md）；SOP 出处逐条回查真实（R-01/R-05/R-06/R-08、RELEASE-CHECKLIST 第 10 项、commit e4af608）；registry 改后 sync-configs 重注入，--check 绿（SOP-2 第 2 步自证）。
+> - **状态**：已落地。命名采用跨工具通行的 AGENTS.md 拼法（与内部协作仓仓一致；用户指令字面为"AGENT.md"）。
+
 ### v0.17.0（2026-10-04）：M14 内部协作仓经验移植 —— 视觉验收闭环 + 雷区结构化 + AI 速查层
 
 > **来源**：用户复盘"查看 (本地路径) 有哪些值得学习参考借鉴的地方"后拍板的 M14（规格见 [内部协作仓经验移植方案.md](内部协作仓经验移植方案.md)，当日立项当日落地）。移植方法=逐项对照 GateKeeper 现状：已有机制（正向红线/单一事实源/四件套）明确不移植，只立经核实的 3 个缺口（T1 视觉验收闭环 / T2 雷区结构化 / T3 AI 速查层）。
