@@ -18,6 +18,7 @@ const gates = [
   { name: '语法检查 node --check 全部 .mjs', cmd: ['node', 'tools/syntax-check.mjs'] },
   { name: '核心文档体检 check-docs', cmd: ['node', 'check-docs.mjs'] },
   { name: '文档口径体检 doc-sync', cmd: ['node', 'tools/doc-sync.mjs'] },
+  { name: '全仓链接体检 lint-links', cmd: ['node', 'tools/lint-links.mjs'] },
   ...(FULL ? [
     { name: '省时实测 bench', cmd: ['node', 'bench.mjs'] },
     { name: 'DWS 编排 dry-run', cmd: ['node', 'dws-bridge.mjs'] },

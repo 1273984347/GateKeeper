@@ -39,6 +39,8 @@ jobs:
         run: node check-docs.mjs
       - name: 文档口径体检（代码真值 → 文档当前态声明，任一漂移 exit 1）
         run: node tools/doc-sync.mjs
+      - name: 全仓链接体检（站内链接存在性，越仓/断链 exit 1）
+        run: node tools/lint-links.mjs
       # informational：换配置能力演示（xiyouji 口径代跑根文档），失败不作红线——红线在 verify/check-docs
       - name: 换配置体检演示（informational）
         run: node project-check.mjs --config configs/xiyouji.json ../README.md ../DESIGN.md ../CHANGELOG.md --compare || true
