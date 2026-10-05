@@ -111,7 +111,7 @@ function main() {
       console.error(`✗ 四处版本不一致：${c.mismatches.join(' / ')}`);
       process.exit(1);
     }
-    const expect = ver ? ver.docs : c.mismatches.length === 0 ? null : null;
+    const expect = ver ? ver.docs : null;
     if (expect) {
       const top = extractChangelogTop(readFileSync(changelogPath, 'utf8'));
       if (top !== expect) {
