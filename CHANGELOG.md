@@ -9,6 +9,16 @@
 
 ---
 
+### v0.19.2（2026-10-05）：收官执行器 release.mjs + 检查表退出码行 + 复审入链（复盘行动 A-01/A-02/A-04）
+
+> **来源**：用户 userselect 拍板第一梯队三项（复盘《工作复盘与优化分析报告-2026-10-05》§8.2：A-02 P0 / A-01 / A-04）。动机数据：收官七步手工链 3 次漏做实史；R-08 族复发 3+1 次未归零；rescan-audit 能力已验证（W42 首跑 1 P1/12 P2）但闲置。
+> - **执行（A-02）**：新建 `prototype/tools/release.mjs`——收官模式（registry 锚定登记→sync-configs 重注入→README/交接版本行→十门→打印手工步骤清单含 CHANGELOG 标题模板/commit 草稿/台账与复审提示）+ `--verify`（四处版本一致性+十门复核）+ `--dry-run`（不写盘预演）；**边界=不自动 commit/push**（机械步骤脚本做、判断性内容人写、提交人审——用户拍板）。`tools/test-release.mjs` 18 例测试先行（先红后绿）。接线：CLAUDE 常用命令、STRUCTURE tools 树、AGENTS SOP-2 执行器段、gk-release 技能同步。
+> - **执行（A-01）**：RELEASE-CHECKLIST 增第 11 行"退出码直取，禁管道取尾"（出处=R-08+M15 两现行犯+M16 一现行犯）。
+> - **执行（A-04）**：SOP-2 增第 7 步"复审（push 后 Agent 运行 rescan-audit 保存工作流）"；首跑计入收官链的时长【待补充：下次收官实测】。
+> - **文件**：prototype/tools/release.mjs（新建）、tools/test-release.mjs（新建）、tools/RELEASE-CHECKLIST.md、AGENTS.md、CLAUDE.md、STRUCTURE.md、.agents/skills/gk-release/SKILL.md、prototype/configs/gatekeeper-self.json（0.19.2 + 登记）、本文件。
+> - **验证**：test-release 18/18；负样本——坏版本号 exit 1、同版本防重复收官 exit 1、--verify 在四处漂移时逐项点名；**dogfood 实证：本版本收官由 release.mjs 本尊执行**（registry/重注入/版本行三机械步零遗漏，CHANGELOG 由人填后 --verify 复核通过）；`node tools/gate.mjs` 十门全绿。
+> - **状态**：已落地。M17 收官继续用本脚本并实测"漏做=0、耗时-50%"（S-03 任务卡验收）。
+
 ### v0.19.1（2026-10-05）：工作区体检 lint-workspace —— 文件清单漂移防线（门序列第十门）
 
 > **来源**：M16 review 提出文件清单漂移缺口（nul 卡 add 人工查/内部协作仓 pyc 扫入邻仓事故/STRUCTURE 纯手工无核对），用户拍板方案 A（轻量三查，否决大白名单制）。
