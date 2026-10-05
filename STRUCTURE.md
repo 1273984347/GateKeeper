@@ -56,7 +56,9 @@ prototype/
 │   ├── lint-links.mjs    全仓链接体检：站内存在性+越仓即红（M16-T1，门序列第九门；行级豁免标记）
 │   ├── test-lint-links.mjs lint-links 纯函数自测 15 例
 │   ├── lint-workspace.mjs 工作区体检：垃圾文件/STRUCTURE 树声明/gitignore 覆盖（门序列第十门）
-│   └── test-lint-workspace.mjs lint-workspace 纯函数自测 13 例
+│   ├── test-lint-workspace.mjs lint-workspace 纯函数自测 13 例
+│   ├── release.mjs       收官执行器：registry→重注入→版本行→十门→手工步骤清单（A-02；--dry-run/--verify；不自动 commit）
+│   └── test-release.mjs  release 纯函数自测 18 例
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
 ├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）
 ├── configs/             声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）
