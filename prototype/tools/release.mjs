@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * release.mjs — 里程碑收官脚本（A-02，复盘 S-03 任务卡）：SOP-2 第 1-5 步一键执行 + --verify 复核
+ * release.mjs — 里程碑收官脚本（A-02，复盘 S-03 任务卡）：SOP-2 第 1-2 步、第 4 步版本行、第 5 步门禁一键 + --verify 复核
  * 边界（用户拍板）：不自动 commit/push——机械步骤脚本做，判断性内容（CHANGELOG 四件套正文）人写，提交人审。
  *
  * 用法：
@@ -119,7 +119,7 @@ function main() {
         process.exit(1);
       }
     }
-    console.log(`✓ 四处版本一致${ver ? ` = ${ver.docs}` : ''}；继续跑十门`);
+    console.log(`✓ 四处版本一致${ver?.docs ? ` = ${ver.docs}` : ""}；继续跑十门`);
     const s = runGates('复核门禁');
     console.log(s === 0 ? `\n✅ --verify 通过（${ver?.docs ?? ''}）` : `\n❌ --verify 门禁红`);
     process.exit(s === 0 ? 0 : 1);
