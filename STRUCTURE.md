@@ -21,11 +21,10 @@ GateKeeper/
 ├── 交接文档.md           接手主入口（进度/下一步/方法论/雷区）
 ├── STRUCTURE.md         本文件
 ├── 配置切换Demo.md       三配置三结论可推广性 demo + 介绍话术
-├── 收官五查工作流方案.md  M17 五镜头复审工作流规格（gk-review-wave；已落地 v0.20.0）
 ├── .github/workflows/   gatekeeper.yml —— CI 门禁（漂移双检 + verify + check-docs + project-check）
 ├── .agents/skills/      项目技能 4 个（gk-release/gk-port/gk-review/gk-newgate；M16 review 移植内部协作仓 .agents 模式）
 ├── .zcode/workflows/    项目工作流 2 个（rescan-audit 安全向复审 / gk-review-wave 台账向五查复审；SOP-2 第 7 步双复审）
-├── docs/                过程治理文档（时点分析快照如工作复盘报告；档案/批次编号对齐表=M15-T3 对账唯一依据；方法论/=M16-T4 经验文档库 8 篇）
+├── docs/                过程治理文档（时点分析快照如工作复盘报告；档案/批次编号对齐表=M15-T3 对账唯一依据；档案/方案/=四份移植方案存档；方法论/=M16-T4 经验文档库 8 篇）
 └── prototype/           可运行原型与编排
 ```
 
