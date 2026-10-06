@@ -9,6 +9,17 @@
 
 ---
 
+### v0.20.0（2026-10-05）：M17 收官五查工作流 gk-review-wave 转正 + 双复审入链 + 历史勘误
+
+> **来源**：用户拍板 P1（收官五查工作流转正）+P2（双路评审做成 depth 扩展点不单建）。试运行（基线 5f4a4e6，v0.19.2 批回溯+逐 commit 快照）：五镜头 30 候选→汇裁 21→独立确认成立 21（P1×3）0 误报——含 HEAD 门禁红等实弹发现；字面复现口径未达（6/8 真值已修复），实弹检测超纲，用户拍板转正。
+> - **执行（工作流）**：新建 `.zcode/workflows/gk-review-wave.dwf.ts`——五镜头（台账/状态行/接线/四件套/指针语义）并行+汇裁去重+逐条独立确认+中文报告；args `baseCommit` 提供时逐 commit 快照审查（git show）；`depth` 扩展点预留未实现（P2 双路评审）。
+> - **执行（试运行 21 项处置）**：并发会话双登记去重（ROADMAP/对齐表 M17 各两行→各一行；245221a+692d08c 并行立项实锤，git 历史在案）；方案 L5 示例豁免+状态行更新；lint-workspace 补登记 AGENTS SOP-4；"九门"硬编码四处改引用式；执行器覆盖口径三处对齐（CLAUDE/脚本头注/gk-release 第 7 步改复审步）；对齐表 v0.19.1/v0.19.2 行补后继修正 hash（a382abe/b116176）；STRUCTURE 补方案行；release.mjs --verify 无参文案修复；doc-sync 补 CHANGELOG 独立版本核对（见执行⑤）。
+> - **执行（历史勘误，历史段不改写故记于本段）**：①v0.19.1/v0.19.2 两段「文件」行均漏列 README.md 与 交接文档.md（版本行系三机械步产物，git diff 实证各 14/13 文件）；②技能层批次（af57252 建 4 个 SKILL.md）与 docs commit（3649bf4 复盘入档、043c8b5 SOP-2 第 6 步）当时未登记版本段，于此补记；③output/lint-workspace-first-run.md 标题"53 FAIL"含解析器 bug 期误报（可复算构成=处置 11+误报 42）；④复盘报告两处小勘误已随手修正（目录 S-01~S-05、提交计数锚定 043c8b5）。
+> - **执行（dogfood 发现的门禁死区）**：doc-sync 的 CHANGELOG 顶部版本核对原写在 CORE_DOCS 循环内，而 CHANGELOG 从不在清单——该红线自 v0.18.0 起为死代码（人工收官先写 CHANGELOG 故未暴露）；补独立单规则核对，活体负样本=本收官中间态当场 exit 1。
+> - **文件**：.zcode/workflows/gk-review-wave.dwf.ts（新建）、prototype/tools/doc-sync.mjs、tools/release.mjs、CLAUDE.md、AGENTS.md、STRUCTURE.md、交接文档.md、ROADMAP.md、.gitignore、新Agent启动Prompt.md、收官五查工作流方案.md、docs/档案/批次编号对齐表.md、docs/工作复盘与优化分析报告-2026-10-05.md、.agents/skills/gk-{release,review,port}/SKILL.md、output/lint-workspace-first-run.md、prototype/configs/gatekeeper-self.json（0.20.0 + 登记）、本文件。
+> - **验证**：test-release 18/18、test-docsync 36/36；十门全绿；`--verify v0.20.0` 通过；doc-sync 活体负样本（registry 0.20.0 vs CHANGELOG v0.19.2 中间态）exit 1 → 填段后 exit 0；gk-review-wave 试运行 21 确认/0 误报；release.mjs 第二战机械步零遗漏。双复审首跑时长于推送后实测、由台账 commit 补记。
+> - **状态**：已落地。遗留：①depth 扩展点未实现（P2）；②双复审首跑时长【待补充→本日实测填入台账】。
+
 ### v0.19.2（2026-10-05）：收官执行器 release.mjs + 检查表退出码行 + 复审入链（复盘行动 A-01/A-02/A-04）
 
 > **来源**：用户 userselect 拍板第一梯队三项（复盘《工作复盘与优化分析报告-2026-10-05》§8.2：A-02 P0 / A-01 / A-04）。动机数据：收官七步手工链 3 次漏做实史；R-08 族复发 3+1 次未归零；rescan-audit 能力已验证（W42 首跑 1 P1/12 P2）但闲置。

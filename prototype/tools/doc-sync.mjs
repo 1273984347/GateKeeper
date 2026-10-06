@@ -112,6 +112,15 @@ else {
   if (!sources.version) fail('configs/gatekeeper-self.json', 0, '缺源', 'registry.currentVersion 缺失', '');
 }
 
+// 1.5) CHANGELOG 顶部版本段 vs registry（CHANGELOG 不在 CORE_DOCS，独立单规则核对——release.mjs dogfood 发现的死区）
+const clText = readFileSync(join(ROOT, 'CHANGELOG.md'), 'utf8');
+const clClaim = extractCurrentVersion(clText, 'changelog');
+if (clClaim === null) fail('CHANGELOG.md', 0, '版本声明缺失', '顶部版本段标题未命中', sources.version || '?');
+else if (sources.version && clClaim !== sources.version) {
+  const lineNo = clText.split('\n').findIndex((l) => l.includes(clClaim)) + 1;
+  fail('CHANGELOG.md', lineNo, '版本漂移', clClaim, sources.version);
+}
+
 // 2) 门数源
 const gateSrc = readFileSync(join(PROTO, 'tools', 'gate.mjs'), 'utf8');
 sources.gateCount = parseGateCount(gateSrc);
