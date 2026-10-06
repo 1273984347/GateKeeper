@@ -3,7 +3,7 @@
  * lint-links.mjs — 全仓链接体检（M16-T1）：站内链接本地存在性校验，越仓即红；只读，绝不修改任何文件
  *
  * 源自西游记仓 scripts/lint_links.py 模式（站内存在性 / 外链跳过 / exit 0-1）。
- * 扫描范围：git 跟踪的 *.md + prototype/*.html；排除 CHANGELOG-ARCHIVE.md 与 prototype/output/**。
+ * 扫描范围：git 跟踪 + 未跟踪（非忽略）的 *.md 与 prototype/*.html——未跟踪盲区修复（M17 复审 P-21：新文件入库前不受检）；排除 CHANGELOG-ARCHIVE.md 与 prototype/output/**。
  * 链接分类：http(s)/mailto/tel/纯锚点 → 跳过；其余按所在文件目录解析 → 目标必须存在且不出仓库根。
  * 豁免：行内含 `lint-links:exempt` 标记的行整行跳过（历史/特殊场景，标记须带原因）。
  *
@@ -63,7 +63,7 @@ function main() {
   const fail = (file, line, target, reason) => failures.push({ file, line, target, reason });
 
   // 跟踪文件清单（git ls-files：只扫被跟踪文件，fail-closed）
-  const ls = spawnSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' });
+  const ls = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8' });
   if (ls.status !== 0 || !ls.stdout) {
     console.error('✗ git ls-files 失败（fail-closed）：', ls.stderr || '无输出');
     process.exit(1);
