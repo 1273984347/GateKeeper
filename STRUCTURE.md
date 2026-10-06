@@ -15,15 +15,16 @@ GateKeeper/
 ├── 新Agent启动Prompt.md  跨工具/人工操作场景的可复制 payload（五段骨架；M16-T3，已入 CORE_DOCS）
 ├── DESIGN.md            设计方案（设计层：目标/架构/门禁契约/视觉/数据模型/取舍）
 ├── UI升级方案.md         界面美化升级规格（量化验收/设计令牌/自检结论）
-├── Web端可扩展改造方案.md  web 端三层治理控制台改造规格（四痛点/分期/风险/待拍板）
+├── Web端可扩展改造方案.md  web 端三层治理控制台改造规格（四痛点/分期/风险；已实施 v0.12.0 存档）
 ├── ROADMAP.md           后续发展与迭代路线图（路线层，里程碑编号权威）
 ├── CHANGELOG.md         正向时间线 · 唯一写细节 · 四件套
 ├── 交接文档.md           接手主入口（进度/下一步/方法论/雷区）
 ├── STRUCTURE.md         本文件
 ├── 配置切换Demo.md       三配置三结论可推广性 demo + 介绍话术
-├── 收官五查工作流方案.md  M17 五镜头复审工作流规格（gk-review-wave；已拍板进行中）
+├── 收官五查工作流方案.md  M17 五镜头复审工作流规格（gk-review-wave；已落地 v0.20.0）
 ├── .github/workflows/   gatekeeper.yml —— CI 门禁（漂移双检 + verify + check-docs + project-check）
 ├── .agents/skills/      项目技能 4 个（gk-release/gk-port/gk-review/gk-newgate；M16 review 移植内部协作仓 .agents 模式）
+├── .zcode/workflows/    项目工作流 2 个（rescan-audit 安全向复审 / gk-review-wave 台账向五查复审；SOP-2 第 7 步双复审）
 ├── docs/                过程治理文档（时点分析快照如工作复盘报告；档案/批次编号对齐表=M15-T3 对账唯一依据；方法论/=M16-T4 经验文档库 8 篇）
 └── prototype/           可运行原型与编排
 ```

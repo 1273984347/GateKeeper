@@ -177,7 +177,7 @@ function main() {
   console.log(`② 填完复跑复核：node tools/release.mjs --verify ${ver.docs}`);
   console.log(`③ 提交（人审后）：git add -A && git commit（message 首行含 ${ver.docs}）→ git push 看 CI`);
   console.log(`④ 台账同步（SOP-2 第 6 步，推送后）：docs/档案/批次编号对齐表.md 本行改 ✅ 已落地 + 收官 hash，单独小 commit`);
-  console.log(`⑤ 复审（SOP-2 第 7 步，推送后）：Agent 运行 rescan-audit 保存工作流（首跑计时【待补充】）`);
+  console.log(`⑤ 复审（SOP-2 第 7 步，推送后）：双复审先后运行——rescan-audit（安全向）+ gk-review-wave（台账向）`);
   console.log(`\ncommit message 草稿：feat(gatekeeper): ${ver.docs} <标题>`);
 }
 
