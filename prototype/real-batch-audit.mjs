@@ -152,7 +152,7 @@ if (TODOS) {
   const dws = JSON.parse(readFileSync(join(PROTO, 'config.dws.json'), 'utf8'));
   const PH = (v) => { const t = String(v ?? '').trim(); return !t || t.startsWith('<') || t.endsWith('>') || /[＜＞]/.test(t); };
   const dwsRealIds = [dws.groupOpenConversationId, dws.authorUserId, dws.approverUserId, dws.reviewerOpenDingTalkId].some((v) => !PH(v));
-  const author = dws.authorUserId || '<AUTHOR_USER_ID>';
+  const author = String(dws.authorUserId || '<AUTHOR_USER_ID>').replace(/[\r\n]+/g, ' ');
   // R10 同款防线（复扫 F04）：真实 ID 不得烘进被跟踪产物——改写 *.local.*（.gitignore 覆盖）
   const planSuffix = dwsRealIds ? '-dws-plan.local.sh' : '-dws-plan.sh';
   const todoSuffix = dwsRealIds ? '-整改待办.local.md' : '-整改待办.md';

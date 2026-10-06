@@ -14,3 +14,4 @@ nul
 *.pyo
 __pycache__/
 desktop.ini
+*.local.*

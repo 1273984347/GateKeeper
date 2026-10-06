@@ -9,6 +9,19 @@
 
 ---
 
+### v0.20.1（2026-10-05）：M17 双复审实战处置 —— 安全向 P1 两修 + 台账向 18 项全处置 + 双复审时长实测
+
+> **来源**：M17 收官后双复审首跑（SOP-2 第 7 步）结果处置。安全向 rescan-audit（7 研究员+三镜头，1h20m）：16 候选→确认 14 否决 2；台账向 gk-review-wave（五镜头，1h00m）：28 候选→汇裁 18→确认 18（P1×2）0 误报。
+> - **执行（安全向 P1×2）**：①`real-batch-audit.mjs` 计划注释行 author 未压平换行——多行占位符形值可向被跟踪的 dws 计划注入未注释活命令行（复扫 R9 同款防线在 dws-bridge 有、本文件漏）→ 对齐 dws-bridge:143 压平 `[
+]+`；②`dws-bridge.mjs` hasRealIds 只查 cfg 六字段——artifacts 供入的 authorUserId/author/name 绕过改写本地路径守卫，真实 ID 烘进被跟踪的 dws-plan.sh（历史泄露同款机制旁路）→ hasRealIds 纳入 artifacts 三字段。
+> - **执行（台账向 18 项全处置）**：双复审接线四处实补（AGENTS SOP-2 第 7 步/CLAUDE 收官链/gk-release 第 7 步/release.mjs 步骤⑤）；ROADMAP M17 ✅+M13 历史残留 ✅；交接「二」「一」「四」三处同步；方案/STRUCTURE 状态行转存档；.zcode/workflows/ 入 STRUCTURE 树；两份复审报告落盘 `output/review-wave-{试运行-v0.19.2,M17-v0.20.0}.md`（消除断链）。
+> - **执行（安全向遗留挂账 M18 安全加固批，报告 artifact 有完整复现与修法）**：F01 gates.mjs G1/成本类 snip 未脱敏 PII（建议 maskSnip 抽公共）；F02 makeConfig registry.versions 畸形可崩溃/静默弱化 G2（建议 safeStrArray 归一化+Array.isArray 守卫）；info 五项（doc 本体形状校验/doc-sync 豁免契约漂移/q() 反斜杠/project-check 表格注入面/.bak- 变体）。
+> - **执行（双复审时长实测回填）**：rescan-audit 1h20m26s（29 步/1817 万 tokens）；gk-review-wave 59m55s（72 步/790 万 tokens）——复盘 A-04 与本段遗留②清账，对齐表 M17 行已回填。
+> - **执行（v0.20.0 段勘误，历史段不改写故记于此）**：①v0.20.0 段「文件」行双向不符——漏列 README.md/prototype/gatekeeper.html/prototype/output/project-check-GateKeeper_自身治理文档.md，多列 AGENTS.md/.gitignore/prototype/output/lint-workspace-first-run.md（实测 b412813..HEAD=19 文件）；②「lint-workspace 补登记 AGENTS SOP-4」为虚结案（实落 CLAUDE.md 常用命令，AGENTS.md 全历史未含该词）；③「见执行⑤」编号不存在（执行子弹无编号）。
+> - **文件**：prototype/dws-bridge.mjs、prototype/real-batch-audit.mjs、.gitignore（`*.local.*`，F05 P1 随批前置修复）、prototype/tools/lint-workspace.mjs（探针+1）、AGENTS.md、CLAUDE.md、STRUCTURE.md、交接文档.md、ROADMAP.md、收官五查工作流方案.md、.agents/skills/gk-release/SKILL.md、prototype/output/review-wave-{试运行-v0.19.2,M17-v0.20.0}.md（新建）、prototype/configs/gatekeeper-self.json（0.20.1 + 登记）、本文件。
+> - **验证**：`node tools/gate.mjs` 十门全绿；test-release 18/18、test-lint-workspace 13/13；F05 修复后 fresh-clone 模拟 `git check-ignore` exit 0；两 P1 修复 `node --check` 通过；安全向 R1-R20 核验台账 20 项全部落地（positive 实证在案）。
+> - **状态**：已落地。遗留：M18 安全加固批（F01/F02/info 五项，复现与修法见安全重扫描报告 artifact）。
+
 ### v0.20.0（2026-10-05）：M17 收官五查工作流 gk-review-wave 转正 + 双复审入链 + 历史勘误
 
 > **来源**：用户拍板 P1（收官五查工作流转正）+P2（双路评审做成 depth 扩展点不单建）。试运行（基线 5f4a4e6，v0.19.2 批回溯+逐 commit 快照）：五镜头 30 候选→汇裁 21→独立确认成立 21（P1×3）0 误报——含 HEAD 门禁红等实弹发现；字面复现口径未达（6/8 真值已修复），实弹检测超纲，用户拍板转正。

@@ -151,8 +151,9 @@ for (const raw of artifacts) {
 }
 // P1 修复（复扫 F09）：真实 ID 会被烘进计划脚本，而 output/dws-plan.sh 是被 git 跟踪的文件——
 // 任何一次 dry-run 都会把真实 ID 写进版本库（历史泄露即同款机制）。检测到非占位符 ID 时改写本地路径。
-const hasRealIds = [cfg.groupOpenConversationId, cfg.approverUserId, cfg.authorUserId, cfg.reviewerOpenDingTalkId, cfg.webhookToken, cfg.archiveFolderId]
-  .some((v) => !isPlaceholderLike(v));
+const hasRealIds = [cfg.groupOpenConversationId, cfg.approverUserId, cfg.authorUserId, cfg.reviewerOpenDingTalkId, cfg.webhookToken, cfg.archiveFolderId,
+    a.authorUserId, a.author, a.name]
+  .some((v) => v && !isPlaceholderLike(v));
 const planPath = hasRealIds ? 'output/dws-plan.local.sh' : 'output/dws-plan.sh';
 if (hasRealIds) {
   console.log(`🔒 检测到 config.dws.json 含真实 ID：计划已写入本地文件 ${planPath}（已被 .gitignore 覆盖，勿改名提交）。`);

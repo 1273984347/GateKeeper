@@ -38,6 +38,7 @@ const JUNK = [
 export const GITIGNORE_PROBES = [
   'nul', 'debug.log', 'x.tmp', 'x.bak', 'x.pyc', 'x.pyo',
   '__pycache__/x.pyc', '.DS_Store', 'Thumbs.db', 'desktop.ini',
+  'x.local.md',
 ];
 
 /** 解析 STRUCTURE.md 围栏树：返回 {declared:[路径], missing:[路径]}（exists 可注入便于测试）
