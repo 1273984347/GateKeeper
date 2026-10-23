@@ -9,6 +9,20 @@
 
 ---
 
+### v0.21.3（2026-10-23）：v0.21.2 双复审遗留一次收口 —— 验收表接线 + 视觉闭环补 A 系列检查点 + 三门禁首跑留证 + lint-layout fail-closed
+
+> **来源**：用户指示「一次收掉」——把 v0.21.2 双复审登记的 5 条遗留一次性处置完毕（人工冷跑数据不在本批：需真人跑出，AI 不代填）。
+> - **执行（① 验收表接线）**：`UI升级方案.md` §1 判据表把 G1/G2/G3/G5/G10 的 A 系列指向 `tools/lint-ui.mjs`（第十二门，原标「人工核」）、G9 标注「需浏览器不进 CI」；§7 验证脚本表补 `lint-ui`（A2–A8/A12/A13）与 `human-baseline-check`（冷跑开跑前自检，不代填人工数据）两行，`class-audit` 行补单测说明。
+> - **执行（② 视觉闭环补 A 系列检查点）**：`prototype/tools/VISUAL-ACCEPTANCE.md` 新增 §六「A / AL 系列判据检查点」——逐判据列出**机械判定载体 + 门序列 + 人工在本闭环仍需额外确认的点**（如 A4 只判位移不判重叠、A6 只算亮度差不判真实卡片可辨性），并写明「同一判据只由一个门承担、本闭环不重复判定」；§一 三道关表的 smoke 口径由旧 6 项校准为**七项**。
+> - **执行（③ 首跑留证）**：按 gk-newgate 五件套第 5 步，为三类新门禁各补首跑留证 —— `prototype/output/class-audit-first-run.md`、`lint-ui-first-run.md`、`lint-layout-first-run.md`（首跑捕获 + 判据清单与**口径声明** + 负样本 exit 证据 + 处置记录）。
+> - **执行（④ class-audit 补单测）**：判定逻辑抽成纯函数 `audit(html)` + `isMain` 守卫（避免单测 import 时产生副作用），CLI 增加可选文件路径参数；新增 `prototype/tools/test-class-audit.mjs` **5 例**（1 正样本 + 3 条负样本「删基线 class / 删基线 id / 动态类来源字面量消失 → 必红」+ 1 增量登记），接入门序列与 CI —— 该门此前**无任何自动调用点**。
+> - **执行（⑤ lint-layout fail-closed）**：浏览器不可用时由 `console.log(跳过…) + exit 0` 改为 `console.error(…) + exit 1`（**判据未跑 ≠ 判据通过**，与 `sync-gates`/`lint-links`/`lint-workspace` 的 fail-closed 口径一致）；该门不进 CI（需真实浏览器，理由在 workflow 注释），故 fail-closed 不会拖慢 CI。
+> - **执行（⑥ 体积终值对齐）**：单文件实测 **105,838 B**（v0.21.2 段的 105,829 B → 差 +9B，来源是**版本号注入**改变注入块字节数，已在 `lint-ui` 留证中登记为漂移源）；现役文档（UI升级方案 / ROADMAP / 对齐表 / v2 方案）统一为 105,838 B。
+> - **文件**：UI升级方案.md、prototype/tools/VISUAL-ACCEPTANCE.md、prototype/tools/lint-layout.mjs、prototype/tools/class-audit.mjs、prototype/tools/test-class-audit.mjs（新建）、prototype/tools/gate.mjs（单测接入）、prototype/output/class-audit-first-run.md（新建）、prototype/output/lint-ui-first-run.md（新建）、prototype/output/lint-layout-first-run.md（新建）、ROADMAP.md、docs/档案/批次编号对齐表.md、docs/档案/方案/UI重设计方案-v2.md、prototype/configs/gatekeeper-self.json（registry 升版 + 重注入）。
+> - **验证**：`node prototype/tools/gate.mjs` 十三门全绿；`node --test tools/test-class-audit.mjs` 5/5；`node tools/lint-ui.mjs` A 系列全过（字号 7 档 / 圆角越档 0 / hover -1,-2px / 焦点声明块 1 / ΔL 0.086 / 色相差 146.8° / 实心块白字 4.75–7.76:1 / muted 6.19:1 / 等宽 7/7 / 体积 105,838 B / 衬线 0）；`lint-layout` AL1–AL11 全过（chrome 21.2% / band 130,248,232 / P0 118px / rail 空洞 0 / 溢出 0px）；`release.mjs --verify v0.21.3` 四处版本一致通过。
+> - **状态**：已落地。**遗留（如实）**：① `human-baseline.html?set=B` 冷跑数据仍待真人跑出（AI 不代填；开跑清单见 `prototype/人工冷跑开跑清单.md`）；② **体积精确字节数会随版本号注入漂移**（±个位数字节）——判据「≤120KB」稳定，但**文档中的精确值应改引用式**（本批仅对齐终值）。
+> - **勘误（历史段只增不删）**：v0.21.2 段「105,829 B」→ 实测 **105,838 B**（差 +9B，版本号注入所致）。
+
 ### v0.21.2（2026-10-23）：SOP-2 第 7 步双复审落地 —— 编排桥接层 P1 真断裂修复 + 22 条台账向发现处置 + 门禁单测接入
 
 > **来源**：用户知会后推送 origin/main（v0.21.0 `abf1a13` / v0.21.1 `fe5a36d`），按 SOP-2 第 7 步执行双复审 —— 安全向 `rescan-audit`（七路研究员 + 三镜头 2/3 计票）与台账向 `gk-review-wave`（五镜头 + 汇裁 + 逐条独立确认）。两者均为 zcode 编排格式（`.dwf.ts`），当前运行时不可直接执行 → 按其镜头定义改写为自包含只读审计任务执行，报告落 `prototype/output/rescan-v0.21.0-0.21.1.md` 与 `prototype/output/review-wave-v0.21.0-0.21.1.md`。

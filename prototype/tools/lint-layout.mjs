@@ -98,9 +98,9 @@ async function main() {
 let browser;
 try { browser = await launch(); }
 catch (e) {
-  console.log('⚠ 跳过布局判据：未找到可用浏览器（环境问题不阻断，需 playwright + chromium）');
-  console.log(`  详情：${String(e.message || e).slice(0, 120)}`);
-  process.exit(0);
+  console.error('✗ 布局判据无法执行：未找到可用浏览器（fail-closed，与本仓其余门禁一致——判据未跑 ≠ 判据通过）');
+  console.error('  详情：' + String(e.message || e).slice(0, 160));
+    process.exit(1);
 }
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const errors = [];

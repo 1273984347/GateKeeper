@@ -14,7 +14,7 @@ const gates = [
   { name: '漂移门禁 · 注入块 == configs/', cmd: ['node', 'sync-configs.mjs', '--check'] },
   { name: '漂移门禁 · 渲染块 == render-core.mjs', cmd: ['node', 'sync-render.mjs', '--check'] },
   { name: '回归红线 verify（12 项+自洽）', cmd: ['node', 'verify.mjs'] },
-  { name: '引擎与门禁单测 node --test（引擎+渲染+编排+门禁）', cmd: ['node', '--test', 'gates.test.mjs', 'render-core.test.mjs', 'dws-bridge.test.mjs', 'tools/test-lint-ui.mjs', 'tools/test-lint-layout.mjs', 'tools/test-lint-links.mjs', 'tools/test-lint-workspace.mjs', 'tools/test-docsync.mjs'] },
+  { name: '引擎与门禁单测 node --test（引擎+渲染+编排+门禁）', cmd: ['node', '--test', 'gates.test.mjs', 'render-core.test.mjs', 'dws-bridge.test.mjs', 'tools/test-lint-ui.mjs', 'tools/test-lint-layout.mjs', 'tools/test-lint-links.mjs', 'tools/test-lint-workspace.mjs', 'tools/test-docsync.mjs', 'tools/test-class-audit.mjs'] },
   { name: '语法检查 node --check 全部 .mjs', cmd: ['node', 'tools/syntax-check.mjs'] },
   { name: '核心文档体检 check-docs', cmd: ['node', 'check-docs.mjs'] },
   { name: '文档口径体检 doc-sync', cmd: ['node', 'tools/doc-sync.mjs'] },
