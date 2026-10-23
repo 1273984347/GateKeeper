@@ -319,13 +319,89 @@
   /* 粘贴框元信息行（字数 / 快捷键） */
   .paste-actions .pmeta{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
   @media(max-width:640px){.toast-stack{left:14px;right:14px;bottom:14px}.paste-actions .pmeta{display:none}.difftable{display:block;overflow-x:auto}}
+
+  /* ============ M20 批 2 · 结构层（信息架构 + 8 栏栅格）============
+     判据与理由：docs/档案/方案/UI布局与动线优化方案-v1.md（§二 A 组 + §6.2 批 2，AL1–AL12）
+     硬约束：class 名只增不删 · #id 不删除 · 字号 ⊆ {12,13,14,16,20,28,40} · 圆角 ⊆ {4,6,8,999} · 间距 ⊆ {4,8,12,16,24,32,48} */
+
+  /* —— 8 栏栅格基座：容器 1280 − 左右 24×2 = 1232；8 栏 + 7 槽×24 = 1232 ⇒ 栏宽 133px（整除）—— */
+  .band{display:grid;grid-template-columns:repeat(8,1fr);gap:24px;align-items:center;padding:16px 24px;margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}
+  .band-lead{grid-column:span 5;display:flex;align-items:center;gap:16px;min-width:0}
+  .band-lead-txt{min-width:0;display:flex;flex-direction:column;gap:4px}
+  .band-ctx{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .band-verdict{font-size:16px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .band-sev{grid-column:span 3;justify-self:end;min-width:0}
+  .band-sev .section-label{margin-bottom:4px}
+  .counters{display:flex;gap:8px;justify-content:flex-end;flex-wrap:nowrap}
+  .cnt{min-width:0;padding:8px 12px}
+  .cnt b{font-size:20px}
+  .cnt small{font-size:12px;letter-spacing:.4px;margin-top:4px}
+
+  /* 环：96px（r=40 → 周长 251.33）；数字仍为 Display 40px 档（字号阶梯不动，避免撞 M19 A2） */
+  .ring{width:96px;height:96px}
+  .ring .num b{font-size:40px}
+  .ring .num small{font-size:12px;max-width:88px;letter-spacing:0;margin-top:4px}
+
+  /* 顶栏语义分区：偏好（图标）｜次要动作｜主行动 */
+  .btn.icon{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:16px;line-height:1}
+  .top-sep{width:1px;height:24px;background:var(--line);flex:0 0 auto}
+
+  /* 批次级结论条（总览的唯一答案：能否放行） */
+  .batch-verdict{display:flex;align-items:center;gap:16px;padding:16px 24px;margin-bottom:24px;background:var(--brand-soft);border:1px solid var(--brand-line);border-left:3px solid var(--brand);border-radius:var(--r-md)}
+  .batch-verdict .bv-main{flex:1;min-width:0}
+  .batch-verdict .bv-t{font-size:14px;font-weight:700;color:var(--ink)}
+  .batch-verdict .bv-d{font-size:13px;color:var(--ink-2);margin-top:4px;line-height:1.6}
+  .batch-verdict .bv-n{font-size:28px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:var(--brand-3)}
+  .batch-verdict .bv-act{flex:0 0 auto}
+
+  /* 门禁矩阵（移入总览视图，独立区块） */
+  .matrix-block{margin-top:24px}
+  .matrix-block .section-label{margin-bottom:8px}
+
+  /* 明细视图：隐藏项目级 band —— 消「同屏两个粒度的分数」（H1）；该屏结论由文档级裁决承担 */
+  body[data-view="inspect"] .band{display:none}
+
+  /* 主布局栏位（8 栏）：rail 2 栏 + main 6 栏；门禁卡 4/4 栏；编排双链路 4/4 栏 */
+  .cols{grid-template-columns:repeat(8,1fr);gap:24px;margin-top:24px}
+  .rail{grid-column:span 2}
+  .main{grid-column:span 6}
+  .cards{grid-template-columns:repeat(8,1fr);gap:16px}
+  .cards .gate{grid-column:span 4}
+  .branch{grid-template-columns:repeat(8,1fr);gap:24px}
+  .branch > *{grid-column:span 4}
+  .projgrid{grid-template-columns:repeat(3,1fr);gap:24px}
+  .metrics-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+
+  /* 断点：≥1200 八栏 · 1024–1199 四栏 · 768–1023 两栏 · <768 单列（窄屏专属布局见批 5） */
+  @media(max-width:1199px){
+    .band{grid-template-columns:repeat(4,1fr)}
+    .band-lead{grid-column:span 4}
+    .band-sev{grid-column:span 4;justify-self:start}
+    .counters{justify-content:flex-start}
+    .projgrid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:1023px){
+    .cols{grid-template-columns:1fr}
+    .rail,.main{grid-column:span 1}
+    .cards{grid-template-columns:1fr}
+    .cards .gate{grid-column:span 1}
+    .branch{grid-template-columns:1fr}
+    .branch > *{grid-column:span 1}
+  }
+  @media(max-width:767px){
+    .projgrid{grid-template-columns:1fr}
+    .band-lead{flex-direction:column;align-items:flex-start;gap:8px}
+    .batch-verdict{flex-direction:column;align-items:flex-start;gap:8px}
+    .batch-verdict .bv-act{width:100%}
+  }
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
   <div class="brand"><b>GateKeeper</b><span>AI 产出治理与验收流水线</span></div>
   <div class="spacer"></div>
-  <button class="btn ghost" id="btnTheme" title="切换明暗主题（快捷键 T）">◐ 主题</button>
+  <button class="btn ghost icon" id="btnTheme" title="切换明暗主题（快捷键 T）" aria-label="切换明暗主题">◐</button>
+  <span class="top-sep" aria-hidden="true"></span>
   <button class="btn ghost" id="btnDemo" title="对任意文本即时体检（快捷键 /）">粘贴文本检测</button>
   <button class="btn" id="btnRun">运行全量验收</button>
   <button class="btn cinn" id="btnApprove">提交发布审批</button>
@@ -334,21 +410,22 @@
 <div class="wrap">
   <div class="demo-banner"><span class="demo-badge">DEMO</span><span>离线演示模式（<span class="mono">?demo=1</span>）· 零外部依赖，断网可从头演到尾；编排链路已预生成真实钉钉回执结果态。</span></div>
 
+  <!-- 汇总带 = 项目级上下文结论条（M20 批 2）：环 + 上下文 + 一句结论 + 问题分级；门禁矩阵移至总览视图 -->
   <div class="band">
-    <div>
+    <div class="band-lead">
       <div class="ring">
-        <svg width="130" height="130">
-          <circle cx="65" cy="65" r="56" stroke="#e5e5e5" stroke-width="10" fill="none"></circle>
-          <circle id="ringArc" cx="65" cy="65" r="56" stroke="#0e700e" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="352" stroke-dashoffset="352"></circle>
+        <svg width="96" height="96" viewBox="0 0 96 96">
+          <circle cx="48" cy="48" r="40" stroke="#e5e5e5" stroke-width="8" fill="none"></circle>
+          <circle id="ringArc" cx="48" cy="48" r="40" stroke="#0e700e" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="251.33" stroke-dashoffset="251.33"></circle>
         </svg>
-        <div class="num"><b id="ringNum">--</b><small id="ringCap">批次健康分</small></div>
+        <div class="num"><b id="ringNum">--</b><small id="ringCap">项目均分</small></div>
+      </div>
+      <div class="band-lead-txt">
+        <div class="band-ctx" id="bandCtx">—</div>
+        <div class="band-verdict" id="bandVerdict">—</div>
       </div>
     </div>
-    <div>
-      <div class="section-label" id="stripLabel">门禁矩阵 · 全批命中</div>
-      <div class="gates-strip" id="gatesStrip"></div>
-    </div>
-    <div>
+    <div class="band-sev">
       <div class="section-label right">问题分级</div>
       <div class="counters" id="counters"></div>
     </div>
@@ -375,7 +452,12 @@
   <section class="view active" id="view-overview">
     <div class="view-title">批次健康总览</div>
     <div class="view-sub" id="ovSub"></div>
+    <div class="batch-verdict" id="batchVerdict"></div>
     <div class="projgrid" id="projGrid"></div>
+    <div class="matrix-block">
+      <div class="section-label" id="stripLabel">门禁矩阵 · 全批命中</div>
+      <div class="gates-strip" id="gatesStrip"></div>
+    </div>
     <div class="metrics-grid" id="ovMetrics"></div>
     <div class="footer">— 点击任一项目卡可下钻到明细；顶栏「粘贴文本检测」可对任意文本按当前口径即时体检 —</div>
   </section>
@@ -738,23 +820,27 @@ function renderNav(){
 }
 function renderCrumbs(){
   const p=activeProject(); const d=curDoc(); let parts=[];
-  parts.push({t:'批次',v:'overview'});
+  const batch=String(GK_DATA.batchName||'批次').replace(/^GateKeeper\s*·\s*/,'');   // 去品牌重复（A7）
+  parts.push({t:batch, v:'overview'});
   if(state.view!=='overview') parts.push({t:p.name, v:'proj'});
-  if(state.view==='inspect' && d) parts.push({t:d.name, v:'doc'});
+  if(state.view==='inspect' && d) parts.push({t:d.name.replace(new RegExp('^'+p.name.split(' · ')[0].replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*'),''), v:'doc'});  // 去项目名前缀重复（A7）
   if(state.view==='config') parts.push({t:'配置对照', cur:true});
   if(state.view==='pipeline') parts.push({t:'DWS 编排', cur:true});
   if(state.view==='history') parts.push({t:'趋势看板', cur:true});
-  if(state.view==='overview') parts=[{t:GK_DATA.batchName, cur:true}];
+  if(state.view==='overview') parts=[{t:batch, cur:true}];
   E('crumbs').innerHTML=parts.map((x,i)=> x.cur ? `<span class="cur">${esc(x.t)}</span>` : `<a data-crumb="${esc(x.v)}">${esc(x.t)}</a>`).join('<span class="sep">›</span>');
   E('crumbs').querySelectorAll('a').forEach(a=>{ focusable(a); a.onclick=()=>goView(a.dataset.crumb==='overview'?'overview':'inspect'); }); // 走 goView 保证 state.custom 复位
 }
 
-// —— Hero 带（当前项目聚合，样例项目默认命中回归红线：环 50 / 6P0 9P1 8P2 1可发布）——
+// —— 汇总带 = 项目级上下文结论条（M20 批 2）：环 + 上下文 + 一句结论 + 问题分级（门禁矩阵已移至总览）
 function renderBand(){
   const p=activeProject(); const a=agg(p.docs);
-  const arc=E('ringArc'); const C=352;
+  const arc=E('ringArc'); const C=251.33;   // 环 r=40 → 周长 2πr=251.33（与 SVG 的 stroke-dasharray 同源）
   arc.style.strokeDashoffset=C*(1-a.avg/100); arc.style.stroke=scoreColor(a.avg); // style.stroke 对 var() 三浏览器全支持；setAttribute('stroke') 在部分内核不解析 var()
-  E('ringNum').textContent=a.avg; E('ringCap').textContent='· '+p.name;
+  E('ringNum').textContent=a.avg; E('ringCap').textContent='项目均分';
+  const cfgName=p.configRef? ((GK_CONFIGS[p.configRef]||{name:'样例默认'}).name) : '样例默认口径';
+  E('bandCtx').textContent=`${p.name} · ${cfgName} · ${p.docs.length} 篇`;
+  E('bandVerdict').textContent=`可发布 ${a.okCount}/${a.n} 篇 · P0 阻断 ${a.total.P0} 处` + (a.okCount===a.n?' · 全部可放行':'');
   E('stripLabel').textContent='门禁矩阵 · '+p.name+'（'+p.docs.length+' 篇）';
   E('gatesStrip').innerHTML=a.gateN.map(g=>{ const clean=g.max-g.hit;
     return `<div class="gpill"><div class="t"><span>${g.icon}</span>${g.id} ${g.name}</div><div class="v"><span style="color:var(--pass-ink)">${clean}</span><span style="color:var(--muted);font-size:13px">/${g.max} 干净</span></div></div>`; }).join('');
@@ -773,16 +859,28 @@ function renderOverview(){
       <div class="pn">${esc(p.name)}</div>
       <div class="pcfg">口径：${p.configRef? esc((GK_CONFIGS[p.configRef]||{name:'（配置缺失）'}).name):'样例默认'}</div>
       <div class="pbar"><i style="width:${a.avg}%;background:${scoreColor(a.avg)}"></i></div>
-      <div class="pstat"><span>平均健康分 <b style="color:${scoreInk(a.avg)}">${a.avg}</b></span><span>${a.okCount}/${a.n} 可发布</span></div>
+      <div class="pstat"><span>项目均分 <b style="color:${scoreInk(a.avg)}">${a.avg}</b></span><span>${a.okCount}/${a.n} 可发布</span></div>
       <div class="pnote">${esc(p.note)}</div>
     </div>`; }).join('');
   E('projGrid').querySelectorAll('.projcard').forEach(c=>{ focusable(c); c.onclick=()=>{ setProject(c.dataset.pid); state.view='inspect'; render(); }; }); // 单次 render
   const all=PROJECTS.flatMap(p=>p.docs); const A=agg(all);
+  // —— 批次级结论条（A5）：本屏唯一答案「这批能不能放行」，此前散在 4 处且分母口径不一（H6）——
+  const blocked=all.filter(d=>d.verdict.k!=='ok');
+  const worst=all.length? all.reduce((m,d)=>d.score<m.score?d:m, all[0]) : null;
+  E('batchVerdict').innerHTML=
+    `<div class="bv-n">${A.okCount}<span style="font-size:13px;color:var(--muted);font-weight:400">/${all.length}</span></div>
+     <div class="bv-main">
+       <div class="bv-t">${A.okCount===all.length?'本批次全部可发布':`本批次 ${A.okCount}/${all.length} 篇可发布，${blocked.length} 篇需整改`}</div>
+       <div class="bv-d">${A.total.P0? `共 ${A.total.P0} 处 P0 阻断（任一 P0 即阻断该篇发布）` : '无 P0 阻断'} · 最需整改：${worst? esc(worst.name)+'（'+worst.score+' 分）' : '—'} · 跨项目均分 ${A.avg}</div>
+     </div>
+     <div class="bv-act">${blocked.length? '<button class="btn" id="btnGoBlocked">查看阻断项 →</button>' : '<span class="tag t-ok">全部可发布</span>'}</div>`;
+  const gb=E('btnGoBlocked');
+  if(gb) gb.onclick=()=>{ const hit=blocked[0]; if(!hit) return; const pr=PROJECTS.find(p=>p.docs.includes(hit)); if(pr){ setProject(pr.id); state.docId=hit.id; state.view='inspect'; render(); } };
   E('ovMetrics').innerHTML=[
     ['产出物总数', all.length,'跨 '+PROJECTS.length+' 项目 · 同一引擎体检'],
     ['P0 阻断合计', A.total.P0,'任一 P0 → 阻断发布'],
-    ['平均健康分', A.avg,'Σ(P0×25+P1×12+P2×5+P3×2) 扣减'],
-    ['可放行', A.okCount, '全绿可进 DWS 发布链'],
+    ['跨项目均分', A.avg,'Σ(P0×25+P1×12+P2×5+P3×2) 扣减 · 全部 '+all.length+' 篇'],
+    ['可发布篇数', A.okCount, '全绿可进 DWS 发布链（共 '+all.length+' 篇）'],
     ['门禁道数', GATE_META.length, '引用/一致/格式/合规/脱敏/证据链'],
   ].map(m=>`<div class="metric"><div class="mv">${m[1]}</div><div class="mk">${m[0]} · ${m[2]}</div></div>`).join('');
 }
@@ -913,19 +1011,19 @@ function renderHistory(){
   E('trendMount').innerHTML=items.map((it,i)=>`<div class="trendcol">
     <div class="tval">${it.val}</div>
     <div class="tbar" style="height:${(it.val/maxV)*150}px;background:${scoreColor(it.val)};transition-delay:${i*0.08}s"></div>
-    <div class="tlab">${esc(it.label)}<br>${it.ok}/${it.n} 放行</div></div>`).join('');
+    <div class="tlab">${esc(it.label)}<br>${it.ok}/${it.n} 可发布</div></div>`).join('');
   const all=PROJECTS.flatMap(p=>p.docs); const A=agg(all);
   E('histMetrics').innerHTML=[
-    ['平均健康分', A.avg, '全部 '+A.n+' 篇'],
+    ['跨项目均分', A.avg, '全部 '+A.n+' 篇'],
     ['P0 阻断', A.total.P0, '需整改'],
     ['P1 高危', A.total.P1, '需修复后发布'],
-    ['可放行数', A.okCount, '进入发布链'],
+    ['可发布篇数', A.okCount, '进入发布链（共 '+A.n+' 篇）'],
     ['覆盖口径', PROJECTS.length, 'project-config'],
   ].map(m=>`<div class="metric"><div class="mv">${m[1]}</div><div class="mk">${m[0]} · ${m[2]}</div></div>`).join('');
 }
 
 // —— 主渲染 ——
-function render(){ renderNav(); renderCrumbs(); renderBand();
+function render(){ document.body.dataset.view=state.view; renderNav(); renderCrumbs(); renderBand();
   ({overview:renderOverview, inspect:renderInspect, pipeline:renderInspect, config:renderConfig, history:renderHistory}[state.view])(); } // pipeline 的 flow 已由 renderInspect→renderDoc→renderFlow 渲染，不再重复
 
 /* ===== Toast（M8.3）：替代 alert · role=status 不抢焦点 · hover 暂停自动关闭（借鉴 sonner/Base Web 模式）===== */
@@ -984,7 +1082,7 @@ E('btnApprove').onclick=()=>{ const r=curDoc(); if(!r)return;
 /* ===== 主题 ===== */
 const rootEl=document.documentElement; const darkMQ=matchMedia('(prefers-color-scheme: dark)');
 let curTheme=darkMQ.matches?'dark':'light'; let userSet=false; // 用户手动选择后，系统主题变化不再覆盖
-function applyTheme(t){rootEl.setAttribute('data-theme',t);curTheme=t;const b=E('btnTheme');if(b)b.textContent=t==='dark'?'☀ 明亮':'◐ 主题';}
+function applyTheme(t){rootEl.setAttribute('data-theme',t);curTheme=t;const b=E('btnTheme');if(b){b.textContent=t==='dark'?'☀':'◐';b.setAttribute('aria-label',t==='dark'?'切换为明亮模式':'切换为暗黑模式');}}
 applyTheme(curTheme);
 if(darkMQ.addEventListener)darkMQ.addEventListener('change',e=>{ if(!userSet) applyTheme(e.matches?'dark':'light'); });
 E('btnTheme').onclick=()=>{ userSet=true; applyTheme(curTheme==='dark'?'light':'dark'); };
