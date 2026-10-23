@@ -443,6 +443,26 @@
     .viewnav{padding:8px 0}
     .viewnav .proj-switch{order:9}
   }
+
+  /* ============ M20 批 4 · 动线层（就近证据 / 按钮联动 / 回跳 / 空态）============
+     判据：docs/档案/方案/UI布局与动线优化方案-v1.md §二 C 组（AL3 / AL10 / AL11） */
+  .top-evidence{margin-top:8px;padding:12px 16px;border:1px solid var(--line);border-left:3px solid var(--danger);border-radius:var(--r-md);background:var(--card);box-shadow:var(--sh-1)}
+  .top-evidence .te-label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .top-evidence .te-item{display:flex;align-items:center;gap:8px;padding:4px 0;margin-top:4px;border-top:1px solid var(--line-soft);cursor:pointer}
+  .top-evidence .te-item:hover{background:rgba(0,0,0,.02)}
+  .top-evidence .te-gate{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--danger-ink);flex:0 0 auto}
+  .top-evidence .te-snip{font-family:var(--mono);font-size:12px;color:var(--ink-2);background:var(--card-2);border:1px solid var(--line-soft);border-radius:var(--r-sm);padding:2px 6px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto}
+  .top-evidence .te-fix{font-size:13px;color:var(--pass-ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hit-jump{display:flex;align-items:center;gap:8px;margin-top:8px;padding:8px 16px;background:var(--brand-soft);border:1px solid var(--brand-line);border-radius:var(--r-md);font-size:12px;color:var(--ink-2)}
+  .hit-jump[hidden]{display:none}
+  .hit-jump .hj-txt{color:var(--muted);flex:0 0 auto}
+  .hit-jump .hj-snip{font-family:var(--mono);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+  .hit-jump .btn{padding:4px 12px;font-size:12px}
+  .btn.is-blocked{background:var(--card-2);color:var(--muted);border-color:var(--line);box-shadow:none}
+  .gates-clean.gc-muted{border-style:dashed}
+  .gates-clean.gc-muted .gc-item{color:var(--muted)}
+  .cfg-empty{padding:16px 24px;border:1px dashed var(--line);border-radius:var(--r-md);background:var(--card)}
+  .cfg-empty-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 </style>
 </head>
 <body>
@@ -521,6 +541,8 @@
       </div>
       <div class="main">
         <div class="doc-head" id="docHead"></div>
+        <div class="top-evidence" id="topEvidence"></div>
+        <div class="hit-jump" id="hitJump" hidden></div>
         <details class="doc-body" id="docBodyWrap"><summary>查看 / 收起原文</summary><pre id="docBody"></pre></details>
         <div class="filterrow" id="filterRow"></div>
         <div class="cards" id="cards"></div>
@@ -558,7 +580,7 @@
   <!-- 趋势 -->
   <section class="view" id="view-history">
     <div class="view-title">跨项目 / 批次趋势</div>
-    <div class="view-sub">当前为<b>跨项目健康分对比</b>（时间线趋势待接入真实批次序列——无真实数据不投空图）；数值由引擎按各口径实时计算，非演示假数据。</div>
+    <div class="view-sub">当前为<b>跨项目健康分对比</b>（时间线趋势待接入真实批次序列——无真实数据不投空图）；数值由引擎按各口径实时计算，非演示假数据。<b>P0 阻断 / 跨项目均分 / 可发布篇数见总览结论条</b>，此处只列趋势视图独有项。</div>
     <div class="trend" id="trendMount"></div>
     <div class="metrics-grid" id="histMetrics"></div>
   </section>
@@ -958,6 +980,27 @@ function renderDoc(){
     `<button class="fchip ${state.gateFilter==='all'?'on':''}" data-f="all">全部 ${r.gates.reduce((a,g)=>a+g.findings.length,0)}</button>`+
     ['P0','P1','P2','P3'].map(l=>`<button class="fchip lv-${l.toLowerCase()} ${state.gateFilter===l?'on':''}" data-f="${l}">${l} ${hasP[l]}</button>`).join('');
   E('filterRow').querySelectorAll('.fchip').forEach(c=>c.onclick=()=>{ state.gateFilter=c.dataset.f; renderDoc(); });
+  // —— M20 批 4（C1）就近证据：裁决与阻断原因同屏（AL3：裁决 → 首条 P0 命中 ≤120px）——
+  const p0s=[]; r.gates.forEach(g=>g.findings.forEach(x=>{ if(x.level==='P0') p0s.push({g,x}); }));
+  const top=p0s.slice(0,3); const totalHit=r.gates.reduce((s,g)=>s+g.findings.length,0);
+  const te=E('topEvidence');
+  if(p0s.length){
+    te.innerHTML=`<div class="te-label"><span class="sev" style="background:var(--danger)">P0 阻断 ${p0s.length} 处</span><span>最需整改的前 ${top.length} 条 · 点条目直达门禁卡</span></div>`+
+      top.map(({g,x})=>`<div class="te-item" data-snip="${esc(x.snip)}" data-gate="${esc(g.id)}"><span class="te-gate">${g.id}</span><span class="te-snip">${esc(x.snip)}</span><span class="te-fix">${esc(x.fix||'')}</span></div>`).join('');
+  } else if(totalHit){
+    te.innerHTML=`<div class="te-label"><span class="sev" style="background:var(--warn)">无 P0 阻断</span><span>共 ${totalHit} 项非阻断问题 · 见下方门禁卡</span></div>`;
+  } else { te.innerHTML=''; }
+  te.style.display=te.innerHTML? '' : 'none';
+  te.querySelectorAll('.te-item').forEach(it=>{ focusable(it); it.onclick=()=>{
+    const card=document.querySelector(`#cards .gate[data-gate="${it.dataset.gate}"]`); if(!card) return;
+    const f=[...card.querySelectorAll('.finding')].find(x=>x.dataset.snip===it.dataset.snip);
+    if(f){ f.classList.add('sel'); f.scrollIntoView({behavior:'smooth',block:'center'}); }
+  }; });
+  // —— M20 批 4（C2）主按钮上下文联动：阻断态禁用并标明原因（AL11）——
+  const ab=E('btnApprove');
+  if(ab){ const blocked=r.verdict.k==='block'; ab.disabled=blocked; ab.classList.toggle('is-blocked',blocked);
+    ab.textContent=blocked? '不可发布 · 需先整改' : '提交发布审批';
+    ab.title=blocked? '存在 P0 阻断：整改并重跑门禁后方可提交' : '按 DWS 编排提交发布审批'; }
   renderCards(r);
   renderFlow(r.verdict);
 }
@@ -975,18 +1018,25 @@ function renderCards(r){
         <div class="issue">${esc(x.issue)}</div><div class="basis">${esc(x.basis)}</div><div class="fix">${esc(x.fix)}</div></div>`).join('');
     }
     const filtered=(state.gateFilter!=='all')? ` <small style="color:var(--muted);font-weight:400">（筛选 ${fs.length}/${g.findings.length}）</small>`:'';
-    return `<div class="gate${g.findings.length>=3?' gate-wide':''}"><div class="gh"><div class="ic" style="background:${bg}">${g.icon}</div>
+    return `<div class="gate${fs.length>=3?' gate-wide':''}" data-gate="${esc(g.id)}"><div class="gh"><div class="ic" style="background:${bg}">${g.icon}</div>
       <div class="gn">${g.id} · ${g.name}<small>${g.findings.length} 项发现${filtered}</small></div>${sevChip(g.sev)}</div>
       <div class="gb">${body}</div></div>`;
   };
-  const hits=r.gates.filter(g=>g.findings.length);                     // 有命中的门禁
-  const clean=r.gates.filter(g=>!g.findings.length);                   // 0 命中的门禁
-  // 分组顺序：短卡（1–2 项命中）并排在前、长卡（≥3 项）独占整行在后 —— 避免长卡占整行时把短卡挤成半屏空白
-  const short=hits.filter(g=>g.findings.length<3), long=hits.filter(g=>g.findings.length>=3);
-  const hitHtml=[...short,...long].map(g=>card(g, state.gateFilter==='all'? g.findings : g.findings.filter(x=>x.level===state.gateFilter))).join('');
+  // 分组：shown（当前筛选下有命中）/ hidden（本身有命中但被筛选隐藏）/ clean（0 命中）
+  const filterOn=state.gateFilter!=='all'; const shown=[],hidden=[],clean=[];
+  r.gates.forEach(g=>{
+    const fs=filterOn? g.findings.filter(x=>x.level===state.gateFilter) : g.findings;
+    if(fs.length) shown.push({g,fs}); else if(g.findings.length) hidden.push(g); else clean.push(g);
+  });
+  // 顺序：短卡（1–2 项）并排在前、长卡（≥3 项）独占整行在后 —— 避免长卡占整行时把短卡挤成半屏空白
+  const short=shown.filter(x=>x.fs.length<3), long=shown.filter(x=>x.fs.length>=3);
+  const hitHtml=[...short,...long].map(x=>card(x.g,x.fs)).join('');
   const cleanHtml=clean.length? `<div class="gates-clean"><span class="gc-label">已通过 ${clean.length} 道</span>`+
     clean.map(g=>`<span class="gc-item"><b>${g.icon} ${g.id} ${g.name}</b></span>`).join('')+`</div>` : '';
-  E('cards').innerHTML=hitHtml+cleanHtml;
+  // —— M20 批 4（C6）被筛选隐藏的门禁收成一行摘要，不再各占一张空卡 ——
+  const hiddenHtml=hidden.length? `<div class="gates-clean gc-muted"><span class="gc-label">筛选隐藏 ${hidden.length} 道</span>`+
+    hidden.map(g=>`<span class="gc-item">${g.icon} ${g.id} ${g.name}（本层无 ${state.gateFilter} 命中）</span>`).join('')+`</div>` : '';
+  E('cards').innerHTML=hitHtml+cleanHtml+hiddenHtml;
   E('cards').querySelectorAll('.finding').forEach(f=>{ focusable(f); f.onclick=()=>jumpToSource(f.dataset.snip,f); });
 }
 function jumpToSource(snip, el){
@@ -999,6 +1049,12 @@ function jumpToSource(snip, el){
   if(raw){ const idx=r.text.indexOf(raw);
     if(idx>=0){ pre.scrollTop=Math.max(0,(idx/r.text.length)*pre.scrollHeight-30); pre.style.transition='background .2s'; pre.style.background='var(--cinnabar-soft)'; setTimeout(()=>pre.style.background='',650); } }
   pre.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // —— M20 批 4（C3）定位后给出「返回命中项」锚：命中卡可能被滚出视口，需能一键回跳（AL10）——
+  const hj=E('hitJump');
+  hj.hidden=false;
+  hj.innerHTML=`<span class="hj-txt">已定位原文片段</span><span class="hj-snip">${esc(raw||snip)}</span><button class="btn ghost" id="btnBackHit">← 返回命中项</button>`;
+  const back=E('btnBackHit');
+  if(back) back.onclick=()=>{ const sel=document.querySelector('#cards .finding.sel'); if(sel) sel.scrollIntoView({behavior:'smooth',block:'center'}); };
 }
 
 // —— 编排 ——
@@ -1040,7 +1096,9 @@ function renderEvidence(passed){
 function renderConfig(){
   const p=activeProject();
   E('cfgSub').textContent=`同一引擎、同一批产出物，换用项目口径后的命中差异。当前：${p.configRef? esc((GK_CONFIGS[p.configRef]||{name:'（配置缺失）'}).name) : '样例默认（无差异项，用于展示基线）'}`;
-  if(!p.configRef){ E('cfgMount').innerHTML=`<div class="view-sub" style="margin-top:8px">「${esc(p.name)}」未绑定 project-config，走样例默认口径。切到「电商大促物料」或「详解西游记」可查看换配置的真实差异。</div>`; return; }
+  if(!p.configRef){ E('cfgMount').innerHTML=`<div class="cfg-empty"><div class="view-sub" style="margin-top:8px">「${esc(p.name)}」未绑定 project-config，走样例默认口径 —— 无差异项可比。换到已绑定口径的项目即可查看真实命中差异：</div><div class="cfg-empty-list">${PROJECTS.filter(x=>x.configRef).map(x=>`<button class="btn ghost" data-pid="${esc(x.id)}">${esc(x.name)}</button>`).join('')}</div></div>`;
+    E('cfgMount').querySelectorAll('[data-pid]').forEach(b=>b.onclick=()=>{ setProject(b.dataset.pid); render(); });
+    return; }
   const cfg=p.cfg;
   const info=`<div class="metrics-grid">
     <div class="metric"><div class="mv mono" style="font-size:20px">v${esc(cfg.registry.currentVersion)}</div><div class="mk">权威版本注册</div></div>
@@ -1072,10 +1130,7 @@ function renderHistory(){
     <div class="tlab">${esc(it.label)}<br>${it.ok}/${it.n} 可发布</div></div>`).join('');
   const all=PROJECTS.flatMap(p=>p.docs); const A=agg(all);
   E('histMetrics').innerHTML=[
-    ['跨项目均分', A.avg, '全部 '+A.n+' 篇'],
-    ['P0 阻断', A.total.P0, '需整改'],
     ['P1 高危', A.total.P1, '需修复后发布'],
-    ['可发布篇数', A.okCount, '进入发布链（共 '+A.n+' 篇）'],
     ['覆盖口径', PROJECTS.length, 'project-config'],
   ].map(m=>`<div class="metric"><div class="mv">${m[1]}</div><div class="mk">${m[0]} · ${m[2]}</div></div>`).join('');
 }

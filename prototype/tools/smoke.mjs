@@ -61,12 +61,24 @@ try {
   const activeView = await page.evaluate(() => document.querySelector('.view.active').id);
   record('⑤ 快捷键 4 → 配置对照视图', activeView === 'view-config', activeView);
 
-  // ④ 阻断文档 toast（明细视图选首样例 A → 提交发布审批）
+  // ④ 阻断文档：提交按钮应禁用并标明原因（M20 批 4 C2 上下文联动；原「点击后弹阻断 toast」的交互已前置为按钮态）
   await page.click('.vtab[data-view="inspect"]'); await page.waitForTimeout(400);
   await page.click('#list .item:first-child'); await page.waitForTimeout(500);
+  const appr = await page.evaluate(() => {
+    const b = document.getElementById('btnApprove');
+    return { disabled: b.disabled, label: b.textContent.trim() };
+  });
+  record('④ 阻断文档 → 提交按钮禁用并标明原因', appr.disabled && appr.label.includes('不可发布'), `disabled=${appr.disabled} label=${appr.label}`);
+
+  // ④b 可发布文档：提交按钮可用且点击弹出 toast（M20 批 4 后动作只在放行态可触发）
+  await page.click('#list .item:last-child'); await page.waitForTimeout(500);
+  const apprOk = await page.evaluate(() => {
+    const b = document.getElementById('btnApprove');
+    return { disabled: b.disabled, label: b.textContent.trim() };
+  });
   await page.click('#btnApprove'); await page.waitForTimeout(400);
   const toastCnt = await page.locator('.toast').count();
-  record('④ 阻断文档提交 → toast', toastCnt >= 1, `toast×${toastCnt}`);
+  record('④b 可发布文档提交 → toast', !apprOk.disabled && toastCnt >= 1, `disabled=${apprOk.disabled} toast×${toastCnt}`);
 
   // ② 暗色 bodyBg（M19 换肤后暗色底 = #1b1b1b，旧值 #131519 已废）
   await page.click('#btnTheme'); await page.waitForTimeout(500);
