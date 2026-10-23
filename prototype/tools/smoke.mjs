@@ -5,7 +5,7 @@
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 
 const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TARGET = process.argv[2] ? join(process.cwd(), process.argv[2]) : join(PROTO, 'gatekeeper.html');
@@ -24,7 +24,21 @@ try {
 const checks = [];
 const record = (name, ok, detail) => { checks.push({ name, ok, detail }); console.log(`${ok ? '✓' : '✗'} ${name}${detail ? '  ' + detail : ''}`); };
 
-const browser = await chromium.launch();
+// 启动浏览器：优先用 Playwright 自带浏览器；本机 playwright 包与已装浏览器 revision 不匹配时，
+// 回落 ms-playwright 缓存中已完整安装的 chromium（可执行路径），保证离线机也能跑冒烟。
+let browser;
+try {
+  browser = await chromium.launch();
+} catch (e) {
+  const cache = join(process.env.LOCALAPPDATA || process.env.APPDATA || '', 'ms-playwright');
+  const dir = existsSync(cache)
+    ? readdirSync(cache).filter((d) => /^chromium-\d+$/.test(d)).sort().reverse()[0]
+    : null;
+  const exe = dir ? join(cache, dir, 'chrome-win64', 'chrome.exe') : '';
+  if (!exe || !existsSync(exe)) throw e;
+  console.log(`  (提示：自带浏览器不可用，回落已装 chromium ${dir})`);
+  browser = await chromium.launch({ executablePath: exe });
+}
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
@@ -54,10 +68,10 @@ try {
   const toastCnt = await page.locator('.toast').count();
   record('④ 阻断文档提交 → toast', toastCnt >= 1, `toast×${toastCnt}`);
 
-  // ② 暗色 bodyBg
+  // ② 暗色 bodyBg（M19 换肤后暗色底 = #1b1b1b，旧值 #131519 已废）
   await page.click('#btnTheme'); await page.waitForTimeout(500);
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  record('② 暗色 bodyBg = rgb(19, 21, 25)', bg === 'rgb(19, 21, 25)', bg);
+  record('② 暗色 bodyBg = rgb(27, 27, 27)', bg === 'rgb(27, 27, 27)', bg);
 
   // ③ 640 无横向溢出
   await page.setViewportSize({ width: 640, height: 900 }); await page.waitForTimeout(600);

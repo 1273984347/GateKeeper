@@ -3,7 +3,7 @@
 //       改 render-core.mjs 后除 sync-render 外也应全绿）
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { esc, highlight, scoreColor } from './render-core.mjs';
+import { esc, highlight, scoreColor, scoreInk } from './render-core.mjs';
 import { BANNED, makeConfig } from './gates.mjs';
 
 const meta = { session: 's', created: 'c', source: 'db' };
@@ -58,4 +58,19 @@ test('scoreColor 阈值三段：≥85 绿 / ≥55 橙 / <55 红（与裁决阈�
   assert.equal(scoreColor(55), 'var(--warn)');
   assert.equal(scoreColor(54), 'var(--p0)');
   assert.equal(scoreColor(0), 'var(--p0)');
+});
+
+// ---------- scoreInk（M19 换肤：文字色与块底色分离） ----------
+test('scoreInk 阈值与 scoreColor 同源，但输出 *-ink 文字色令牌', () => {
+  assert.equal(scoreInk(100), 'var(--pass-ink)');
+  assert.equal(scoreInk(85), 'var(--pass-ink)');
+  assert.equal(scoreInk(84), 'var(--warn-ink)');
+  assert.equal(scoreInk(55), 'var(--warn-ink)');
+  assert.equal(scoreInk(54), 'var(--danger-ink)');
+  assert.equal(scoreInk(0), 'var(--danger-ink)');
+  // 阈值口径必须与 scoreColor 完全一致（否则两处漂移）
+  for (const s of [0, 54, 55, 84, 85, 100]) {
+    const tier = (c) => (c.includes('--pass') ? 'p' : c.includes('--warn') ? 'w' : 'd');
+    assert.equal(tier(scoreInk(s)), tier(scoreColor(s)), '阈值不一致：' + s);
+  }
 });

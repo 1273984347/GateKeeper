@@ -20,3 +20,6 @@ export function highlight(text, cfg){
 
 // 健康分配色阈值（与裁决阈值一致：≥85 可发布绿 / ≥55 告警橙 / 其余阻断红）
 export const scoreColor=(s)=> s>=85?'var(--pass)':s>=55?'var(--warn)':'var(--p0)';
+// 健康分配「文字色」变体（M19 换肤：块底色与文字色分离——暗色底上块底色作文字对比度不足，
+// 文字改用 *-ink 令牌，暗色下提亮）。阈值与 scoreColor 同源，避免两处口径漂移。
+export const scoreInk=(s)=> s>=85?'var(--pass-ink)':s>=55?'var(--warn-ink)':'var(--danger-ink)';
