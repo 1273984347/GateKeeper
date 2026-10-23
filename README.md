@@ -5,7 +5,7 @@
 > Session：会话 ID 见 git 提交记录
 
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.21.0
+> **当前版本**：v0.21.1
 > 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
 
 ![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)

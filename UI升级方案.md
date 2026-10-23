@@ -1,7 +1,7 @@
 # UI 设计系统与布局层规格 v2 · GateKeeper（gatekeeper.html）
 
 > 版本：v0.21.0（M19 呈现层 + M20 布局层合并收官）｜对象文件：`prototype/gatekeeper.html` 的 `<style>` 与渲染层
-> 状态：**已实施并通过门禁**（v0.21.0 收官：十二门全绿 + smoke 7/7 + lint-layout AL1–AL11 全过 + class-audit 基线全在）
+> 状态：**已实施并通过门禁**（v0.21.0 收官：十三门全绿 + smoke 7/7 + lint-layout AL1–AL11 全过 + class-audit 基线全在）
 > 权威分工：本文件 = **第二关验收的权威来源**（判据与口径）；**令牌现役值以 `prototype/gatekeeper.html` 的 `:root` 为唯一来源**——沿用本仓引用式纪律（不在治理文档复制色值），改代码即改唯一源。
 > 方向与过程：[UI重设计方案-v2.md](docs/档案/方案/UI重设计方案-v2.md)（M19 呈现层）· [UI布局与动线优化方案-v1.md](docs/档案/方案/UI布局与动线优化方案-v1.md)（M20 布局层/动线/适配）｜细节与历史：[CHANGELOG.md](CHANGELOG.md) v0.21.0
 > 治理约束：[AGENTS.md](AGENTS.md) SOP-3（UI 三道关）· 禁改清单（三处注入块 / 样例五裁决 / 禁改他方行）
@@ -15,10 +15,10 @@
 | G1 | 视觉层级可辨 | 表面三档 + 数字四档 + 标题两档 | A2–A5（人工核，v2 规格见 §3） | — |
 | G2 | 色彩分工无撞车 | 品牌 / 危险 / 语义三级 / 中性四套互不越界；`--brand ≠ --danger` | A6 | — |
 | G3 | 字体体系收敛 | 衬线整族移除；关键数字等宽 tabular；字号 7 档 | A8 / A13 | — |
-| G4 | 间距栅格成体系 | 4px 基线 7 档刻度 + 8 栏栅格 | **AL7**（`lint-layout` 声明级解析） | 第十二门 |
+| G4 | 间距栅格成体系 | 4px 基线 7 档刻度 + 8 栏栅格 | **AL7**（`lint-layout` 声明级解析） | 第十三门 |
 | G5 | 组件样式统一 | 8 族单一来源；焦点态声明 ≤2 处 | A4 / A5 | — |
 | G6 | 结构零回归 | class 名**只增不删**（基线 ⊆ 实测）+ `#id` 不删 | **`tools/class-audit.mjs`** | 第十一门 |
-| G7 | 布局结果达标 | 一屏一结论 / 无空洞 / 动线距离 / 窄屏可干活 | **`tools/lint-layout.mjs`（AL1–AL11，DOM 实测型）** | 第十二门 |
+| G7 | 布局结果达标 | 一屏一结论 / 无空洞 / 动线距离 / 窄屏可干活 | **`tools/lint-layout.mjs`（AL1–AL11，DOM 实测型）** | 第十三门 |
 | G8 | 功能零回归 | smoke 7/7 + verify 12 项 + 样例五裁决 + 三道 sync `--check` | smoke / verify / gate | 门序列 |
 | G9 | 可访问性 | 正文对比度 ≥4.5:1；`:focus-visible`；`prefers-reduced-motion` | `tools/contrast-probe.mjs` | — |
 | G10 | 体积 | 单文件 ≤120KB | A12 | — |
@@ -78,7 +78,7 @@
 
 | 脚本 | 判据 | 门序列 | 退出码 |
 |---|---|---|---|
-| `tools/lint-layout.mjs` | **AL1–AL11**（DOM 实测型）：390 首屏 chrome 占比 / band 高 / 裁决→首条 P0 距离 / 0 命中卡高 / rail 空洞 / 同屏结论性分数 / 间距刻度 / 孤儿末卡 / 横向溢出 / 定位后命中项可达 / 主按钮上下文联动 | 第十二门 | 直取（0 全过；无浏览器时告警跳过，不阻断） |
+| `tools/lint-layout.mjs` | **AL1–AL11**（DOM 实测型）：390 首屏 chrome 占比 / band 高 / 裁决→首条 P0 距离 / 0 命中卡高 / rail 空洞 / 同屏结论性分数 / 间距刻度 / 孤儿末卡 / 横向溢出 / 定位后命中项可达 / 主按钮上下文联动 | 第十三门 | 直取（0 全过；无浏览器时告警跳过，不阻断） |
 | `tools/class-audit.mjs` | 基线静态 class + 动态 class 来源 + 基线 `#id` 三项对拍 | 第十一门（亦进 CI） | 直取 |
 | `tools/smoke.mjs` | 7 项：0 error / 暗色 / 640 无溢出 / ④ 阻断态按钮禁用 / ④b 放行态 toast / 快捷键切视图 / 粘贴全链路 | 独立 | 直取 |
 | `tools/contrast-probe.mjs` | 亮/暗两态实算对比度，低于 AA 即红 | 独立 | 直取 |
@@ -86,17 +86,17 @@
 | `tools/shot.mjs` | 整页截图 + 横向溢出采样（`layout-*` / `v2-*` 命名分区） | 独立 | 直取 |
 | `sync-gates/configs/render --check` | 三处注入块漂移 | 门序列前三门 | 直取 |
 
-**跑法**：`node prototype/tools/gate.mjs`（十二门一键，退出码直取，禁管道包裹）｜`node prototype/tools/smoke.mjs`（7 项）｜UI 变更另走 `prototype/tools/VISUAL-ACCEPTANCE.md` 五步闭环。
+**跑法**：`node prototype/tools/gate.mjs`（十三门一键，退出码直取，禁管道包裹）｜`node prototype/tools/smoke.mjs`（7 项）｜UI 变更另走 `prototype/tools/VISUAL-ACCEPTANCE.md` 五步闭环。
 
 ## 8. 实施批次（已落地）
 
-M19 呈现层 6 批 + M20 布局层 4 批 + v0.21.0 收官批（门序列十门→十二门、间距刻度归一收尾、全仓门数表述改写），逐批明细见 [CHANGELOG.md](CHANGELOG.md) v0.21.0 与两份方案文档的落地记录节。
+M19 呈现层 6 批 + M20 布局层 4 批 + v0.21.0 收官批（门序列十门→十二门、间距刻度归一收尾、全仓门数表述改写）+ v0.21.1 治理批（十二门→十三门：`lint-ui` A 系列声明级判据 + 人工冷跑开跑前自检），逐批明细见 [CHANGELOG.md](CHANGELOG.md) v0.21.0 / v0.21.1 与两份方案文档的落地记录节。
 
 ## 9. 自检结论（v0.21.0 实测，2026-10-23）
 
 | 判据 | 实测 | 达标 |
 |---|---|---|
-| 十二门门禁 | 全绿（EXIT=0） | ✅ |
+| 十三门门禁 | 全绿（EXIT=0） | ✅ |
 | smoke | 7/7 PASS | ✅ |
 | AL1–AL11 | 全过（chrome 21.2% / 裁决→P0 118px / 0 命中卡 46px / rail 空洞 0 / 溢出 0px 等） | ✅ |
 | class-audit | 基线静态 class 全在 + 动态类来源全在 + 基线 `#id` 42 全在 | ✅ |

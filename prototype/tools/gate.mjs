@@ -21,6 +21,7 @@ const gates = [
   { name: '全仓链接体检 lint-links', cmd: ['node', 'tools/lint-links.mjs'] },
   { name: '工作区体检 lint-workspace', cmd: ['node', 'tools/lint-workspace.mjs'] },
   { name: 'class/id 集合对拍 class-audit', cmd: ['node', 'tools/class-audit.mjs'] },
+  { name: 'A 系列声明级判据 lint-ui', cmd: ['node', 'tools/lint-ui.mjs'] },
   { name: '布局结果判据 lint-layout', cmd: ['node', 'tools/lint-layout.mjs'] },
   ...(FULL ? [
     { name: '省时实测 bench', cmd: ['node', 'bench.mjs'] },
