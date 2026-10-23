@@ -261,7 +261,7 @@
   .difftable td.doc{font-weight:600}
   .difftable .delta{text-align:right;font-family:var(--serif);font-weight:700;white-space:nowrap}
   .delta.down{color:var(--pass-ink)} .delta.up{color:var(--danger-ink)} .delta.eq{color:var(--muted)}
-  .supp{display:inline-block;font-size:12px;color:var(--pass-ink);background:var(--jade-soft);padding:1px 8px;border-radius:999px;margin:1px 4px 1px 0}
+  .supp{display:inline-block;font-size:12px;color:var(--pass-ink);background:var(--jade-soft);padding:2px 8px;border-radius:999px;margin:0 4px 0 0}
   /* 趋势条（历史视图，取真实多项目/批次计算值） */
   .trend{display:flex;align-items:flex-end;gap:16px;height:200px;padding:16px 16px;background:linear-gradient(180deg,var(--card),var(--card-2));border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1)}
   .trendcol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:8px}
@@ -305,7 +305,7 @@
   @keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
   .toast.out{opacity:0;transform:translateY(6px);transition:opacity .25s var(--ease),transform .25s var(--ease)}
   /* 快捷键提示键帽 */
-  kbd.kbd{font-family:var(--mono);font-size:12px;background:var(--card-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:1px 8px;color:var(--muted);white-space:nowrap}
+  kbd.kbd{font-family:var(--mono);font-size:12px;background:var(--card-2);border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:2px 8px;color:var(--muted);white-space:nowrap}
   /* 可点元素键盘可达：div[role=button] 与 chip/tab 的焦点态 */
   .vtab:focus-visible,.fchip:focus-visible,.crumbs a:focus-visible,.item:focus-visible,.projcard:focus-visible,.finding:focus-visible{outline:2px solid var(--cinnabar);outline-offset:2px;border-radius:6px}
   .crumbs a:focus-visible{border-radius:var(--r-sm)}
@@ -315,7 +315,7 @@
   details.doc-body summary::after{content:"▾";margin-left:auto;color:var(--muted);transition:transform .2s var(--ease);font-size:12px}
   details.doc-body[open] summary::after{transform:rotate(180deg)}
   /* 锚点跳转为 sticky 顶栏让位 */
-  #docBody,#cards,.doc-head{scroll-margin-top:140px}
+  #docBody,#cards,.doc-head{scroll-margin-top:var(--sticky-off)}
   /* 粘贴框元信息行（字数 / 快捷键） */
   .paste-actions .pmeta{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
   @media(max-width:640px){.toast-stack{left:14px;right:14px;bottom:14px}.paste-actions .pmeta{display:none}.difftable{display:block;overflow-x:auto}}
@@ -393,6 +393,55 @@
     .band-lead{flex-direction:column;align-items:flex-start;gap:8px}
     .batch-verdict{flex-direction:column;align-items:flex-start;gap:8px}
     .batch-verdict .bv-act{width:100%}
+  }
+
+  /* ============ M20 批 3 · 布局层（区块分布与留白）============
+     判据：docs/档案/方案/UI布局与动线优化方案-v1.md §二 B 组（AL4/AL5/AL7/AL8）
+     硬约束：class 名只增不删 · #id 不删除 · 字号 ⊆ {12,13,14,16,20,28,40} · 圆角 ⊆ {4,6,8,999} · 间距 ⊆ {4,8,12,16,24,32,48} */
+
+  /* —— 吸顶偏移统一口径：--hdr-h 由 JS 同步头高，--sticky-off = 头 + 导航 + 8 —— */
+  :root{--hdr-h:74px;--sticky-off:144px}
+  .viewnav{top:var(--hdr-h)}
+
+  /* B2 左栏：按内容取高（消 rail 空洞）+ 吸顶常驻（切产出物不必回滚） */
+  .rail{position:sticky;top:var(--sticky-off);align-self:start;max-height:calc(100vh - var(--sticky-off) - 16px);overflow:auto}
+
+  /* B1 门禁卡：命中多的卡独占整行，0 命中的卡收成一行摘要（消 830px 卡内空洞）
+     —— 纯 CSS 多列（columns:2）实测不可行：单卡 900px 时两列列高差 >1000px，故改为 JS 分组渲染 */
+  .cards .gate.gate-wide{grid-column:span 8}
+  .gates-clean{grid-column:span 8;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-md);box-shadow:var(--sh-1)}
+  .gates-clean .gc-label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+  .gates-clean .gc-item{font-size:13px;color:var(--pass-ink);display:inline-flex;align-items:center;gap:4px}
+  .gates-clean .gc-item b{font-weight:600}
+
+  /* B3 留白节奏归一（4px 基线 7 档）：以下为实测越刻度的声明 */
+  .footer{margin-top:32px}
+  .branch{margin-top:24px}
+  .lane{padding:12px 16px}
+  .lane h4{margin-bottom:8px}
+  .dws{padding:16px 24px}
+  .paste-box{padding:16px}
+  .paste-ta{padding:12px}
+  .rail-foot{margin-top:12px;padding-top:12px}
+  .toast-stack{right:16px;bottom:16px}
+
+  /* B4 孤儿末卡：指标卡下限抬到 180px（窄屏末卡不再独占一行） */
+  .metrics-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+
+  /* B5 语义色归属：「当前位置」不该用危险色（与 P0 阻断撞语义） */
+  .crumbs .cur{color:var(--brand-3)}
+  .crumbs a:hover{background:var(--brand-soft);color:var(--brand-3)}
+
+  /* F5 修复：≤1024px 导航恢复吸顶（横滚保 5 视图可达，不再占整行） */
+  @media(max-width:1024px){
+    .viewnav{position:sticky;top:var(--hdr-h);flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+    .viewnav::-webkit-scrollbar{display:none}
+    .viewnav .vtab{flex:0 0 auto}
+    .viewnav .proj-switch{margin-left:auto;width:auto;flex:0 0 auto}
+  }
+  @media(max-width:640px){
+    .viewnav{padding:8px 0}
+    .viewnav .proj-switch{order:9}
   }
 </style>
 </head>
@@ -913,10 +962,10 @@ function renderDoc(){
   renderFlow(r.verdict);
 }
 function renderCards(r){
-  E('cards').innerHTML=r.gates.map(g=>{
+  // —— M20 批 3（B1）：分组渲染 —— 命中多的卡独占整行（消等高 grid 拉高的 830px 空洞）；
+  //    0 命中的门禁收成一条「已通过」摘要（3 张空卡 → 1 行信息），信息层级更清晰。
+  const card=(g,fs)=>{
     const bg={P0:'var(--p0)',P1:'var(--p1)',P2:'var(--p2)',pass:'var(--pass)',P3:'var(--muted)'}[g.sev];
-    let fs=g.findings;
-    if(state.gateFilter!=='all') fs=fs.filter(x=>x.level===state.gateFilter);
     let body;
     if(!g.findings.length){ body=`<div class="clean">✓ 未发现问题</div>`; }
     else if(!fs.length){ body=`<div class="clean" style="color:var(--muted)">本层无 ${state.gateFilter} 级命中（共 ${g.findings.length} 项，已按筛选隐藏）</div>`; }
@@ -926,9 +975,18 @@ function renderCards(r){
         <div class="issue">${esc(x.issue)}</div><div class="basis">${esc(x.basis)}</div><div class="fix">${esc(x.fix)}</div></div>`).join('');
     }
     const filtered=(state.gateFilter!=='all')? ` <small style="color:var(--muted);font-weight:400">（筛选 ${fs.length}/${g.findings.length}）</small>`:'';
-    return `<div class="gate"><div class="gh"><div class="ic" style="background:${bg}">${g.icon}</div>
+    return `<div class="gate${g.findings.length>=3?' gate-wide':''}"><div class="gh"><div class="ic" style="background:${bg}">${g.icon}</div>
       <div class="gn">${g.id} · ${g.name}<small>${g.findings.length} 项发现${filtered}</small></div>${sevChip(g.sev)}</div>
-      <div class="gb">${body}</div></div>`; }).join('');
+      <div class="gb">${body}</div></div>`;
+  };
+  const hits=r.gates.filter(g=>g.findings.length);                     // 有命中的门禁
+  const clean=r.gates.filter(g=>!g.findings.length);                   // 0 命中的门禁
+  // 分组顺序：短卡（1–2 项命中）并排在前、长卡（≥3 项）独占整行在后 —— 避免长卡占整行时把短卡挤成半屏空白
+  const short=hits.filter(g=>g.findings.length<3), long=hits.filter(g=>g.findings.length>=3);
+  const hitHtml=[...short,...long].map(g=>card(g, state.gateFilter==='all'? g.findings : g.findings.filter(x=>x.level===state.gateFilter))).join('');
+  const cleanHtml=clean.length? `<div class="gates-clean"><span class="gc-label">已通过 ${clean.length} 道</span>`+
+    clean.map(g=>`<span class="gc-item"><b>${g.icon} ${g.id} ${g.name}</b></span>`).join('')+`</div>` : '';
+  E('cards').innerHTML=hitHtml+cleanHtml;
   E('cards').querySelectorAll('.finding').forEach(f=>{ focusable(f); f.onclick=()=>jumpToSource(f.dataset.snip,f); });
 }
 function jumpToSource(snip, el){
@@ -1086,6 +1144,21 @@ function applyTheme(t){rootEl.setAttribute('data-theme',t);curTheme=t;const b=E(
 applyTheme(curTheme);
 if(darkMQ.addEventListener)darkMQ.addEventListener('change',e=>{ if(!userSet) applyTheme(e.matches?'dark':'light'); });
 E('btnTheme').onclick=()=>{ userSet=true; applyTheme(curTheme==='dark'?'light':'dark'); };
+
+/* ===== 吸顶偏移同步（M20 批 3 · 布局基础设施）=====
+   头高随断点变化（1280 档 74px / 640 档换行后 125px），导航条与左栏的吸顶偏移必须跟随，
+   否则出现「导航被顶栏遮住 17px」「左栏吸顶位置错位」。此处只同步两个 CSS 变量，不改任何渲染与业务逻辑。 */
+function syncStickyOffsets(){
+  const hdr=document.querySelector('header.top'); const nav=document.querySelector('.viewnav');
+  if(!hdr) return;
+  const h=Math.round(hdr.getBoundingClientRect().height);
+  const n=nav? Math.round(nav.getBoundingClientRect().height) : 0;
+  rootEl.style.setProperty('--hdr-h', h+'px');
+  rootEl.style.setProperty('--sticky-off', (h+n+8)+'px');
+}
+syncStickyOffsets();
+if(window.ResizeObserver){ const ro=new ResizeObserver(()=>syncStickyOffsets()); ro.observe(document.querySelector('header.top')); }
+window.addEventListener('resize', syncStickyOffsets);
 
 /* ===== 初始化 + 路由（?demo=1 / #hash）===== */
 if(/[?&]demo=1/.test(location.search)) document.body.classList.add('demo');
