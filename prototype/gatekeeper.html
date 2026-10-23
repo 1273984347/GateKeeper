@@ -463,6 +463,68 @@
   .gates-clean.gc-muted .gc-item{color:var(--muted)}
   .cfg-empty{padding:16px 24px;border:1px dashed var(--line);border-radius:var(--r-md);background:var(--card)}
   .cfg-empty-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+  /* ============ M20 批 5 · 移动端层（≤480px 完整布局）============
+     目标动线：打开 → 选项目 → 选产出物 → 首屏看到裁决与首条 P0 原因 → 判定能否发布 → 提交
+     判据：AL1（390 首屏 chrome 占比 ≤60%）· AL9（无横向溢出） */
+  .mobile-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:none;align-items:center;gap:12px;padding:8px 12px;background:var(--card);border-top:1px solid var(--line);box-shadow:var(--sh-2)}
+  .mobile-bar .mb-verdict{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mobile-bar .btn{flex:0 0 auto}
+
+  @media(max-width:640px){
+    /* 汇总带：环与结论横排一行，分级计数第二行（band 307→~180px） */
+    .band{gap:16px;padding:12px 16px}
+    .band-lead{flex-direction:row;align-items:center;gap:12px}
+    .view-sub{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  }
+  @media(max-width:480px){
+    /* 顶栏：压缩到一行（副标题隐藏、动作文字缩写、提交移到底部操作条） */
+    .brand span{display:none}
+    .brand b{font-size:16px}
+    .top-in{padding:8px 12px;gap:8px}
+    #btnDemo{font-size:0;padding:8px 12px}
+    #btnDemo::before{content:"粘贴";font-size:13px}
+    #btnRun{font-size:0;padding:8px 12px}
+    #btnRun::before{content:"运行";font-size:13px}
+    #btnApprove{display:none}
+    .top-sep{display:none}
+    .wrap{padding:0 12px 72px}
+    .mobile-bar{display:flex}
+
+    /* 汇总带：折叠为两行文字结论（分数与结论同句），分级计数进详情 */
+    .band{grid-template-columns:1fr;padding:12px 16px;gap:0}
+    .band-lead{grid-column:span 1;flex-direction:column;align-items:flex-start;gap:4px}
+    .band-lead .ring{display:none}
+    .band-sev{display:none}
+    .band-ctx{font-size:12px}
+    .band-verdict{font-size:14px}
+
+    /* 文档头单列 + 证据条紧凑 */
+    .doc-head{flex-direction:column;align-items:flex-start;padding:12px 16px}
+    .doc-head h2{font-size:20px}
+    .top-evidence{padding:8px 12px}
+    .top-evidence .te-item{flex-wrap:wrap;gap:4px}
+    .top-evidence .te-snip{max-width:100%}
+    .top-evidence .te-fix{flex:1 0 100%;white-space:normal}
+
+    /* 左栏折叠为顶部横排产出物条 */
+    .rail{position:static;max-height:none;overflow:visible;padding:12px;min-width:0}
+    #list{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;min-width:0;max-width:100%}
+    #list .item{flex:0 0 220px;margin-bottom:0}
+
+    /* 原文改为覆盖层（手机无法同时容纳原文与命中列表）—— 仅展开时生效，避免未展开时盖住就近证据条 */
+    details.doc-body[open]{position:fixed;left:0;right:0;top:12%;bottom:0;z-index:50;margin:0;border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--sh-3);overflow:auto}
+    details.doc-body[open] pre{max-height:none;padding-bottom:72px}
+    .cards .gate{grid-column:span 1}
+    .gates-clean{padding:8px 12px}
+    /* 结论条竖排（row 布局会把说明文字挤成窄柱、按钮撑破容器 → 横向溢出） */
+    .batch-verdict{padding:12px 16px;flex-direction:column;align-items:flex-start;gap:8px}
+    .batch-verdict .bv-act{width:100%}
+    .batch-verdict .bv-d{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    /* 导航：项目选择器收窄（「项目」标签隐藏 + select 限宽），把宽度留给 5 个视图 tab */
+    .viewnav .proj-switch span{display:none}
+    .viewnav select{max-width:120px}
+  }
 </style>
 </head>
 <body>
@@ -584,6 +646,12 @@
     <div class="trend" id="trendMount"></div>
     <div class="metrics-grid" id="histMetrics"></div>
   </section>
+</div>
+
+<!-- 窄屏底部固定操作条（M20 批 5）：裁决常驻 + 提交动作（≤480px 显示；宽屏隐藏） -->
+<div class="mobile-bar" id="mobileBar">
+  <div class="mb-verdict" id="mbVerdict">—</div>
+  <button class="btn cinn" id="btnApproveM">提交发布审批</button>
 </div>
 
 <script>
@@ -911,7 +979,7 @@ function renderBand(){
   E('ringNum').textContent=a.avg; E('ringCap').textContent='项目均分';
   const cfgName=p.configRef? ((GK_CONFIGS[p.configRef]||{name:'样例默认'}).name) : '样例默认口径';
   E('bandCtx').textContent=`${p.name} · ${cfgName} · ${p.docs.length} 篇`;
-  E('bandVerdict').textContent=`可发布 ${a.okCount}/${a.n} 篇 · P0 阻断 ${a.total.P0} 处` + (a.okCount===a.n?' · 全部可放行':'');
+  E('bandVerdict').textContent=`项目均分 ${a.avg} · 可发布 ${a.okCount}/${a.n} 篇 · P0 阻断 ${a.total.P0} 处` + (a.okCount===a.n?' · 全部可放行':'');
   E('stripLabel').textContent='门禁矩阵 · '+p.name+'（'+p.docs.length+' 篇）';
   E('gatesStrip').innerHTML=a.gateN.map(g=>{ const clean=g.max-g.hit;
     return `<div class="gpill"><div class="t"><span>${g.icon}</span>${g.id} ${g.name}</div><div class="v"><span style="color:var(--pass-ink)">${clean}</span><span style="color:var(--muted);font-size:13px">/${g.max} 干净</span></div></div>`; }).join('');
@@ -1000,7 +1068,12 @@ function renderDoc(){
   const ab=E('btnApprove');
   if(ab){ const blocked=r.verdict.k==='block'; ab.disabled=blocked; ab.classList.toggle('is-blocked',blocked);
     ab.textContent=blocked? '不可发布 · 需先整改' : '提交发布审批';
-    ab.title=blocked? '存在 P0 阻断：整改并重跑门禁后方可提交' : '按 DWS 编排提交发布审批'; }
+    ab.title=blocked? '存在 P0 阻断：整改并重跑门禁后方可提交' : '按 DWS 编排提交发布审批';
+    // —— M20 批 5：窄屏底部固定操作条同步同一裁决与同一动作（≤480px 顶栏隐藏提交按钮）——
+    const mv=E('mbVerdict'), bm=E('btnApproveM');
+    if(mv) mv.textContent=`${r.verdict.t} · ${r.score} 分`;
+    if(bm){ bm.disabled=blocked; bm.classList.toggle('is-blocked',blocked); bm.textContent=blocked? '不可发布 · 需先整改':'提交发布审批'; bm.onclick=()=>ab.click(); }
+  }
   renderCards(r);
   renderFlow(r.verdict);
 }
