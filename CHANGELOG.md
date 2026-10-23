@@ -9,6 +9,16 @@
 
 ---
 
+### v0.21.2（2026-10-23）：SOP-2 第 7 步双复审落地 —— 编排桥接层 P1 真断裂修复 + 22 条台账向发现处置 + 门禁单测接入
+
+> **来源**：用户知会后推送 origin/main（v0.21.0 `abf1a13` / v0.21.1 `fe5a36d`），按 SOP-2 第 7 步执行双复审 —— 安全向 `rescan-audit`（七路研究员 + 三镜头 2/3 计票）与台账向 `gk-review-wave`（五镜头 + 汇裁 + 逐条独立确认）。两者均为 zcode 编排格式（`.dwf.ts`），当前运行时不可直接执行 → 按其镜头定义改写为自包含只读审计任务执行，报告落 `prototype/output/rescan-v0.21.0-0.21.1.md` 与 `prototype/output/review-wave-v0.21.0-0.21.1.md`。
+> - **执行（安全向处置 5 条存活：P1×1 / P2×3 / info×1）**：① **P1 真断裂修复** —— `dws-bridge.mjs` 的 `hasRealIds` 引用 for 块作用域外的 `const a`，自 v0.20.1（2026-10-07）起 dry-run 必抛 `ReferenceError`，编排工具**实际从未成功运行过**（`output/dws-plan.sh` 停在 v0.15.3、`gate-report.json` 停在 v0.15.6），且 v0.20.1「真实 ID 不烘进被跟踪产物」的安全修复路径**永不可达**（只修作用域不修判定口径＝修复即回归陷阱）；改为循环内聚合收集，并把判定口径收紧为**只判 ID/凭据类字段**（文档标题 `a.name` 与署名 `a.author` 不是 ID，计入会让被跟踪的 `dws-plan.sh` 永远不更新）；② `q()` 转义顺序修复（未先转义反斜杠 → 展示行复制进 bash 时 `$(...)` 仍是有效命令替换，依据 IEEE Std 1003.1-2024 §2.2.3）；③ CI 触发面扩为 `prototype/** + docs/** + *.md`（此前 `check-docs` 的 9/9 核心文档全在仓库根，**改核心文档完全不触发 CI**）；④ `tools/` 下 6 个门禁单测（107 例）接入本地门序列与 CI（此前无任何自动调用点，判据被改宽即无信号）；⑤ `lint-layout` 浏览器不可用时静默 exit 0 → **挂账**（属已声明的设计取舍）。
+> - **执行（台账向处置 22 条确认：P2×17 / info×5）**：已修 17 条 —— 台账断表修复（v0.21.1 行被空行截断致 GFM 表格断裂）、AL 实测值回填（AL1 23.3→**21.2%**、AL4 46→**47px**、AL5 0→**12px**）、单文件体积终值统一（**105,829 B / −75.7%**）、`--muted` 对比度更正（6.38→**6.19:1**）、smoke「六项」全仓清扫（7 处文档 + 工具自身 3 处）、门位次更正（`lint-layout`=第 13 门）、CLAUDE.md 判据范围更正（A2–A8/A12/A13）+ 三件探针收录、DESIGN.md §5 路线表述改写（弃用「故宫数字馆藏 × Linear」）、交接文档里程碑链与完成表补 M19/M20、CI 补 syntax-check 步、v2 方案自身编排修正；**挂账 5 条** —— `UI升级方案.md` §1/§7 表补行、VISUAL-ACCEPTANCE 补 A 系列检查点、三类新门禁首跑留证、lint-layout fail-open、CHANGELOG 历史段漏列。
+> - **文件**：prototype/dws-bridge.mjs、prototype/dws-bridge.test.mjs（新建，4 例正负样本）、prototype/tools/gate.mjs（单测接入 + 步名）、.github/workflows/gatekeeper.yml（paths 扩面 + syntax-check + 单测步）、prototype/output/rescan-v0.21.0-0.21.1.md（新建）、prototype/output/review-wave-v0.21.0-0.21.1.md（新建）、AGENTS.md、CLAUDE.md、README.md、STRUCTURE.md、DESIGN.md、ROADMAP.md、交接文档.md、UI升级方案.md、docs/档案/批次编号对齐表.md（断表修复 + M18 保留注 + AL 值 + touches）、docs/档案/方案/UI重设计方案-v2.md、docs/档案/方案/UI布局与动线优化方案-v1.md、prototype/tools/smoke.mjs、prototype/configs/gatekeeper-self.json（registry 升版 + 重注入）。
+> - **验证**：`node prototype/tools/gate.mjs` 十三门全绿（单测步并入 6 个门禁单测后 604ms）；`node --test dws-bridge.test.mjs` 4/4（黑盒子进程 + 临时目录，产物不落仓库）；smoke 7/7；`class-audit` 基线 class 118 + 动态 18 + id 42 全在；`lint-ui` 全绿；`release.mjs --verify v0.21.2` 四处版本一致通过。
+> - **状态**：已落地。**遗留（如实）**：① `human-baseline.html?set=B` 冷跑数据未取数（AI 不代填；开跑清单见 `prototype/人工冷跑开跑清单.md`）；② `UI升级方案.md` §1/§7 表待补 `lint-ui` 与 `human-baseline-check` 行；③ VISUAL-ACCEPTANCE 待补 A1–A13 检查点；④ 三类新门禁待补 `output/<name>-first-run.md` 首跑留证；⑤ `lint-layout` 浏览器不可用时 fail-open 待定口径。
+> - **勘误（历史段只增不删，故记于此）**：① v0.21.0 段「436KB → 105,618 B（−75.9%）」→ 实测 **105,829 B（−75.7%）**；② v0.21.1 段「105,820 B」→ 同上；③ v0.21.0 段「`--muted` 6.38:1」→ 实测 **6.19:1**；④ v0.21.0 段「文件」行 output 产物通配与实际不符（batch5 无 .json）且漏列 5 个文件；⑤ v0.21.1 段「文件」行漏列 7 个文件（gk-release 技能 / AGENTS.md / README.md / release.mjs / gatekeeper.html / project-check 产物 / 台账）。
+
 ### v0.21.1（2026-10-23）：v0.21.0 两条遗留收口 —— A 系列声明级判据工具化（门序列十二门→十三门）+ 人工盲测冷跑开跑前自检
 
 > **来源**：用户指向 v0.21.0 收官遗留的两项——① `human-baseline.html?set=B` 人工盲测冷跑未取数；② M19 声明级判据 A1–A13 中除 AL7 外尚未工具化（`tools/lint-ui.mjs` 未建），要求收口。

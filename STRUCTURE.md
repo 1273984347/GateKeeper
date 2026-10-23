@@ -49,7 +49,7 @@ prototype/
 ├── check-docs.mjs       提交前门禁：全部核心文档 self-config 体检，任一非可发布 exit 1
 ├── tools/               开发工具（复盘报告 SK-01/03 沉淀）
 │   ├── gate.mjs         门禁一键门卫：全量门禁串行+汇总+失败定位（--full 追加 bench/dry-run；项数以源内 gates 数组为准）
-│   ├── smoke.mjs        前端冒烟标准化：六项清单（0 error/暗色/640/toast/快捷键/粘贴）
+│   ├── smoke.mjs        前端冒烟标准化：七项清单（0 error/粘贴全链路/快捷键/④阻断态禁用/④b放行态toast/暗色/640）
 │   ├── RELEASE-CHECKLIST.md  发布闭环检查表（10 项，周期事故反向成表；第 10 项=视觉验收）
 │   ├── VISUAL-ACCEPTANCE.md  视觉验收闭环（五步/验收 Prompt 模板/像素采样；M14-T1，UI 变更必走）
 │   ├── doc-sync.mjs      文档口径体检：代码真值反拍文档当前态声明（M15-T1，门序列第八门；--json 供 CI）
@@ -67,7 +67,7 @@ prototype/
 │   ├── contrast-probe.mjs 对比度体检（亮/暗两态实算，低于 WCAG AA 即红）
 │   ├── shot.mjs         UI 截图留档（<前缀> <主题>；整页 + 横向溢出采样）
 │   ├── human-baseline-check.mjs 人工盲测冷跑「开跑前自检」（样本集结构/冷跑独立性/采集器可跑性；只验工具链，不代填人工数据）
-│   ├── release.mjs       收官执行器：registry→重注入→版本行→十二门→手工步骤清单（A-02；--dry-run/--verify；不自动 commit）
+│   ├── release.mjs       收官执行器：registry→重注入→版本行→十三门→手工步骤清单（A-02；--dry-run/--verify；不自动 commit）
 │   └── test-release.mjs  release 纯函数自测 18 例
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
 ├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）
@@ -78,7 +78,7 @@ prototype/
 ├── config.dws.json      真实 DWS 目标 ID（群/复核人/作者/审批人 openDingTalkId）
 ├── README-DWS.md        DWS 接入指南与执行模型
 ├── 人工实测对照表.md      人工审核耗时对照实测表（human-baseline 采集器的纸质兜底与判分口径）
-├── screenshots/         UI 截图（Playwright 真实截图，非 AI 生成；README 配图出处，共 11 张）
+├── screenshots/         UI 截图（Playwright 真实截图，非 AI 生成；README 配图出处；数量以目录实况为准——旧档 ui-* 11 张 + v2-* 呈现层换肤档 + layout-* 布局层档，前缀不互相覆盖）
 │   ├── ui-1280.png      控制台桌面全页（1280 档）
 │   ├── ui-1024.png      控制台 1024 档
 │   ├── ui-640.png       控制台移动全页（640 档）

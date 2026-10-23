@@ -4,9 +4,9 @@ name: gatekeeper-gates
 
 on:
   push:
-    paths: ['prototype/**', '.github/workflows/gatekeeper.yml']
+    paths: ['prototype/**', 'docs/**', '*.md', '.github/workflows/gatekeeper.yml']
   pull_request:
-    paths: ['prototype/**', '.github/workflows/gatekeeper.yml']
+    paths: ['prototype/**', 'docs/**', '*.md', '.github/workflows/gatekeeper.yml']
   workflow_dispatch:
 
 jobs:
@@ -31,10 +31,10 @@ jobs:
         run: node sync-render.mjs --check
       - name: 功能回归红线 + 换配置差异
         run: node verify.mjs
-      - name: 引擎单元/负样本测试（node:test）
-        run: node --test gates.test.mjs
-      - name: 渲染纯函数测试（node:test）
-        run: node --test render-core.test.mjs
+      - name: 语法检查（node --check 全部 .mjs）
+        run: node tools/syntax-check.mjs
+      - name: 引擎/渲染/编排/门禁单测（node:test，正负样本）
+        run: node --test gates.test.mjs render-core.test.mjs dws-bridge.test.mjs tools/test-lint-ui.mjs tools/test-lint-layout.mjs tools/test-lint-links.mjs tools/test-lint-workspace.mjs tools/test-docsync.mjs
       - name: 核心治理文档体检（全部核心文档，任一非「可发布」exit 1）
         run: node check-docs.mjs
       - name: 文档口径体检（代码真值 → 文档当前态声明，任一漂移 exit 1）

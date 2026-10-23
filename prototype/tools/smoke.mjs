@@ -1,6 +1,6 @@
-// smoke.mjs — SK-03 前端冒烟标准化：六项清单（复盘报告 §5 SC-03）
+// smoke.mjs — SK-03 前端冒烟标准化：七项清单（复盘报告 §5 SC-03；v0.21.0 起 ④ 拆为 ④/④b）
 // 用法：node tools/smoke.mjs [gatekeeper.html 路径]
-// 六项：①加载 0 error ②暗色 bodyBg ③640 无横向溢出 ④阻断文档 toast ⑤快捷键切视图 ⑥粘贴全链路
+// 七项：①加载 0 error ②暗色 bodyBg ③640 无横向溢出 ④阻断态按钮禁用并标明原因 ④b放行态按钮可用且弹 toast ⑤快捷键切视图 ⑥粘贴全链路
 // 依赖 playwright（本机全局安装）；未命中时按提示设置 NODE_PATH。
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -95,5 +95,5 @@ try {
 
 await browser.close();
 const fail = checks.filter((c) => !c.ok).length;
-console.log(`\n===== 冒烟 ${fail === 0 ? '✅ 六项全 PASS' : `❌ ${fail} 项 FAIL`} / ${checks.length} =====`);
+console.log(`\n===== 冒烟 ${fail === 0 ? '✅ 七项全 PASS' : `❌ ${fail} 项 FAIL`} / ${checks.length} =====`);
 process.exit(fail === 0 ? 0 : 1);

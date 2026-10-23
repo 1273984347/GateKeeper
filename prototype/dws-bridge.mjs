@@ -45,7 +45,8 @@ function isoDue(days) {
 function q(v) {
   v = String(v).replace(/[\r\n]+/g, ' '); // 压平换行（对齐 sq）
   // $ 与反引号必须转义：双引号内 $()/${} 会被 bash 执行，展示行被复制即触发命令替换/变量外泄
-  return /[\s%&<>|^"'`$]/.test(v) ? '"' + v.replace(/"/g, '\\"').replace(/`/g, '\\`').replace(/\$/g, '\\$') + '"' : v;
+  // 转义顺序：**必须先转义反斜杠**，否则其后的 \$ 会被前一字符的反斜杠吃掉（POSIX：双引号内 \\ 折叠为字面 \，\$(...) 仍是有效命令替换）
+  return /[\s%&<>|^"'`$\\]/.test(v) ? '"' + v.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/`/g, '\\`').replace(/\$/g, '\\$') + '"' : v;
 } // 补 ` '$ ：展示行被复制进 bash 时防命令替换
 function toStr(tokens) { return tokens.map(q).join(' '); }
 
@@ -131,11 +132,16 @@ mkdirSync('output', { recursive: true });
 const results = [];
 const planLines = ['#!/usr/bin/env bash', '# 由 dws-bridge.mjs 生成的真实执行计划。', '# 在千问办公内：由 Agent 逐条直接执行（宿主钩子才会真正调用钉钉）；普通终端不触发钩子。', 'set -e', ''];
 console.log(LIVE ? '=== 模式：LIVE（生成计划 + 提示 Agent 直接执行） ===\n' : '=== 模式：DRY-RUN（仅打印，不执行） ===\n');
+// 真实标识收集：**只判 ID/凭据类字段**（artifacts 的 authorUserId）——
+// 文档标题 a.name 与署名 a.author（部门名/人名）不是 ID 也不是凭据，计入会让被跟踪的
+// output/dws-plan.sh 永远不更新（产物永久陈旧），且与本段声明的「真实 ID」意图不符。
+const artifactRealIdHits = [];
 for (const raw of artifacts) {
   const a = analyze(raw);
   const info = buildPlan(a);
   writeReport(a, info);
   results.push({ id: a.id, name: a.name, verdict: a.verdict, score: a.score, p0: info.p0, p1: info.p1, total: info.total, steps: info.plan.map((p) => p.step) });
+  if (a.authorUserId && !isPlaceholderLike(a.authorUserId)) artifactRealIdHits.push(String(a.authorUserId));
 
   const badge = { ok: '✅', fix: '⚠️ ', block: '🚫' }[a.verdict.k];
   console.log(`${badge} [${a.id}] ${a.name}  →  ${a.verdict.t}（${a.score} 分，命中 ${info.total}：P0×${info.p0} P1×${info.p1}）`);
@@ -151,9 +157,10 @@ for (const raw of artifacts) {
 }
 // P1 修复（复扫 F09）：真实 ID 会被烘进计划脚本，而 output/dws-plan.sh 是被 git 跟踪的文件——
 // 任何一次 dry-run 都会把真实 ID 写进版本库（历史泄露即同款机制）。检测到非占位符 ID 时改写本地路径。
-const hasRealIds = [cfg.groupOpenConversationId, cfg.approverUserId, cfg.authorUserId, cfg.reviewerOpenDingTalkId, cfg.webhookToken, cfg.archiveFolderId,
-    a.authorUserId, a.author, a.name]
-  .some((v) => v && !isPlaceholderLike(v));
+// 注：a（原为 for 块内 const）在本作用域不可见——v0.20.1 引入的此行自 2026-10-07 起恒抛
+// ReferenceError，使本安全修复路径永不可达（已由 v0.21.2 修复批改为循环内聚合收集）。
+const hasRealIds = [cfg.groupOpenConversationId, cfg.approverUserId, cfg.authorUserId, cfg.reviewerOpenDingTalkId, cfg.webhookToken, cfg.archiveFolderId]
+  .some((v) => v && !isPlaceholderLike(v)) || artifactRealIdHits.length > 0;
 const planPath = hasRealIds ? 'output/dws-plan.local.sh' : 'output/dws-plan.sh';
 if (hasRealIds) {
   console.log(`🔒 检测到 config.dws.json 含真实 ID：计划已写入本地文件 ${planPath}（已被 .gitignore 覆盖，勿改名提交）。`);
