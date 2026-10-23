@@ -1,129 +1,110 @@
-# UI 全面美化升级方案 · GateKeeper（gatekeeper.html）
+# UI 设计系统与布局层规格 v2 · GateKeeper（gatekeeper.html）
 
-> 版本：v0.8.0（M8）｜对象文件：`prototype/gatekeeper.html` 的 `<style>` 设计系统
-> 本方案为**可独立执行的规格**：所有条目给出精确值与验证方式，其他 Agent 无需额外解释即可实施与验收。
-> 状态：已实施并通过自检（见 §9 自检结论，数据为 2026-08-29 实测）。
+> 版本：v0.21.0（M19 呈现层 + M20 布局层合并收官）｜对象文件：`prototype/gatekeeper.html` 的 `<style>` 与渲染层
+> 状态：**已实施并通过门禁**（v0.21.0 收官：十二门全绿 + smoke 7/7 + lint-layout AL1–AL11 全过 + class-audit 基线全在）
+> 权威分工：本文件 = **第二关验收的权威来源**（判据与口径）；**令牌现役值以 `prototype/gatekeeper.html` 的 `:root` 为唯一来源**——沿用本仓引用式纪律（不在治理文档复制色值），改代码即改唯一源。
+> 方向与过程：[UI重设计方案-v2.md](docs/档案/方案/UI重设计方案-v2.md)（M19 呈现层）· [UI布局与动线优化方案-v1.md](docs/档案/方案/UI布局与动线优化方案-v1.md)（M20 布局层/动线/适配）｜细节与历史：[CHANGELOG.md](CHANGELOG.md) v0.21.0
+> 治理约束：[AGENTS.md](AGENTS.md) SOP-3（UI 三道关）· 禁改清单（三处注入块 / 样例五裁决 / 禁改他方行）
 
 ---
 
-## 1. 目标与量化验收标准
+## 1. 目标与量化验收标准（判据 → 脚本映射）
 
-| # | 目标 | 可验证判据（通过=达标） |
+| # | 目标 | 判据组 | 执行载体 | 门序列 |
+|---|---|---|---|---|
+| G1 | 视觉层级可辨 | 表面三档 + 数字四档 + 标题两档 | A2–A5（人工核，v2 规格见 §3） | — |
+| G2 | 色彩分工无撞车 | 品牌 / 危险 / 语义三级 / 中性四套互不越界；`--brand ≠ --danger` | A6 | — |
+| G3 | 字体体系收敛 | 衬线整族移除；关键数字等宽 tabular；字号 7 档 | A8 / A13 | — |
+| G4 | 间距栅格成体系 | 4px 基线 7 档刻度 + 8 栏栅格 | **AL7**（`lint-layout` 声明级解析） | 第十二门 |
+| G5 | 组件样式统一 | 8 族单一来源；焦点态声明 ≤2 处 | A4 / A5 | — |
+| G6 | 结构零回归 | class 名**只增不删**（基线 ⊆ 实测）+ `#id` 不删 | **`tools/class-audit.mjs`** | 第十一门 |
+| G7 | 布局结果达标 | 一屏一结论 / 无空洞 / 动线距离 / 窄屏可干活 | **`tools/lint-layout.mjs`（AL1–AL11，DOM 实测型）** | 第十二门 |
+| G8 | 功能零回归 | smoke 7/7 + verify 12 项 + 样例五裁决 + 三道 sync `--check` | smoke / verify / gate | 门序列 |
+| G9 | 可访问性 | 正文对比度 ≥4.5:1；`:focus-visible`；`prefers-reduced-motion` | `tools/contrast-probe.mjs` | — |
+| G10 | 体积 | 单文件 ≤120KB | A12 | — |
+
+## 2. 设计令牌（引用式：现役值以代码 `:root` 为唯一来源）
+
+> **不在本文件复制色值**（沿用 v0.14.1 起的引用式纪律）。令牌现役值 = `prototype/gatekeeper.html` 的 `:root` 块；改令牌只改代码，不改本文件。
+
+| 令牌族 | 职责 | 关键约束 |
 |---|---|---|
-| 1 | 现代配色系统 | `:root` 定义 ≥3 级语义色（主/成功/警示/告警）+ 渐变与分层阴影令牌；`getComputedStyle(body).backgroundImage !== 'none'` |
-| 2 | 排版层次 | 标题用衬线栈、正文无衬线、数据等宽；数字启用 `font-feature-settings:"tnum"`；标题/正文/辅助三级字号差 ≥4px |
-| 3 | 视觉深度 | 定义 3 级阴影令牌 `--sh-1/2/3`；卡片/按钮/计数块使用渐变或阴影；`header` 启用 `backdrop-filter` 玻璃拟态 |
-| 4 | 交互反馈 | 可交互元素含 `transition`（时长 0.14–0.9s、统一 easing）；有 `:hover`/`:active`/`:focus-visible` 三态；入场动画 `fadeUp/pop` |
-| 5 | 组件一致性 | 圆角令牌 `--r-lg/md/sm` 全局复用；状态徽章统一 999px 胶囊；所有既有 class 名保留（见 §6） |
-| 6 | 响应式 | 断点 1024px、640px；两断点下 `.cols/.cards/.branch/.band` 折叠为单列；640px 无横向滚动 |
-| 7 | 可访问性 | `:focus-visible` 描边；`prefers-reduced-motion` 关闭全部动画；`::selection` 定义 |
-| 8 | 功能不回归 | 升级后健康环=50、计数=6P0/9P1/8P2/1可发布、A=阻断0分(4×P0)、E=可发布100分；控制台 0 报错 |
-| 9 | 引擎不破坏 | `node sync-gates.mjs --check` 通过（引擎块 == gates.mjs） |
+| 中性层 | 页面底 / 表面两级 / 三级文字 / 三级描边 | `--muted` 对白底 ≥4.5:1（v1 的 3.25:1 为已修缺陷） |
+| 品牌层 | 字标、主导航、主行动、focus 环 | `--brand`（文字/描边）与 `--brand-solid`（块底色）分工；**品牌色不得兼作危险色** |
+| 语义层 | 危险 / 警示 / 注意 / 通过，各配实心块 + 浅底 + 深字 | 四级实心块白字 ≥4.5:1；P1 与 P2 相对亮度差 ≥0.08（P2 另叠 45° 斜纹作第二编码通道） |
+| 几何层 | 圆角 4 档、阴影 3 级、间距 7 档（4px 基线） | 间距集合 ⊆ {4,8,12,16,24,32,48} + 2px 徽章纵向白名单 |
+| 字体层 | 品牌衬线（字标）/ 正文无衬线 / 数据等宽 | **衬线整族已移除**（v0.21.0 删内嵌 base64，单文件 436KB→105,618 B）；关键数字一律等宽 tabular |
 
-## 2. 设计令牌（精确值，全部位于 `:root`）
+## 3. 表面、数字、标题与栅格（v2 规格）
 
-- 背景：`--bg:#f6f4ef`；`--bg-grad` 双 radial 渐变（朱砂 6% 右上、青玉 5% 左上），`background-attachment:fixed`。
-- 表面：`--card:#fff`、`--card-2:#fbfaf7`（卡片用 `linear-gradient(180deg,card,card-2)` 增加厚度）。
-- 文字：`--ink:#191b1e`、`--ink-2:#43474d`、`--muted:#878d96`。
-- 线条：`--line:#e8e4da`、`--line-2:#efece4`。
-- 主色：`--cinnabar:#b23a2e`、`--cinnabar-2:#9c2f24`、`--cinnabar-soft:#f7e7e4`、`--cinnabar-grad:linear-gradient(135deg,#c04a3c,#9c2f24)`。
-- 语义：`--jade:#1f7a5c`(pass)、`--orange:#d97706`(P1/warn)、`--ochre:#a97b0a`(P2)、`--p0:#b23a2e`；各配 `-soft` 浅色底。
-- 圆角：`--r-lg:16px`、`--r-md:12px`、`--r-sm:8px`。
-- 阴影三级：`--sh-1`(贴地)、`--sh-2`(悬浮)、`--sh-3`(弹起)，均为双层柔和投影。
-- 字体：`--serif:"Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif`；`--sans:"Inter","PingFang SC",…,"Microsoft YaHei",system-ui`；`--mono:"JetBrains Mono",…,Consolas,monospace`。
-- 缓动：`--ease:cubic-bezier(.22,.61,.36,1)`，全交互统一。
+- **表面三档**：L0 页面底（`--bg`）｜L1 面板（`--card`/`--card-2`，纯白 + 1px 边 + 淡影，**去渐变**）｜L2 结论面（`--card-elev`，仅汇总带与文档头）。一屏内 L2 容器 ≤2。
+- **数字四档**：Display 40（唯一主视觉）｜Title 28（关键指标卡）｜Lead 20（模块内主数字）｜Body 13/14（次要数字）。全部等宽 tabular，行高 1。
+- **标题两档**：Section 20 衬线→（v2 起为 sans 加粗，字标保留品牌字形）｜Card 15 加粗。中文标题 `letter-spacing` 归 0，西文小标签保留 uppercase。
+- **徽章五形态**：导航（Tabs 下划线）｜过滤（药丸）｜状态（浅底徽章）｜严重度（实心方角）｜补充/实时（浅底小标）。
+- **8 栏栅格**：容器 1280 − 左右 24×2 = **1232**；8 栏 + 7 槽×24 = 1232 ⇒ **栏宽 133px**（整除）。栏位分配见 §5。
+- **垂直节奏**：视图标题 0 → 副标题 +8 → 内容块 +24 → 块内小节 +16 → 卡片内元素 +12。间距全量归 4px 基线（AL7 机械判定）。
 
-## 3. 逐模块实施清单（机制→类名）
+## 4. 交互与动效规格（收敛后）
 
-| 模块 | 类名 | 关键机制 |
-|---|---|---|
-| 顶栏 | `header.top` | sticky + `backdrop-filter:blur(14px) saturate(1.4)` + 半透明白 + 发丝底边 + 内高光 |
-| 品牌字 | `.brand b` | 衬线 21px + `background-clip:text` 墨→朱砂渐变字 |
-| 按钮 | `.btn/.ghost/.cinn` | 圆角 8px + 三级态（hover 上浮 1px+sh-2；active 缩放 .98；focus-visible 朱砂描边 2px）；`.cinn` 用主色渐变+彩色投影 |
-| 汇总带 | `.band` | 190/1fr/250 三列 + 渐变表面 + sh-2 + `fadeUp` 入场 |
-| 健康环 | `.ring` | 140px + `drop-shadow` + `circle{transition:stroke-dashoffset .9s,stroke .4s}`（数值变化时平滑动画） |
-| 门禁命中条 | `.gpill` | 白底圆角 12px + sh-1 + hover 上浮 2px |
-| 分级计数 | `.cnt` | 四色渐变块 + 衬线大数字 + hover 上浮 |
-| 产出物列表 | `.item` | hover 右移 2px；`.active` 朱砂左边条 + 左→右浅朱砂渐变 |
-| 裁决徽章 | `.verdict` | 999px 胶囊 + 三态浅色底 + `transition:all .3s` |
-| 门禁卡 | `.gate` | 渐变表面 + 圆角 16px + sh-1 + hover 上浮 3px+sh-3 + `fadeUp` 错峰入场 |
-| 命中条目 | `.finding` | 左 3px 语义色条 + hover 浅底 + `.snip` 等宽代码块带边框 |
-| 高亮 | `mark` | 下半幅朱砂浅渐变（荧光笔效果） |
-| DWS 编排 | `.dws/.node/.lane/.step` | `.node.on` 浅朱砂渐变+sh-2；`.lane.active` 实线+渐变底；`.step` hover 上浮 |
+- 过渡时长 4 档：微交互 `.16s`｜色彩 `.2s`｜入场 `.4s`｜环形/进度 `.8s`；缓动统一 `--ease`。
+- hover 位移：卡片类 `translateY(-1px)`；列表左移项保留 `translateX(2px)` 的方向语义。
+- 焦点态：**1 处通用声明**（`:focus-visible` 描边 + 品牌色），另 1 处方向性圆角覆盖。
+- 入场动画两套：`fadeUp`（面板/卡片错峰）、`pop`（文档头）；`prefers-reduced-motion` 全关。
 
-## 4. 交互/动效规格
+## 5. 响应式规格（五档断点 + 各档布局）
 
-- 统一缓动 `--ease`；位移类 hover 0.14–0.18s；色彩/透明 0.16–0.3s；环 0.9s。
-- 入场：`fadeUp`(translateY10px→0) 用于 `.band/.rail/.gate/.dws`，`animation-delay` 0/.06s/.1s 错峰；`pop`(scale.96→1) 用于 `.doc-head`。
-- `@keyframes fadeUp/pop` 仅两处，复用。
-- `prefers-reduced-motion:reduce` → `*{animation:none;transition:none}`。
+| 视口 | 栏位 | 汇总带 | 视图导航 | 明细左栏 | 门禁卡 | 底部操作条 | 原文 |
+|---|---|---|---|---|---|---|---|
+| ≥1200 | 8 栏 | 结论条横排（环+上下文+一句结论+计数） | 一行（吸顶） | 2 栏 sticky | 短卡并排 + 长卡整行 | 无 | 内联折叠 |
+| 1024–1199 | 4 栏 | 结论条两行 | 一行（吸顶） | 单列 | 单列 | 无 | 内联折叠 |
+| 768–1023 | 2 栏 | 结论条两行 | 横滚一行（吸顶恢复） | 单列 | 单列 | 无 | 内联折叠 |
+| 641–767 | 1 栏 | 结论条两行（紧凑） | 横滚一行 | 单列 | 单列 | 无 | 内联折叠 |
+| ≤640 | 窄屏专属 | **折叠为两行文字结论**（环隐、分数并入结论句、计数收起） | 横滚一行 | **顶部横排产出物条** | 单列 | **≤480 显示**（裁决常驻 + 提交） | **覆盖层 sheet（仅展开时）** |
 
-## 5. 响应式规格
+**量化底线（机械判定）**：390px 首屏 chrome ≤60%（实测 **21.2%**）｜各档横向溢出 = 0px｜首张项目卡完整落在首屏内。
 
-- `@media(max-width:1024px)`：`.band/.cols/.cards/.branch` 单列；`.counters` 左对齐。
-- `@media(max-width:640px)`：`.top-in` 换行；`.doc-head` 纵排；`.verdict` 自对齐起始；`.wrap` 收窄。
-- 判据：1024 与 640 下 `.cols` 计算列数=1；640 下 `scrollWidth<=clientWidth`（无横向溢出）。
+## 6. 兼容与不可变约束（硬性 · v2 修订）
 
-## 6. 兼容与不可变约束（硬性）
-
-1. **引擎块不可变**：`/*GATES-SRC-START*/…END*/` 之间由 `sync-gates.mjs` 生成，本方案只改 `<style>`，不改该块；验收=`sync-gates --check` 通过。
-2. **class 名不可变**：JS 渲染依赖以下类名，全部保留不得改名/删除：`top top-in brand spacer btn(ghost/cinn) wrap band ring num gates-strip gpill(t/v) counters cnt(c-p0/c-p1/c-p2/c-pass) cols rail item(active/name/meta) tag(t-block/t-fix/t-ok) main doc-head(who/sub) verdict(v-block/v-fix/v-ok) doc-body cards gate(gh/ic/gn/sev/gb) finding(P0-P3/snip/issue/basis/fix) clean dws(note) flow node(on/on-reject/nt/nd) arrow branch lane(ok/no/active) steps step footer`。
-3. **JS 逻辑不可变**：不修改 `<script>` 任何函数；仅 CSS 层升级。
-4. **离线可跑**：不引入 CDN/外部字体文件/图片；字体用系统栈回退。
-5. **改前备份**：`gatekeeper.html.bak` 存于工作区（已存）。
+1. **三处注入块零改动**：`GATES-SRC` / `CONFIGS-SRC` / `RENDER-SRC` 由 `sync-*.mjs` 生成，改规则只改源文件；三道 `--check` 必须全绿。
+2. **class 名只增不删**：既有基线（静态 class + 运行时拼接 class）必须全部存在，由 `tools/class-audit.mjs` 机械对拍（基线 ⊆ 实测）。
+3. **`#id` 不删除**；节点层级在**授权放宽范围**内可改（见第 4 条）。
+4. **授权放宽（用户 2026-10-23 拍板）**：M20 的 **A（信息架构）/ C（动线）/ D（适配）** 三组范围内**允许改 JS 渲染逻辑与 DOM 结构**；放宽清单与仍然禁改项以 [UI重设计方案-v2.md](docs/档案/方案/UI重设计方案-v2.md) v0.3 §1.2/§1.3 为准。
+5. **仍然禁改**：门禁规则与评分公式、配置口径、样例五裁决（A0/B49/C17/D84/E100）与 verify 12 项断言、CHANGELOG 历史段、交接文档「六」雷区存量行、对齐表他方行。
+6. **行为零变化**（授权范围内的动线增强除外）：五视图 / 五级下钻 / 五裁决 / 快捷键（1–5 · / · T · Esc · ?）/ toast / 粘贴检测 / 明暗切换全部保持。
+7. **离线可跑**：零 CDN、零外链字体、零网络请求、零 localStorage。
+8. **体积上限 120KB**（实测 105,618 B）。
 
 ## 7. 验证脚本与通过标准
 
-运行 `prototype/` 下：
-```bash
-node sync-gates.mjs --check        # 期望输出 "✓ 一致：gatekeeper.html 引擎块 == gates.mjs"
-```
-Playwright（见 /tmp/uiverify.cjs 思路）断言：
-- 控制台 error 数 = 0；
-- `header.top` `backdropFilter` 含 `blur(`；`body` `backgroundImage!=='none'`；
-- `.gate` `transitionDuration` 含 `0.18s`；`#ringArc` 含 `0.9s`；
-- 1280px `.cols` 列数=2；1024px=1；640px=1 且无横向溢出；
-- 功能：`#ringNum`=50、`#counters` 含 "6P0…9P1…8P2…1可发布"、切 A 后 `.verdict`="阻断发布 · 0 分" 且 `.finding.P0`=4。
+| 脚本 | 判据 | 门序列 | 退出码 |
+|---|---|---|---|
+| `tools/lint-layout.mjs` | **AL1–AL11**（DOM 实测型）：390 首屏 chrome 占比 / band 高 / 裁决→首条 P0 距离 / 0 命中卡高 / rail 空洞 / 同屏结论性分数 / 间距刻度 / 孤儿末卡 / 横向溢出 / 定位后命中项可达 / 主按钮上下文联动 | 第十二门 | 直取（0 全过；无浏览器时告警跳过，不阻断） |
+| `tools/class-audit.mjs` | 基线静态 class + 动态 class 来源 + 基线 `#id` 三项对拍 | 第十一门（亦进 CI） | 直取 |
+| `tools/smoke.mjs` | 7 项：0 error / 暗色 / 640 无溢出 / ④ 阻断态按钮禁用 / ④b 放行态 toast / 快捷键切视图 / 粘贴全链路 | 独立 | 直取 |
+| `tools/contrast-probe.mjs` | 亮/暗两态实算对比度，低于 AA 即红 | 独立 | 直取 |
+| `tools/geo-probe.mjs` | 三档视口盒子实测（换肤/重排后复测 AL2/AL4/AL5 的基线） | 独立 | 直取 |
+| `tools/shot.mjs` | 整页截图 + 横向溢出采样（`layout-*` / `v2-*` 命名分区） | 独立 | 直取 |
+| `sync-gates/configs/render --check` | 三处注入块漂移 | 门序列前三门 | 直取 |
 
-## 8. 实施步骤（另一 Agent 可直接执行）
+**跑法**：`node prototype/tools/gate.mjs`（十二门一键，退出码直取，禁管道包裹）｜`node prototype/tools/smoke.mjs`（7 项）｜UI 变更另走 `prototype/tools/VISUAL-ACCEPTANCE.md` 五步闭环。
 
-1. 备份 `gatekeeper.html` → `gatekeeper.html.bak`。
-2. 仅替换 `<style>…</style>` 为 §2–§5 规格对应 CSS（保留 §6 全部类名）。
-3. 跑 §7 两条验证；任一不达标回滚备份并定位。
-4. 截图 1280/1024/640 三档存作视觉留档（目录 v0.13.0 起更名 `prototype/screenshots/`）。
-5. 治理登记：CHANGELOG 加 M8 四件套；README/交接文档/STRUCTURE 版本行同步 v0.8.0。
+## 8. 实施批次（已落地）
 
-## 9. 自检结论（2026-08-29 实测，真实数据）
+M19 呈现层 6 批 + M20 布局层 4 批 + v0.21.0 收官批（门序列十门→十二门、间距刻度归一收尾、全仓门数表述改写），逐批明细见 [CHANGELOG.md](CHANGELOG.md) v0.21.0 与两份方案文档的落地记录节。
 
-| 判据 | 结果 | 达标 |
+## 9. 自检结论（v0.21.0 实测，2026-10-23）
+
+| 判据 | 实测 | 达标 |
 |---|---|---|
-| sync --check | ✓ 一致 | ✅ |
-| 控制台报错 | none | ✅ |
-| header 玻璃 | blur(14px) saturate(1.4) | ✅ |
-| body 渐变 | true | ✅ |
-| .gate 过渡 | 0.18s | ✅ |
-| 环过渡 | 0.9s | ✅ |
-| 1280 列数 | 2 | ✅ |
-| 1024 列数 | 1 | ✅ |
-| 640 列数/溢出 | 1 / 无 | ✅ |
-| 功能回归 | 环50、计数正确、A阻断0分(4P0)、E可发布100分 | ✅ |
+| 十二门门禁 | 全绿（EXIT=0） | ✅ |
+| smoke | 7/7 PASS | ✅ |
+| AL1–AL11 | 全过（chrome 21.2% / 裁决→P0 118px / 0 命中卡 46px / rail 空洞 0 / 溢出 0px 等） | ✅ |
+| class-audit | 基线静态 class 全在 + 动态类来源全在 + 基线 `#id` 42 全在 | ✅ |
+| 对比度 | 亮/暗各 0 条不足 | ✅ |
+| 体积 | 436KB → 105,618 B（−75.9%） | ✅ |
+| 功能回归 | 样例五裁决逐字不变 + verify 12 项 + 三道 sync 绿 | ✅ |
 
-**原 3 项可选优化的处置（M8.1 落地两项，M8.2 完成字体嵌入，三项全部闭环）**：
-
-1. **内联 style 迁移 —— 已完成**。新增设计系统类：`.section-label(.right)`、`.paste-box/.paste-hint/.paste-ta/.paste-actions`、`.rail-foot`、`.mono`、`.tag.sq`；body 静态区原 9 处内联 style 全部替换。审计后残留 `[style]` 仅两类且均为合法动态：① JS 按严重度注入的颜色（`#ringArc`、`.gpill .v`、`.ic` 等）；② `#pasteBox` 的 `display` 显隐切换（功能态）。
-2. **暗色模式 —— 已完成**。实现方式：`:root[data-theme='dark']` 覆盖令牌（bg/card/ink/line/朱砂提亮为 `#d95f50`/语义色/阴影加深）+ 13 条硬编码渐变的暗色覆盖；`color-scheme` 双态声明（原生控件/滚动条适配）。**默认跟随系统**（JS 读 `matchMedia('(prefers-color-scheme: dark)')` 初始化 `data-theme`，并监听系统切换），顶栏「◐ 主题」按钮手动明↔暗切换。验证：暗色下 bodyBg=`rgb(19,21,25)`、功能回归通过（A 阻断 0 分/4×P0、粘贴检测正常）、可切回明色、0 控制台报错。
-3. **字体嵌入 —— 已完成（M8.2）**。实测解析链后对**衬线标题层**做了子集内嵌（Inter 不嵌：拉丁正文回退 Segoe UI/微软雅黑均为各 OS 必备字体，嵌入无可见收益、徒增体积）：
-   | 项 | 值 |
-   |---|---|
-   | 源字体 | `C:/Windows/Fonts/NotoSerifSC-VF.ttf`（可变字体，wght 轴 200–900） |
-   | 子集方法 | `py -3 -m fontTools.subset --text-file=used_chars.txt --flavor=woff2 --layout-features='*'`（用字从 `gatekeeper.html` 穷举，677 字符 → 1095 字形，fvar 轴保留） |
-   | 产物 | `output/notoserifsc-subset.woff2` 265KB → base64 内嵌 `@font-face`，独立族名 **GKSerif**，`font-weight:200 900` 单文件覆盖全字重 |
-   | 栈顺序 | `--serif:"GKSerif","Noto Serif SC","Songti SC","STSong","SimSun",Georgia,serif`（嵌入族优先，保证跨机像素一致；未命中仍优雅降级） |
-   | 体积代价 | HTML 65KB → **394KB**（本地 file:// 打开无感，无网络依赖） |
-   | 验证 | `document.fonts` → `GKSerif:loaded`；canvas 宽度 87.9 vs 系统 serif 86.1（证明确实启用嵌入字体）；0 控制台报错；功能回归通过（环50 / A阻断0分 / E可发布100分）；暗色下字体同样生效 |
-   回滚备份：`gatekeeper.html.pre-font.bak`（嵌入前版本；已随 v0.14.1 清理删除，需要时从 git 历史取回）。
-
-> 结论：方案可实施、符合实际、已通过全部量化验收；原 3 项可选优化已全部落地（1、2 于 M8.1，3 于 M8.2），Inter 经实测论证后明确不嵌（无可见收益）。
+**遗留（如实）**：① `human-baseline.html?set=B` 冷跑未取数（交接「四」挂账）；② M19 声明级判据 A1–A13 中除 AL7 外尚未工具化（`lint-ui.mjs` 未建）；③ 双复审按 SOP-2 第 7 步在推送后执行。
 
 ---
 

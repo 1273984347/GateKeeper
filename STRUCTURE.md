@@ -58,7 +58,13 @@ prototype/
 │   ├── test-lint-links.mjs lint-links 纯函数自测 15 例
 │   ├── lint-workspace.mjs 工作区体检：垃圾文件/STRUCTURE 树声明/gitignore 覆盖（门序列第十门）
 │   ├── test-lint-workspace.mjs lint-workspace 纯函数自测 13 例
-│   ├── release.mjs       收官执行器：registry→重注入→版本行→十门→手工步骤清单（A-02；--dry-run/--verify；不自动 commit）
+│   ├── class-audit.mjs  class/#id 集合对拍（基线 ⊆ 实测，只增不删；M19 A11，门序列第十一门）
+│   ├── lint-layout.mjs  布局结果判据（AL1–AL11，DOM 实测型而非 CSS 文本解析；M20，门序列第十二门；--json）
+│   ├── test-lint-layout.mjs lint-layout 纯函数自测 12 例（正样本 + 逐条负样本）
+│   ├── geo-probe.mjs    几何基线探针（三档视口盒子实测；换肤/重排后复测 AL2/AL4/AL5）
+│   ├── contrast-probe.mjs 对比度体检（亮/暗两态实算，低于 WCAG AA 即红）
+│   ├── shot.mjs         UI 截图留档（<前缀> <主题>；整页 + 横向溢出采样）
+│   ├── release.mjs       收官执行器：registry→重注入→版本行→十二门→手工步骤清单（A-02；--dry-run/--verify；不自动 commit）
 │   └── test-release.mjs  release 纯函数自测 18 例
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
 ├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）

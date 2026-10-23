@@ -43,6 +43,10 @@ jobs:
         run: node tools/lint-links.mjs
       - name: 工作区体检（垃圾文件/STRUCTURE 树声明/gitignore 覆盖，exit 1）
         run: node tools/lint-workspace.mjs
+      - name: class/id 集合对拍（基线 ⊆ 实测，只增不删，exit 1）
+        run: node tools/class-audit.mjs
+      # 注：布局结果判据 tools/lint-layout.mjs 需真实浏览器（playwright + chromium），
+      #     故只在本地门序列 prototype/tools/gate.mjs 中执行，不进本 CI（避免每次 CI 额外下载浏览器）。
       # informational：换配置能力演示（xiyouji 口径代跑根文档），失败不作红线——红线在 verify/check-docs
       - name: 换配置体检演示（informational）
         run: node project-check.mjs --config configs/xiyouji.json ../README.md ../DESIGN.md ../CHANGELOG.md --compare || true

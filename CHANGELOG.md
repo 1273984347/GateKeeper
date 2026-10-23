@@ -9,6 +9,16 @@
 
 ---
 
+### v0.21.0（2026-10-23）：UI 重设计 v2 与布局层优化合并落地（Fluent 换肤 + 信息架构/动线/移动端 + 门序列十二门）
+
+> **来源**：用户两轮指令 + 拍板。①「给界面出一版重设计：视觉层级、配色与字体体系、间距栅格、组件样式统一都要升级，保留原有功能结构不乱动，先出设计方向再细化」（M19）；②「帮我优化现有界面布局：信息层级梳理、区块分布与留白、操作动线、不同屏幕适配都过一遍，每处调整讲清理由」（M20）。拍板：M19 路线 **C 彻底换肤** / 等宽 tabular / 加深 P2+纹理 / 逐批落地；M20 四项痛点全开 / 允许改 JS 与 DOM / 信息架构可重排 / 手机也要能真正干活 / **两批合并为一条 6 批流水线统一落地**（跨会话协调：让号依据、共享面划分、写顺序、不变量放宽条款均已书面交底）。
+> - **执行（M19 呈现层 · 6 批）**：路线 C 换肤（中性灰阶 + Fluent brand 蓝 + 语义四级可辨，品牌色让出危险色语义）；字号 13→7 档；间距归 4px 基线刻度；对比度修复（`--muted` 3.25:1→6.38:1 补 WCAG AA 缺口）；组件族统一（Button 三型 Accent/Subtle/Danger、导航改 Tabs 下划线指示器、徽章五形态分工、Surface 去渐变改纯白+发丝边）；关键数字全改等宽 tabular；焦点态 7 处重复收敛为 1 处通用声明；**删除内嵌衬线字体 base64（−353,916 字节）**。
+> - **执行（M20 布局层 · 4 批）**：①**结构层**——汇总带重构为「上下文结论条」（环 + 项目/口径/篇数 + 一句结论 + 分级计数单行，252→130px）、门禁矩阵移入总览、明细视图隐藏项目级 band（消「同屏两个粒度的分数」）、总览新增批次级结论条（唯一答案 + 直达动作）、顶栏语义分区、术语统一、8 栏栅格在新结构上重算；②**布局层**——门禁卡分组渲染（长卡独占整行/短卡并排/0 命中收成「已通过」摘要，0 命中卡 908→46px）、左栏 sticky 按内容取高（空洞 1191→0）、间距全量归刻度、**吸顶重叠 17→0px**；③**动线层**——就近证据条（裁决→首条 P0 498→118px）、提交按钮阻断态禁用、命中定位回跳条、配置空态引导、趋势页去重、过滤折叠；④**移动端层**——390/480 完整布局（首屏 chrome 107%→23.3%、底部固定操作条常驻裁决、汇总带折叠、左栏横排、原文覆盖层 sheet、修横向溢出 780px）。
+> - **执行（收官批）**：门序列**十门→十二门**（新增 `class-audit` 只增不删对拍 + `lint-layout` 布局结果判据）；新工具 6 件（class-audit / lint-layout / test-lint-layout / geo-probe / contrast-probe / shot）；间距刻度归一收尾（`.btn` padding 7/14px → `height:32px`+`padding:0 16px`、select 7px → `height:32px`、`.te-snip` 6→8px、底部预留 72→48px）；AL5 口径修正（扣左栏标题下边距）；全仓现役「十门」表述统一改写为「十二门」；UI升级方案 §2–§7 改写为引用式 + 判据表（令牌现役值以代码 `:root` 为唯一来源，不在文档复制色值）。
+> - **文件**：prototype/gatekeeper.html、prototype/render-core.mjs（新增 scoreInk）、prototype/tools/{gate,class-audit,lint-layout,test-lint-layout,geo-probe,contrast-probe,shot,smoke}.mjs、prototype/screenshots/{v2-*,layout-*}.png、prototype/output/geo-baseline-m20-batch{2,3,4,5}.{md,json}、docs/档案/方案/{UI重设计方案-v2.md,UI布局与动线优化方案-v1.md}、docs/档案/批次编号对齐表.md、ROADMAP.md、STRUCTURE.md、AGENTS.md、CLAUDE.md、交接文档.md、README.md、UI升级方案.md、.agents/skills/gk-release/SKILL.md、.github/workflows/gatekeeper.yml、prototype/configs/gatekeeper-self.json（0.21.0 + 登记）、本文件。
+> - **验证**：**十二门全绿**（EXIT=0）；smoke **7/7 PASS**（原 ④「阻断文档点提交弹 toast」因主按钮上下文联动改为「④ 阻断态按钮禁用并标明原因」+「④b 放行态可点并弹 toast」，断言随行为改写而非迁就）；`tools/lint-layout.mjs` **AL1–AL11 全过**（AL1 390 首屏 chrome 21.2%｜AL2 band 130/248/232｜AL3 裁决→首条 P0 118px｜AL4 已通过摘要条 47px、独立空卡 0｜AL5 rail 空洞 12px｜AL6 同屏结论性分数 1｜AL7 越刻度 0 处｜AL8 孤儿末卡 0｜AL9 横向溢出 0px｜AL10 定位后命中项可达｜AL11 阻断态禁用 + 放行态可点）；`tools/class-audit.mjs` 基线静态 class 全在 + 18 项动态类来源字面量全在 + 基线 #id 42 全在；`test-lint-layout.mjs` 12/12；对比度探针亮/暗各 0 条不足；单文件体积 **436KB → 105,618 字节（−75.9%）**；几何实测：390 首屏 chrome 906→197px、裁决→首条 P0 498→118px、0 命中卡 908→46px、rail 空洞 1191→0、吸顶重叠 17→0px。
+> - **状态**：已落地（版本升到 v0.21.0，两批合并收官）。遗留（如实）：①交接「四」的 `human-baseline.html?set=B` 作者盲测冷跑仍未取数（两批均挂账，标注不阻塞，待补跑回填 `prototype/人工实测对照表.md`）；②M19 的声明级判据 A1–A13 尚未工具化（`tools/lint-ui.mjs` 未建），本版仅由 `lint-layout` 承担 AL7 间距刻度，A1–A6/A8–A13 仍靠人工核；③SOP-2 第 7 步双复审（rescan-audit 安全向 + gk-review-wave 台账向）待推送后执行（本次未推送）。
+
 ### v0.20.2（2026-10-07）：A-12 写前对账规程 + A-14 lint-links 未跟踪盲区修复（第二期复盘行动部分落地）
 
 > **来源**：用户确认 H-03（并发会话=多 AI session）并询问 A-14 形态取舍，执行方建议方案 a（机械防线）获采纳。

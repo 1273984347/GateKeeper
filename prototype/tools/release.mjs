@@ -4,8 +4,8 @@
  * 边界（用户拍板）：不自动 commit/push——机械步骤脚本做，判断性内容（CHANGELOG 四件套正文）人写，提交人审。
  *
  * 用法：
- *   node tools/release.mjs <vX.Y.Z> [--dry-run]   # 登记 registry→重注入→README/交接版本行→十门→打印手工步骤清单
- *   node tools/release.mjs --verify [vX.Y.Z]      # 复核四处版本一致（registry/README/交接/CHANGELOG 顶段）+ 十门
+ *   node tools/release.mjs <vX.Y.Z> [--dry-run]   # 登记 registry→重注入→README/交接版本行→十二门→打印手工步骤清单
+ *   node tools/release.mjs --verify [vX.Y.Z]      # 复核四处版本一致（registry/README/交接/CHANGELOG 顶段）+ 十二门
  *
  * 覆盖的漏做史（3 次）：M15 registry 改后漏重注入（被 --check 实拦）；M14/M15/M16 台账不同步（review 抓出）。
  * 台账（SOP-2 第 6 步）与复审（第 7 步）在推送后由 Agent 执行，脚本只提示。
@@ -75,7 +75,7 @@ export function checkConsistency({ registry, readme, handover, changelog }) {
 // ---------- 主流程 ----------
 
 function runGates(label) {
-  console.log(`\n==> ${label}：十门全量门禁（退出码直取，禁管道）`);
+  console.log(`\n==> ${label}：十二门全量门禁（退出码直取，禁管道）`);
   const r = spawnSync('node', ['tools/gate.mjs'], { cwd: PROTO, stdio: 'inherit' });
   return r.status;
 }
@@ -119,7 +119,7 @@ function main() {
         process.exit(1);
       }
     }
-    console.log(`✓ 四处版本一致${ver?.docs ? ` = ${ver.docs}` : ""}；继续跑十门`);
+    console.log(`✓ 四处版本一致${ver?.docs ? ` = ${ver.docs}` : ""}；继续跑十二门`);
     const s = runGates('复核门禁');
     console.log(s === 0 ? `\n✅ --verify 通过（${ver?.docs ?? ''}）` : `\n❌ --verify 门禁红`);
     process.exit(s === 0 ? 0 : 1);
@@ -144,7 +144,7 @@ function main() {
     console.log(`[1] registry: currentVersion=${ver.reg} + versions 首位`);
     console.log(`[2] node sync-configs.mjs 重注入`);
     console.log(`[3] README 抬头 → ${ver.docs}；交接文档「一」→ ${ver.docs}`);
-    console.log(`[4] 十门全量门禁`);
+    console.log(`[4] 十二门全量门禁`);
     console.log(`[5] 打印手工步骤清单（CHANGELOG 四件套/commit/台账/复审提示）`);
     console.log('（dry-run 结束，未写任何文件）');
     process.exit(0);
@@ -163,7 +163,7 @@ function main() {
   console.log(`✓ [3] README/交接文档版本行 → ${ver.docs}`);
 
   // [4] 门禁（CHANGELOG 尚未写，doc-sync 版本句此刻必红——这是预期信号，提示先填再复跑）
-  const gateStatus = runGates('[4] 十门全量门禁');
+  const gateStatus = runGates('[4] 十二门全量门禁');
   if (gateStatus !== 0) {
     console.log(`\nℹ 门禁红属预期（CHANGELOG 版本段尚未写，doc-sync 版本句漂移）。填完 CHANGELOG 后重跑：node tools/release.mjs --verify ${ver.docs}`);
   }
