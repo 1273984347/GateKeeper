@@ -15,3 +15,10 @@ nul
 __pycache__/
 desktop.ini
 *.local.*
+
+# ---- AI 工具本地状态（勿入库·统一模板 2026-10-30）----
+.mimosa/
+.workbuddy/
+.codebuddy/
+.trae/
+.writerHelper/
