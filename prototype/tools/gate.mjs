@@ -1,20 +1,24 @@
 // gate.mjs — SK-01 门禁一键门卫：串行跑全链门禁，任一红即 exit 1（复盘报告 §7 A-01）
-// 用法：node tools/gate.mjs [--full]    （--full 追加 bench 与 dws-bridge dry-run）
-// 全量门禁 = 漂移三检（sync-gates/sync-configs/sync-render --check）+ verify 回归红线 + 引擎单测
-//          + 语法检查 + check-docs 文档体检 + doc-sync 文档口径体检（项数以源内 gates 数组为准）
+// 用法：node tools/gate.mjs [--full] [--ci] [--json]
+//   --full  追加前端冒烟 smoke / bench / dws-bridge dry-run
+//   --ci    CI 模式：剔除浏览器门（单一清单源——CI yml 只跑本模式，防双清单漂移）
+//   --json  只输出机器可读 JSON（release.mjs 消费：区分预期红与真红）
+// SKIP 语义：依赖缺失的门显式打 ⏭ 并计入汇总（v0.21.5：不再与真过门混同打 ✓）
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FULL = process.argv.includes('--full');
+const CI = process.argv.includes('--ci');
+const JSON_OUT = process.argv.includes('--json');
 
 const gates = [
   { name: '漂移门禁 · 引擎块 == gates.mjs', cmd: ['node', 'sync-gates.mjs', '--check'] },
   { name: '漂移门禁 · 注入块 == configs/', cmd: ['node', 'sync-configs.mjs', '--check'] },
   { name: '漂移门禁 · 渲染块 == render-core.mjs', cmd: ['node', 'sync-render.mjs', '--check'] },
   { name: '回归红线 verify（12 项+自洽）', cmd: ['node', 'verify.mjs'] },
-  { name: '引擎与门禁单测 node --test（引擎+渲染+编排+门禁）', cmd: ['node', '--test', 'gates.test.mjs', 'render-core.test.mjs', 'dws-bridge.test.mjs', 'tools/test-lint-ui.mjs', 'tools/test-lint-layout.mjs', 'tools/test-lint-links.mjs', 'tools/test-lint-workspace.mjs', 'tools/test-docsync.mjs', 'tools/test-class-audit.mjs'] },
+  { name: '引擎与门禁单测 node --test（引擎+渲染+编排+门禁+收官）', cmd: ['node', '--test', 'gates.test.mjs', 'render-core.test.mjs', 'dws-bridge.test.mjs', 'tools/test-lint-ui.mjs', 'tools/test-lint-layout.mjs', 'tools/test-lint-links.mjs', 'tools/test-lint-workspace.mjs', 'tools/test-docsync.mjs', 'tools/test-class-audit.mjs', 'tools/test-release.mjs'] },
   { name: '语法检查 node --check 全部 .mjs', cmd: ['node', 'tools/syntax-check.mjs'] },
   { name: '核心文档体检 check-docs', cmd: ['node', 'check-docs.mjs'] },
   { name: '文档口径体检 doc-sync', cmd: ['node', 'tools/doc-sync.mjs'] },
@@ -22,33 +26,46 @@ const gates = [
   { name: '工作区体检 lint-workspace', cmd: ['node', 'tools/lint-workspace.mjs'] },
   { name: 'class/id 集合对拍 class-audit', cmd: ['node', 'tools/class-audit.mjs'] },
   { name: 'A 系列声明级判据 lint-ui', cmd: ['node', 'tools/lint-ui.mjs'] },
-  { name: '布局结果判据 lint-layout', cmd: ['node', 'tools/lint-layout.mjs'] },
+  { name: '布局结果判据 lint-layout', cmd: ['node', 'tools/lint-layout.mjs'], browser: true },
   ...(FULL ? [
+    { name: '前端冒烟 smoke（七项）', cmd: ['node', 'tools/smoke.mjs'], browser: true },
     { name: '省时实测 bench', cmd: ['node', 'bench.mjs'] },
     { name: 'DWS 编排 dry-run', cmd: ['node', 'dws-bridge.mjs'] },
   ] : []),
 ];
 
+// --ci：剔除浏览器门（CI 无浏览器；本数组即唯一清单源）
+const runList = CI ? gates.filter((g) => !g.browser) : gates;
+
 const results = [];
 let failed = 0;
-for (const g of gates) {
+let skipped = 0;
+for (const g of runList) {
   const t0 = process.hrtime.bigint();
   const r = spawnSync(g.cmd[0], g.cmd.slice(1), { cwd: PROTO, encoding: 'utf8', shell: process.platform === 'win32' });
   const ms = Number(process.hrtime.bigint() - t0) / 1e6;
+  const skip = r.status === 0 && (r.stdout || '').includes('⏭️ SKIP');
   const ok = r.status === 0;
   if (!ok) failed++;
-  results.push({ name: g.name, ok, ms, stderr: (r.stderr || '').trim(), stdoutTail: (r.stdout || '').trim().split('\n').slice(-3).join('\n') });
+  if (skip) skipped++;
+  results.push({ name: g.name, ok, skipped: skip, ms, stderr: (r.stderr || '').trim(), stdoutTail: (r.stdout || '').trim().split('\n').slice(-3).join('\n') });
+}
+
+if (JSON_OUT) {
+  console.log(JSON.stringify({ ok: failed === 0, failed, skipped, results: results.map(({ name, ok, skipped, ms }) => ({ name, ok, skipped, ms })) }, null, 2));
+  process.exit(failed === 0 ? 0 : 1);
 }
 
 const width = Math.max(...results.map((r) => r.name.length));
 console.log('\n===== GateKeeper 门禁总览 =====');
 for (const r of results) {
-  console.log(`${r.ok ? '✓' : '✗'} ${r.name.padEnd(width)}  ${r.ms.toFixed(0).padStart(5)} ms`);
+  console.log(`${r.skipped ? '⏭' : r.ok ? '✓' : '✗'} ${r.name.padEnd(width)}  ${r.ms.toFixed(0).padStart(5)} ms${r.skipped ? '  （SKIP：依赖缺失，未测 ≠ 通过）' : ''}`);
   if (!r.ok) {
     console.log('  └─ 失败输出（尾 20 行）:');
     for (const l of (r.stderr || r.stdoutTail).split('\n').slice(-20)) console.log('     ' + l);
   }
 }
 const total = results.reduce((s, r) => s + r.ms, 0);
-console.log(`===== ${failed === 0 ? '✅ 全绿' : `❌ ${failed} 项失败`} · 合计 ${(total / 1000).toFixed(1)}s =====`);
+const head = failed === 0 ? '✅ 全绿' : `❌ ${failed} 项失败`;
+console.log(`===== ${head}${skipped ? ` · ${skipped} 项 SKIP` : ''} · 合计 ${(total / 1000).toFixed(1)}s =====`);
 process.exit(failed === 0 ? 0 : 1);

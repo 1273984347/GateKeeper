@@ -10,7 +10,7 @@
  * 覆盖的漏做史（3 次）：M15 registry 改后漏重注入（被 --check 实拦）；M14/M15/M16 台账不同步（review 抓出）。
  * 台账（SOP-2 第 6 步）与复审（第 7 步）在推送后由 Agent 执行，脚本只提示。
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -74,10 +74,15 @@ export function checkConsistency({ registry, readme, handover, changelog }) {
 
 // ---------- 主流程 ----------
 
-function runGates(label) {
-  console.log(`\n==> ${label}：十三门全量门禁（退出码直取，禁管道）`);
-  const r = spawnSync('node', ['tools/gate.mjs'], { cwd: PROTO, stdio: 'inherit' });
-  return r.status;
+// 门禁单一清单源：--ci 模式（非浏览器门）+ --json 机器可读——release 据此区分「预期红（仅 doc-sync）」与「真红」
+function runGatesJson(label) {
+  console.log(`\n==> ${label}：门禁（gate.mjs --ci 单一清单源，退出码直取，禁管道）`);
+  const r = spawnSync('node', ['tools/gate.mjs', '--ci', '--json'], { cwd: PROTO, encoding: 'utf8' });
+  const out = r.stdout || '';
+  const start = out.indexOf('{');
+  let json = null;
+  try { json = start >= 0 ? JSON.parse(out.slice(start)) : null; } catch { /* JSON 段不完整 → fail-closed */ }
+  return { status: r.status, json };
 }
 
 function main() {
@@ -101,14 +106,16 @@ function main() {
 
   // ---- --verify 模式 ----
   if (verifyMode) {
-    const c = checkConsistency({
+    const hasHandover = existsSync(handoverPath); // 交接文档为维护者本地件（v0.21.4 起不入公开面），缺省时不参与一致性
+    const consistency = {
       registry: JSON.parse(readFileSync(regPath, 'utf8')).registry.currentVersion,
       readme: (readFileSync(readmePath, 'utf8').match(/\*\*当前版本\*\*：(v[\d.]+)/) || [])[1] ?? null,
-      handover: (readFileSync(handoverPath, 'utf8').match(/\*\*版本\*\*：(v[\d.]+)/) || [])[1] ?? null,
       changelog: extractChangelogTop(readFileSync(changelogPath, 'utf8')),
-    });
+    };
+    if (hasHandover) consistency.handover = (readFileSync(handoverPath, 'utf8').match(/\*\*版本\*\*：(v[\d.]+)/) || [])[1] ?? null;
+    const c = checkConsistency(consistency);
     if (!c.ok) {
-      console.error(`✗ 四处版本不一致：${c.mismatches.join(' / ')}`);
+      console.error(`✗ 版本不一致：${c.mismatches.join(' / ')}`);
       process.exit(1);
     }
     const expect = ver ? ver.docs : null;
@@ -119,10 +126,10 @@ function main() {
         process.exit(1);
       }
     }
-    console.log(`✓ 四处版本一致${ver?.docs ? ` = ${ver.docs}` : ""}；继续跑十三门`);
-    const s = runGates('复核门禁');
-    console.log(s === 0 ? `\n✅ --verify 通过（${ver?.docs ?? ''}）` : `\n❌ --verify 门禁红`);
-    process.exit(s === 0 ? 0 : 1);
+    console.log(`✓ 版本一致${ver?.docs ? ` = ${ver.docs}` : ""}${hasHandover ? '（含交接文档）' : '（交接文档本地不存在，跳过）'}；继续跑门禁`);
+    const g = runGatesJson('复核门禁');
+    console.log(g.status === 0 ? `\n✅ --verify 通过（${ver?.docs ?? ''}）` : `\n❌ --verify 门禁红`);
+    process.exit(g.status === 0 ? 0 : 1);
   }
 
   // ---- 收官模式 ----
@@ -133,9 +140,10 @@ function main() {
     process.exit(1);
   }
   const readmeOut = updateDocVersionLine(readFileSync(readmePath, 'utf8'), 'README', ver.docs);
-  const handoverOut = updateDocVersionLine(readFileSync(handoverPath, 'utf8'), '交接', ver.docs);
-  if (!readmeOut || !handoverOut) {
-    console.error(`✗ 版本行句式不匹配（fail-closed）：README=${readmeOut ? 'ok' : 'null'} 交接=${handoverOut ? 'ok' : 'null'}`);
+  const hasHandover = existsSync(handoverPath); // 交接文档为维护者本地件，公开克隆无此文件——缺省时跳过该版本行
+  const handoverOut = hasHandover ? updateDocVersionLine(readFileSync(handoverPath, 'utf8'), '交接', ver.docs) : null;
+  if (!readmeOut || (hasHandover && !handoverOut)) {
+    console.error(`✗ 版本行句式不匹配（fail-closed）：README=${readmeOut ? 'ok' : 'null'} 交接=${hasHandover ? (handoverOut ? 'ok' : 'null') : '文件不存在（跳过）'}`);
     process.exit(1);
   }
 
@@ -159,13 +167,23 @@ function main() {
   console.log(`✓ [2] sync-configs 重注入完成`);
   // [3] 版本行
   writeFileSync(readmePath, readmeOut);
-  writeFileSync(handoverPath, handoverOut);
-  console.log(`✓ [3] README/交接文档版本行 → ${ver.docs}`);
+  if (hasHandover) writeFileSync(handoverPath, handoverOut);
+  console.log(`✓ [3] README 版本行 → ${ver.docs}${hasHandover ? '；交接文档「一」→ ' + ver.docs : '（交接文档本地不存在，跳过）'}`);
 
-  // [4] 门禁（CHANGELOG 尚未写，doc-sync 版本句此刻必红——这是预期信号，提示先填再复跑）
-  const gateStatus = runGates('[4] 十三门全量门禁');
-  if (gateStatus !== 0) {
-    console.log(`\nℹ 门禁红属预期（CHANGELOG 版本段尚未写，doc-sync 版本句漂移）。填完 CHANGELOG 后重跑：node tools/release.mjs --verify ${ver.docs}`);
+  // [4] 门禁（CHANGELOG 尚未写，doc-sync 版本句此刻必红——预期信号；其余门红 = 真问题，fail-closed exit 1）
+  const g = runGatesJson('[4] 全量门禁（非浏览器门）');
+  if (g.status !== 0) {
+    const failedNames = (g.json?.results || []).filter((x) => !x.ok && !x.skipped).map((x) => x.name);
+    if (!g.json) {
+      console.error(`\n✗ 门禁红且 --json 解析失败（无法判定是否属预期，fail-closed）。请直接跑 node tools/gate.mjs 定位后重试。`);
+      process.exit(1);
+    }
+    if (failedNames.every((n) => n.includes('doc-sync'))) {
+      console.log(`\nℹ 门禁红属预期（仅 doc-sync 版本句：CHANGELOG 版本段尚未写）。填完 CHANGELOG 后重跑：node tools/release.mjs --verify ${ver.docs}`);
+    } else {
+      console.error(`\n✗ 门禁红且非预期（失败门：${failedNames.join('、')}）。先修复再收官——只有 doc-sync 版本句红才属预期。`);
+      process.exit(1);
+    }
   }
 
   // [5] 手工步骤清单

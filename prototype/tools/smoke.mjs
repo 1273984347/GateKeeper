@@ -2,47 +2,27 @@
 // 用法：node tools/smoke.mjs [gatekeeper.html 路径]
 // 七项：①加载 0 error ②暗色 bodyBg ③640 无横向溢出 ④阻断态按钮禁用并标明原因 ④b放行态按钮可用且弹 toast ⑤快捷键切视图 ⑥粘贴全链路
 // 依赖 playwright（本机全局安装）；未命中时按提示设置 NODE_PATH。
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
+import { resolveChromium, launch as launchBrowser, skipMsg } from './browser.mjs';
 
 const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TARGET = process.argv[2] ? join(process.cwd(), process.argv[2]) : join(PROTO, 'gatekeeper.html');
 if (!existsSync(TARGET)) { console.error(`✗ 找不到被测文件：${TARGET}`); process.exit(2); }
 const URL = 'file:///' + TARGET.replace(/\\/g, '/');
 
-let chromium = null;
-try {
-  chromium = createRequire(import.meta.url)('playwright').chromium;
-} catch {
-  const guess = join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright');
-  try { chromium = createRequire(import.meta.url)(join(guess, 'index.js')).chromium; }
-  catch {
-    // 依赖缺失 ≠ 冒烟通过：SKIP 需显式声明（v0.21.4 首航友好——新用户环境不红，但维护者必须自知未测）
-    console.log('⏭️ SKIP 前端冒烟：未安装 Playwright（可选依赖）。安装后启用：npm i -g playwright && npx playwright install chromium（维护者环境未测 ≠ 通过，勿据此宣称冒烟绿）');
-    process.exit(0);
-  }
+const { chromium } = resolveChromium();
+if (!chromium) {
+  // 依赖缺失 ≠ 冒烟通过：SKIP 需显式声明（维护者环境未测 ≠ 通过，勿据此宣称冒烟绿）
+  console.log(skipMsg('前端冒烟') + '（维护者环境未测 ≠ 通过，勿据此宣称冒烟绿）');
+  process.exit(0);
 }
 
 const checks = [];
 const record = (name, ok, detail) => { checks.push({ name, ok, detail }); console.log(`${ok ? '✓' : '✗'} ${name}${detail ? '  ' + detail : ''}`); };
 
-// 启动浏览器：优先用 Playwright 自带浏览器；本机 playwright 包与已装浏览器 revision 不匹配时，
-// 回落 ms-playwright 缓存中已完整安装的 chromium（可执行路径），保证离线机也能跑冒烟。
-let browser;
-try {
-  browser = await chromium.launch();
-} catch (e) {
-  const cache = join(process.env.LOCALAPPDATA || process.env.APPDATA || '', 'ms-playwright');
-  const dir = existsSync(cache)
-    ? readdirSync(cache).filter((d) => /^chromium-\d+$/.test(d)).sort().reverse()[0]
-    : null;
-  const exe = dir ? join(cache, dir, 'chrome-win64', 'chrome.exe') : '';
-  if (!exe || !existsSync(exe)) throw e;
-  console.log(`  (提示：自带浏览器不可用，回落已装 chromium ${dir})`);
-  browser = await chromium.launch({ executablePath: exe });
-}
+const browser = await launchBrowser(chromium);
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });

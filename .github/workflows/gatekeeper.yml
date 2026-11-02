@@ -23,32 +23,11 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '20'
-      - name: 单一事实源漂移门禁（引擎块 == gates.mjs）
-        run: node sync-gates.mjs --check
-      - name: 配置/数据漂移门禁（注入块 == configs/）
-        run: node sync-configs.mjs --check
-      - name: 渲染纯函数漂移门禁（注入块 == render-core.mjs）
-        run: node sync-render.mjs --check
-      - name: 功能回归红线 + 换配置差异
-        run: node verify.mjs
-      - name: 语法检查（node --check 全部 .mjs）
-        run: node tools/syntax-check.mjs
-      - name: 引擎/渲染/编排/门禁单测（node:test，正负样本）
-        run: node --test gates.test.mjs render-core.test.mjs dws-bridge.test.mjs tools/test-lint-ui.mjs tools/test-lint-layout.mjs tools/test-lint-links.mjs tools/test-lint-workspace.mjs tools/test-docsync.mjs
-      - name: 核心治理文档体检（全部核心文档，任一非「可发布」exit 1）
-        run: node check-docs.mjs
-      - name: 文档口径体检（代码真值 → 文档当前态声明，任一漂移 exit 1）
-        run: node tools/doc-sync.mjs
-      - name: 全仓链接体检（站内链接存在性，越仓/断链 exit 1）
-        run: node tools/lint-links.mjs
-      - name: 工作区体检（垃圾文件/STRUCTURE 树声明/gitignore 覆盖，exit 1）
-        run: node tools/lint-workspace.mjs
-      - name: class/id 集合对拍（基线 ⊆ 实测，只增不删，exit 1）
-        run: node tools/class-audit.mjs
-      - name: A 系列声明级判据（字号/圆角/hover/焦点/语义色/等宽/体积/衬线残留，exit 1）
-        run: node tools/lint-ui.mjs
-      # 注：布局结果判据 tools/lint-layout.mjs 需真实浏览器（playwright + chromium），
-      #     故只在本地门序列 prototype/tools/gate.mjs 中执行，不进本 CI（避免每次 CI 额外下载浏览器）。
+      # 单一清单源（v0.21.5）：CI 只跑 gate.mjs --ci（剔除浏览器门 lint-layout/smoke），
+      # 门清单以 tools/gate.mjs 源内数组为唯一权威——本地十三门与 CI 十二门永不漂移。
+      # 注：布局结果判据 tools/lint-layout.mjs 需真实浏览器（playwright + chromium），只在本地门序列执行。
+      - name: 全量门禁（非浏览器门，单一清单源 gate.mjs --ci）
+        run: node tools/gate.mjs --ci
       # informational：换配置能力演示（xiyouji 口径代跑根文档），失败不作红线——红线在 verify/check-docs
       - name: 换配置体检演示（informational）
         run: node project-check.mjs --config configs/xiyouji.json ../README.md ../DESIGN.md ../CHANGELOG.md --compare || true
@@ -56,5 +35,5 @@ jobs:
         if: always()
         run: |
           echo "## GateKeeper · CI 门禁" >> "$GITHUB_STEP_SUMMARY"
-          echo "- 漂移双门禁 + 回归红线 + 文档体检 全部通过则本 job 绿" >> "$GITHUB_STEP_SUMMARY"
+          echo "- gate.mjs --ci 单一清单源：漂移三检 + 回归红线 + 单测 + 语法 + 文档/口径/链接/工作区/class/UI 门全过则本 job 绿" >> "$GITHUB_STEP_SUMMARY"
           echo "- 规则源 gates.mjs / 配置源 configs/*.json 单一事实源，前端不硬编码" >> "$GITHUB_STEP_SUMMARY"

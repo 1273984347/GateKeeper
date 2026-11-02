@@ -7,9 +7,9 @@
 //   动态自检用空答案跑一遍仅用于验证脚本无 bug，**不构成人工实测数据**；
 //   人工召回率/漏检/误报/耗时必须由真人独立跑出并回填（见交接文档「四」与人工实测对照表）。
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
+import { resolveChromium, skipMsg } from './browser.mjs';
 
 const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const HTML = join(PROTO, 'human-baseline.html');
@@ -59,12 +59,15 @@ if (isMain) {
   console.log(`静态：B 集 ${st.facts.violations} 违规 + ${st.facts.clean} 合规 · 与 A 集文案重合 ${st.facts.overlapWithA} 条 · 法律依据覆盖 ${st.facts.basisKinds} 类`);
   for (const x of st.fails) console.log(`  ✗ ${x}`);
 
-  // 动态：采集器可跑性（空答案，仅验脚本无 bug）
-  let dyn = { ok: true, fails: [] };
+  // 动态：采集器可跑性（空答案，仅验脚本无 bug）。依赖缺失 → 显式 SKIP（静态结论如实保留，不假报动态已测）
+  let dyn = { ok: true, fails: [], skipped: false };
+  const { chromium } = resolveChromium();
+  if (!chromium) {
+    dyn.skipped = true;
+    console.log(skipMsg('动态自检（采集器可跑性）') + '——静态自检结论仍有效，动态未测 ≠ 已测');
+  }
   try {
-    let chromium;
-    try { chromium = createRequire(import.meta.url)('playwright').chromium; }
-    catch { chromium = createRequire(import.meta.url)(join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright', 'index.js')).chromium; }
+    if (chromium) {
     const browser = await chromium.launch({ channel: 'chrome', args: ['--hide-scrollbars'] }).catch(async () => chromium.launch());
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     // 采集器在有条目未作答时会 confirm() 询问「未答按没问题计，继续？」——自检须接受该确认（真人会点继续）
@@ -88,6 +91,7 @@ if (isMain) {
     if (errs.length) dyn.fails.push(`页面错误 ${errs.length} 条：${errs[0]}`);
     console.log(`动态：渲染 ${n} 条 · 结果面板 ${r.resultShown ? '已出分' : '未出现'} · 回填文本「${r.hero}…」`);
     await browser.close();
+    }
   } catch (e) {
     dyn = { ok: false, fails: [`动态自检异常：${String(e.message || e).slice(0, 120)}`] };
   }
@@ -95,6 +99,7 @@ if (isMain) {
   for (const x of dyn.fails) console.log(`  ✗ ${x}`);
 
   const ok = st.ok && dyn.ok;
+  if (dyn.skipped) console.log('⏭️ 动态自检未执行（依赖缺失）——本结论仅覆盖静态部分，动态未测 ≠ 已测');
   console.log(ok
     ? '✅ 工具链就绪：可交真人冷跑（本次为工具自检，空答案，不构成人工实测数据）'
     : '❌ 工具链有缺陷：真跑前需先修');

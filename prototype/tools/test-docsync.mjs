@@ -71,12 +71,24 @@ t('门数句：8 门全绿 → 8', () => { assert.deepEqual(findGateCountClaims(
 t('门数句：7 门全绿 → 7', () => { assert.deepEqual(findGateCountClaims('七门禁全绿 7 门全绿'), [{ line: 1, n: 7 }]); });
 t('反例：六道门禁（引擎）不报', () => { assert.equal(findGateCountClaims('六道门禁明细').length, 0); });
 t('反例：无门数句', () => { assert.equal(findGateCountClaims('全绿通过').length, 0); });
+t('反例：doc-sync:exempt 豁免行不报（v0.21.5 与陈旧词口径对齐）', () => {
+  assert.deepEqual(
+    findGateCountClaims('8 门全绿\n历史叙述：7 门全绿<!--doc-sync:exempt 历史时点事实-->'),
+    [{ line: 1, n: 8 }]
+  );
+});
 
 // ---- findTestCountClaims：正 2 / 反 2 ----
 t('单测句：测试 29 例', () => { assert.deepEqual(findTestCountClaims('单测共测试 29 例'), [{ line: 1, n: 29 }]); });
 t('单测句：测试 13 例（第 2 行）', () => { assert.deepEqual(findTestCountClaims('x\n回归测试 13 例')[0], { line: 2, n: 13 }); });
 t('反例：单测（9 例 无「测试」前缀不报', () => { assert.equal(findTestCountClaims('渲染纯函数单测（9 例；同栈）').length, 0); });
 t('反例：node:test 17 例 历史叙述不报', () => { assert.equal(findTestCountClaims('node:test 17 例单元/负样本').length, 0); });
+t('反例：doc-sync:exempt 豁免行不报（v0.21.5 与陈旧词口径对齐）', () => {
+  assert.deepEqual(
+    findTestCountClaims('测试 18 例\n历史叙述：测试 15 例<!--doc-sync:exempt 历史时点事实-->'),
+    [{ line: 1, n: 18 }]
+  );
+});
 
 // ---- extractCurrentVersion：正 3 / 反 3 ----
 t('README 当前版本句', () => { assert.equal(extractCurrentVersion('> **当前版本**：v0.17.2', 'readme'), 'v0.17.2'); });

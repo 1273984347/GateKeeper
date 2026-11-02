@@ -48,16 +48,29 @@ export const TRACKED_FORBIDDEN = [
   'CLAUDE.md', 'AGENTS.md', '交接文档.md', '新Agent启动Prompt.md',
   '.agents/', '.zcode/', 'docs/档案/', 'prototype/人工冷跑开跑清单.md',
   'UI升级方案.md', 'Web端可扩展改造方案.md',
+  'docs/工作复盘与优化分析报告-*.md',
 ];
 
-/** 跟踪路径中命中防回流清单的条目，返回 [{path, rule}]（目录规则按前缀匹配，文件规则全等匹配） */
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, (c) => (c === '*' ? '\0' : '\\' + c)); }
+
+/** 规则 → 匹配器：目录规则前缀；含 * 规则段内通配（[^/]*）；其余全等 */
+function ruleMatcher(rule) {
+  if (rule.endsWith('/')) return (p) => p.startsWith(rule);
+  if (rule.includes('*')) {
+    const re = new RegExp('^' + escapeRe(rule).split('\0').join('[^/]*') + '$');
+    return (p) => re.test(p);
+  }
+  return (p) => p === rule;
+}
+
+/** 跟踪路径中命中防回流清单的条目，返回 [{path, rule}] */
 export function findTrackedForbidden(paths, forbidden = TRACKED_FORBIDDEN) {
+  const matchers = forbidden.map((rule) => ({ rule, m: ruleMatcher(rule) }));
   const out = [];
   for (const p of paths) {
     const norm = p.replace(/\\/g, '/');
-    for (const rule of forbidden) {
-      if (rule.endsWith('/') ? norm.startsWith(rule) : norm === rule) { out.push({ path: p, rule }); break; }
-    }
+    const hit = matchers.find(({ m }) => m(norm));
+    if (hit) out.push({ path: p, rule: hit.rule });
   }
   return out;
 }
@@ -134,9 +147,7 @@ function main() {
   sources.declaredPaths = r.declared.length;
   for (const miss of r.missing) fail('STRUCTURE 声明缺失', `${miss}（树中声明但仓库不存在——移动/删除后未同步 STRUCTURE）`);
 
-  // 3) .gitignore 覆盖探针
-  const gi = spawnSync('git', ['check-ignore', '-q', ...GITIGNORE_PROBES], { cwd: ROOT, encoding: 'utf8' });
-  // check-ignore 逐路径判定：用 --non-matching 逐条拿结果更稳
+  // 3) .gitignore 覆盖探针（--non-matching 逐路径判定；此前并行的 -q 调用结果从未消费，v0.21.5 清理）
   const gi2 = spawnSync('git', ['check-ignore', '--verbose', '--non-matching', ...GITIGNORE_PROBES], { cwd: ROOT, encoding: 'utf8' });
   sources.ignoredProbes = 0;
   if (gi2.status !== 0 && !gi2.stdout) { fail('.gitignore 探针', 'git check-ignore 执行失败（fail-closed）'); }
@@ -150,12 +161,14 @@ function main() {
     }
   }
 
-  // 4) 防回流探针（v0.21.4）：本地面路径禁回跟踪面
-  const ls = spawnSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' });
+  // 4) 防回流探针（v0.21.4）：本地面路径禁回跟踪面。必须用 -z：默认 quotepath 会把非 ASCII 路径
+  //    转成八进制转义，中文规则（交接文档/档案/复盘报告）全部匹配落空（v0.21.5 实测抓出修复）
+  const ls = spawnSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' });
   if (ls.status !== 0) { fail('git ls-files', '执行失败（fail-closed）'); }
   else {
-    sources.trackedFiles = ls.stdout.split('\n').filter(Boolean).length;
-    for (const hit of findTrackedForbidden(ls.stdout.split('\n').filter(Boolean))) {
+    const tracked = ls.stdout.split('\0').filter(Boolean);
+    sources.trackedFiles = tracked.length;
+    for (const hit of findTrackedForbidden(tracked)) {
       fail('防回流探针', `${hit.path} 属本地面（规则 ${hit.rule}），禁止回跟踪面——git rm --cached 处置`);
     }
   }

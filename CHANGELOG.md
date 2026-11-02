@@ -9,6 +9,19 @@
 
 ---
 
+### v0.21.5（2026-11-03）：机械面审查处置批 —— 门禁单源化与防回流补洞 + 浏览器工具链收敛 + 退役归并
+
+> **来源**：用户指令「审查口径/级联/脚本/钩子/守卫/兜底/门禁/探针/台账/生成器/计数链/报告链——哪些建了没应用、有问题、可提效、需重构」。四路审查（引擎验收线/注入级联/门禁工具链/编排报告链+CI）产出 20+ 发现，用户拍板全部执行。
+> - **执行（P1 安全面与可信度）**：①防回流探针补洞——`TRACKED_FORBIDDEN` 增 glob 规则（`docs/工作复盘与优化分析报告-*.md`）+ 匹配器支持段内通配；负样本实测再抓出 **quotepath 盲区**（`git ls-files` 默认把非 ASCII 路径转八进制转义，中文规则全部匹配落空——v0.21.4 的 CLAUDE.md 负样本能红纯因 ASCII，属侥幸），改 `-z` 原样输出修复；负样本 复盘报告/人工冷跑清单 `add -f` 红→还原→绿 双闭环。②单测清单单源化——gate.mjs 增 `--ci`（剔除浏览器门）为唯一清单源，**CI 十三步收敛为单步引用**（根除 gate/CI 双清单漂移，v0.21.1 的 test-class-audit「接入 CI」失守即此类）；`test-release.mjs`（18 例，此前零接入）与 test-class-audit 双侧对齐；test-lint-workspace 增 `.gitignore` 内部面两节 ↔ `TRACKED_FORBIDDEN` 同步守卫测试（漂移即红）。③release.mjs 红判定——改消费 `gate.mjs --json`，失败集 ⊆ {doc-sync} 才属「预期红」，其余 **fail-closed exit 1**（原实现任何红都打印「属预期」放行）；交接文档版本行改可选（本地件缺省跳过，公开克隆不再崩）。④gate.mjs SKIP 单列（⏭ 计入汇总，不与真过门混同打 ✓）。
+> - **执行（P2 口径对齐与退役）**：doc-sync 三扫描器豁免口径统一（门数/单测句跳过 `doc-sync:exempt`，与陈旧词对齐）+ 2 例；dws-bridge 输入默认锚定脚本目录 + 缺文件友好报错（从仓库根误运行不再 ENOENT 崩；产物保持 CWD 相对——test 临时目录隔离依赖此语义，CHANGELOG-ARCHIVE:72 历史声明以本段为勘误不回改）；**selfcheck.mjs / run-real.mjs 退役删除**（0 引用孤儿；selfcheck 默认清单含已本地化的交接文档，公开克隆必崩）；`parse-meta.mjs` 新建收敛 parseDoc 契约（4 份复制→2 消费方共 1 实现）；geo-probe AL5 公式对齐 lint-layout 修正版（旧探针复测会得出与门禁矛盾的基线）。
+> - **执行（P3 提效重构）**：`tools/browser.mjs` 新建收敛六处 Playwright 解析+launch 复制粘贴，SKIP/fail-closed 口径全链统一（geo/contrast/shot 缺依赖改 SKIP exit 0；human-baseline-check 缺依赖降级「仅静态自检+显式 SKIP」）；**lint-layout 提速 10.7s→3.8s**（单页复用+双 rAF 替代 3 次整页加载与约 9s 硬编码 sleep，14 项测量值与改前基线逐项一致）；lint-links 两次 ls-files 合并单次 `-t`；lint-workspace 死调用（`check-ignore -q` 结果从未消费）清理。
+> - **执行（文档口径）**：RELEASE-CHECKLIST 增「自动化载体」列（11 项中 7 项标注工具载体、4 项显式人工）；VISUAL-ACCEPTANCE 留证口径改「本地留存+CHANGELOG 摘要」（output/ 不入库后留证语义修正）+ A7 双口径分工注记 + shot 命令入五步闭环；CHANGELOG 历史段两处已本地化文件引用加「维护者本地留档」注记。
+> - **文件**：tools/gate.mjs、tools/release.mjs、tools/browser.mjs（新建）、tools/lint-layout.mjs、tools/lint-workspace.mjs、tools/test-lint-workspace.mjs、tools/doc-sync.mjs、tools/test-docsync.mjs、tools/lint-links.mjs、tools/smoke.mjs、tools/geo-probe.mjs、tools/contrast-probe.mjs、tools/shot.mjs、tools/human-baseline-check.mjs、tools/RELEASE-CHECKLIST.md、tools/VISUAL-ACCEPTANCE.md、parse-meta.mjs（新建）、project-check.mjs、real-batch-audit.mjs、dws-bridge.mjs、prototype/selfcheck.mjs（删）、prototype/run-real.mjs（删）、.github/workflows/gatekeeper.yml、STRUCTURE.md、DESIGN.md、prototype/configs/gatekeeper-self.json（0.21.5 + 登记）、本文件。
+> - **验证**：十三门全绿（test-release 首次入链 18/18；test-lint-workspace 22/22、test-docsync 38/38）；lint-layout 提速后测量值与基线逐项零漂移；`--ci` 12 门独立可跑且失败集判定=「仅 doc-sync」实录；防回流 glob/中文路径负样本 双红双绿；release 新红判定首跑实拦自身 --json 解析 bug（fail-closed 按设计生效）→ 修正 → 预期红正确放行；--verify v0.21.5 全绿；GitHub Actions 单步化后绿。
+> - **状态**：已落地。四路审查 20+ 发现全部处置或登记；已知取舍（如实）：dws-bridge 产物保持 CWD 相对（测试隔离设计）、CHANGELOG-ARCHIVE:72 历史声明不回改、parse-meta 契约由两消费方门禁兜底（不另设单测）。
+
+---
+
 ### v0.21.4（2026-11-03）：公开整备批 —— 产物/截图/内部协作文档移出跟踪面 + 公开面脱敏 + 防回流探针 + 首航缺口修复 + git 历史重写预备
 
 > **来源**：用户公开前审查指令「新用户首航自测 + 严格区分自己的内容与公开面」——从 GitHub 实克隆首航 13 门全绿（可用性成立），但审查发现三类问题：①`prototype/output/`（41 项运行产物）与 `prototype/screenshots/`（30 张测试截图）被 git 跟踪，违反"测试产物禁止公开"；②`live-evidence.md`/HTML 证据块含真实钉钉回执锚点（taskId×5/alidocs 链接/openDingId），且真实群 openConversationId 存在于 ≥4 个历史提交（v0.14.1 才占位符化）；③内部协作文档（交接文档/对齐表/启动Prompt/CLAUDE/AGENTS/.agents/.zcode/复盘×3/档案方案×6）混入公开面。用户拍板：原仓重写历史 + 顺带修首航缺口。
@@ -34,7 +47,7 @@
 > - **执行（⑥ 体积终值对齐）**：单文件实测 **105,838 B**（v0.21.2 段的 105,829 B → 差 +9B，来源是**版本号注入**改变注入块字节数，已在 `lint-ui` 留证中登记为漂移源）；现役文档（UI升级方案 / ROADMAP / 对齐表 / v2 方案）统一为 105,838 B。
 > - **文件**：UI升级方案.md、prototype/tools/VISUAL-ACCEPTANCE.md、prototype/tools/lint-layout.mjs、prototype/tools/class-audit.mjs、prototype/tools/test-class-audit.mjs（新建）、prototype/tools/gate.mjs（单测接入）、prototype/output/class-audit-first-run.md（新建）、prototype/output/lint-ui-first-run.md（新建）、prototype/output/lint-layout-first-run.md（新建）、ROADMAP.md、docs/档案/批次编号对齐表.md、docs/档案/方案/UI重设计方案-v2.md、prototype/configs/gatekeeper-self.json（registry 升版 + 重注入）。
 > - **验证**：`node prototype/tools/gate.mjs` 十三门全绿；`node --test tools/test-class-audit.mjs` 5/5；`node tools/lint-ui.mjs` A 系列全过（字号 7 档 / 圆角越档 0 / hover -1,-2px / 焦点声明块 1 / ΔL 0.086 / 色相差 146.8° / 实心块白字 4.75–7.76:1 / muted 6.19:1 / 等宽 7/7 / 体积 105,838 B / 衬线 0）；`lint-layout` AL1–AL11 全过（chrome 21.2% / band 130,248,232 / P0 118px / rail 空洞 0 / 溢出 0px）；`release.mjs --verify v0.21.3` 四处版本一致通过。
-> - **状态**：已落地。**遗留（如实）**：① `human-baseline.html?set=B` 冷跑数据仍待真人跑出（AI 不代填；开跑清单见 `prototype/人工冷跑开跑清单.md`）；② **体积精确字节数会随版本号注入漂移**（±个位数字节）——判据「≤120KB」稳定，但**文档中的精确值应改引用式**（本批仅对齐终值）。
+> - **状态**：已落地。**遗留（如实）**：① `human-baseline.html?set=B` 冷跑数据仍待真人跑出（AI 不代填；开跑清单见 `prototype/人工冷跑开跑清单.md`——维护者本地留档，公开面不含）；② **体积精确字节数会随版本号注入漂移**（±个位数字节）——判据「≤120KB」稳定，但**文档中的精确值应改引用式**（本批仅对齐终值）。
 > - **勘误（历史段只增不删）**：v0.21.2 段「105,829 B」→ 实测 **105,838 B**（差 +9B，版本号注入所致）。
 
 ### v0.21.2（2026-10-23）：SOP-2 第 7 步双复审落地 —— 编排桥接层 P1 真断裂修复 + 22 条台账向发现处置 + 门禁单测接入
@@ -44,7 +57,7 @@
 > - **执行（台账向处置 22 条确认：P2×17 / info×5）**：已修 17 条 —— 台账断表修复（v0.21.1 行被空行截断致 GFM 表格断裂）、AL 实测值回填（AL1 23.3→**21.2%**、AL4 46→**47px**、AL5 0→**12px**）、单文件体积终值统一（**105,829 B / −75.7%**）、`--muted` 对比度更正（6.38→**6.19:1**）、smoke「六项」全仓清扫（7 处文档 + 工具自身 3 处）、门位次更正（`lint-layout`=第 13 门）、CLAUDE.md 判据范围更正（A2–A8/A12/A13）+ 三件探针收录、DESIGN.md §5 路线表述改写（弃用「故宫数字馆藏 × Linear」）、交接文档里程碑链与完成表补 M19/M20、CI 补 syntax-check 步、v2 方案自身编排修正；**挂账 5 条** —— `UI升级方案.md` §1/§7 表补行、VISUAL-ACCEPTANCE 补 A 系列检查点、三类新门禁首跑留证、lint-layout fail-open、CHANGELOG 历史段漏列。
 > - **文件**：prototype/dws-bridge.mjs、prototype/dws-bridge.test.mjs（新建，4 例正负样本）、prototype/tools/gate.mjs（单测接入 + 步名）、.github/workflows/gatekeeper.yml（paths 扩面 + syntax-check + 单测步）、prototype/output/rescan-v0.21.0-0.21.1.md（新建）、prototype/output/review-wave-v0.21.0-0.21.1.md（新建）、AGENTS.md、CLAUDE.md、README.md、STRUCTURE.md、DESIGN.md、ROADMAP.md、交接文档.md、UI升级方案.md、docs/档案/批次编号对齐表.md（断表修复 + M18 保留注 + AL 值 + touches）、docs/档案/方案/UI重设计方案-v2.md、docs/档案/方案/UI布局与动线优化方案-v1.md、prototype/tools/smoke.mjs、prototype/configs/gatekeeper-self.json（registry 升版 + 重注入）。
 > - **验证**：`node prototype/tools/gate.mjs` 十三门全绿（单测步并入 6 个门禁单测后 604ms）；`node --test dws-bridge.test.mjs` 4/4（黑盒子进程 + 临时目录，产物不落仓库）；smoke 7/7；`class-audit` 基线 class 118 + 动态 18 + id 42 全在；`lint-ui` 全绿；`release.mjs --verify v0.21.2` 四处版本一致通过。
-> - **状态**：已落地。**遗留（如实）**：① `human-baseline.html?set=B` 冷跑数据未取数（AI 不代填；开跑清单见 `prototype/人工冷跑开跑清单.md`）；② `UI升级方案.md` §1/§7 表待补 `lint-ui` 与 `human-baseline-check` 行；③ VISUAL-ACCEPTANCE 待补 A1–A13 检查点；④ 三类新门禁待补 `output/<name>-first-run.md` 首跑留证；⑤ `lint-layout` 浏览器不可用时 fail-open 待定口径。
+> - **状态**：已落地。**遗留（如实）**：① `human-baseline.html?set=B` 冷跑数据未取数（AI 不代填；开跑清单见 `prototype/人工冷跑开跑清单.md`——维护者本地留档，公开面不含）；② `UI升级方案.md` §1/§7 表待补 `lint-ui` 与 `human-baseline-check` 行（该文档已转维护者本地留档，公开面不含）；③ VISUAL-ACCEPTANCE 待补 A1–A13 检查点；④ 三类新门禁待补 `output/<name>-first-run.md` 首跑留证（output/ 不入库，本地留存）；⑤ `lint-layout` 浏览器不可用时 fail-open 待定口径（已于 v0.21.3 改 fail-closed、v0.21.4 补 SKIP 口径）。
 > - **勘误（历史段只增不删，故记于此）**：① v0.21.0 段「436KB → 105,618 B（−75.9%）」→ 实测 **105,829 B（−75.7%）**；② v0.21.1 段「105,820 B」→ 同上；③ v0.21.0 段「`--muted` 6.38:1」→ 实测 **6.19:1**；④ v0.21.0 段「文件」行 output 产物通配与实际不符（batch5 无 .json）且漏列 5 个文件；⑤ v0.21.1 段「文件」行漏列 7 个文件（gk-release 技能 / AGENTS.md / README.md / release.mjs / gatekeeper.html / project-check 产物 / 台账）。
 
 ### v0.21.1（2026-10-23）：v0.21.0 两条遗留收口 —— A 系列声明级判据工具化（门序列十二门→十三门）+ 人工盲测冷跑开跑前自检

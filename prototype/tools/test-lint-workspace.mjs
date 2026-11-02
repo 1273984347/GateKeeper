@@ -4,6 +4,7 @@
  * 用法：node tools/test-lint-workspace.mjs
  */
 import { strict as assert } from 'node:assert';
+import { readFileSync } from 'node:fs';
 import { parseStructureTree, findJunk, GITIGNORE_PROBES, TRACKED_FORBIDDEN, findTrackedForbidden } from './lint-workspace.mjs';
 
 let pass = 0, failCount = 0;
@@ -90,9 +91,42 @@ t('防回流反例：公开面文件不命中', () => {
 t('防回流反例：同名前缀但不相等不命中（如 CLAUDE.md.bak）', () => {
   assert.equal(findTrackedForbidden(['CLAUDE.md.bak', 'docs/档案备份/x.md'.replace('档案备份', 'arch')]).length, 0);
 });
+t('防回流：glob 规则段内通配命中（复盘报告 -*.md）', () => {
+  const hits = findTrackedForbidden(['docs/工作复盘与优化分析报告-2026-10.md', 'docs/工作复盘与优化分析报告-2026-11-01.md']);
+  assert.equal(hits.length, 2);
+  assert.ok(hits.every((h) => h.rule === 'docs/工作复盘与优化分析报告-*.md'));
+});
+t('防回流 glob 反例：跨段 * 不越界（子目录/改后缀不命中）', () => {
+  assert.equal(findTrackedForbidden(['docs/工作复盘与优化分析报告-2026-10.md.bak']).length, 0);
+  assert.equal(findTrackedForbidden(['docs/方法论/工作复盘与优化分析报告-x.md']).length, 0);
+});
 t('防回流清单 ≥8 条且含 output/screenshots/CLAUDE.md', () => {
   assert.ok(TRACKED_FORBIDDEN.includes('prototype/output/') && TRACKED_FORBIDDEN.includes('prototype/screenshots/') && TRACKED_FORBIDDEN.includes('CLAUDE.md'));
   assert.ok(TRACKED_FORBIDDEN.length >= 8);
+});
+
+// ---- .gitignore 同步守卫：内部面两节的每条 pattern 都必须被防回流清单覆盖（漂移即红，v0.21.5） ----
+t('.gitignore 内部面两节 ↔ TRACKED_FORBIDDEN 无漂移', () => {
+  const gi = readFileSync(new URL('../../.gitignore', import.meta.url), 'utf8');
+  const sections = [];
+  let cur = null;
+  for (const l of gi.split('\n')) {
+    if (l.includes('# ---- ') && (l.includes('运行产物与测试截图') || l.includes('内部协作文档'))) { cur = []; sections.push(cur); continue; }
+    if (cur !== null) {
+      if (l.startsWith('# ---- ') || (l.trim() === '' && cur.length)) { cur = null; continue; }
+      const pat = l.trim();
+      if (pat && !pat.startsWith('#')) cur.push(pat);
+    }
+  }
+  assert.ok(sections.length === 2, `.gitignore 应有「运行产物与测试截图」「内部协作文档」两节，实见 ${sections.length} 节`);
+  const patterns = sections.flat();
+  assert.ok(patterns.length >= 10, `两节 pattern 数应 ≥10，实见 ${patterns.length}`);
+  const misses = [];
+  for (const pat of patterns) {
+    const rep = pat.replace(/^\//, '').replace(/\*[^/]*$/g, 'X.md').replace(/\/$/, '/x');
+    if (!findTrackedForbidden([rep]).length) misses.push(`${pat}（代表路径 ${rep}）`);
+  }
+  assert.deepEqual(misses, [], `.gitignore 内部面 pattern 未被 TRACKED_FORBIDDEN 覆盖：${misses.join('；')}`);
 });
 
 console.log(`\n===== test-lint-workspace：${pass} 过 / ${failCount} 败 =====`);

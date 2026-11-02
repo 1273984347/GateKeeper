@@ -7,6 +7,7 @@ import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'n
 import { fileURLToPath } from 'node:url';
 import { dirname, join, basename, resolve } from 'node:path';
 import { analyze, makeConfig } from './gates.mjs';
+import { parseKv, pickMeta, parseTitle } from './parse-meta.mjs';
 
 const PROTO = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -50,11 +51,8 @@ function collect() {
 
 function parseDoc(path) {
   const text = readFileSync(path, 'utf8');
-  const kv = Object.fromEntries([...text.matchAll(/^>\s*([^\uff1a:\n]+)[\uff1a:]\s*(.+)$/gm)].map((m) => [m[1].trim(), m[2].trim()]));
-  const pick = (arr) => (arr.map((k) => kv[k]).find((v) => v) || '');
-  const meta = { session: pick(KEYS.session), created: pick(KEYS.created), source: pick(KEYS.source) };
-  const name = (text.match(/^#\s+(.+)$/m) || [])[1] || basename(path, '.md');
-  return { id: basename(path, '.md'), name, meta, text };
+  const meta = pickMeta(parseKv(text), KEYS);
+  return { id: basename(path, '.md'), name: parseTitle(text, basename(path, '.md')), meta, text };
 }
 
 const files = collect();

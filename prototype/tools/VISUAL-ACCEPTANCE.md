@@ -16,11 +16,12 @@
 ## 二、五步闭环
 
 ```
-① 渲染   → Playwright 截图（正式成品落 screenshots/，过程临时件落 output/，命名 visual-tmp-*）
+① 渲染   → node tools/shot.mjs <前缀> both（正式成品落 screenshots/，过程临时件落 output/，命名 visual-tmp-*；screenshots/output 均本地留存不入库）
 ② 逐页判定 → 验收 agent 按 §三 模板逐张 Read，每页输出一行 JSON
 ③ 修复   → must_fix 逐条修复，禁止只修截图能过的表面项
 ④ 复检   → 重新渲染 → 重新逐页判定，overall=pass 才算过
-⑤ 留证   → 判定 JSON 原文落 output/visual-accept-<主题>.md（日期+对象+判定人+逐页 JSON+overall），清理 visual-tmp-*
+⑤ 留证   → 判定 JSON 原文落 output/visual-accept-<主题>.md（日期+对象+判定人+逐页 JSON+overall），清理 visual-tmp-*；
+            output/ 已不入库——留证=本地留存，公开面以 CHANGELOG 版本段摘要承载（v0.21.5 口径）
 ```
 
 ## 三、验收 Prompt 模板（逐字使用，替换【】部分）
@@ -61,7 +62,7 @@
 | A4 hover 位移 | lint-ui | 第十二门 | 位移是否造成相邻元素碰撞（脚本不判重叠） |
 | A5 焦点态 | lint-ui | 第十二门 | 键盘实走一遍，焦点环是否被裁切/不可见 |
 | A6 语义色可辨 | lint-ui | 第十二门 | P0–P3 四色在真实卡片上是否仍能区分（脚本只算亮度差） |
-| A7 辅助文本对比度 | lint-ui + contrast-probe | 第十二门 / 独立 | 深色底上的次要文字是否偏暗 |
+| A7 辅助文本对比度 | lint-ui + contrast-probe | 第十二门 / 独立 | 深色底上的次要文字是否偏暗；分工：lint-ui=提交门（令牌态解析），contrast-probe=换肤后全页复测（渲染态实测，`node tools/contrast-probe.mjs [light\|dark]`）——两者口径不同，结论可能不同，以各自载体为准 |
 | A8 关键数字等宽 | lint-ui | 第十二门 | 数字纵向刻度是否对齐（脚本只判 font-family） |
 | A9 功能零回归 | smoke + verify | 门序列 | 无 |
 | A10 定位后可达 | lint-layout 的 AL10 | 第十三门 | 定位后目标是否真的在视口内可见 |

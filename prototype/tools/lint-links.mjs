@@ -64,25 +64,22 @@ function main() {
   const failures = [];
   const fail = (file, line, target, reason) => failures.push({ file, line, target, reason });
 
-  // 跟踪文件清单（git ls-files：只扫被跟踪文件，fail-closed）
-  const ls = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8' });
+  // 单次 git ls-files -t（H=跟踪 / h=未跟踪 others）同时取扫描清单与跟踪面集合（v0.21.5 合并两次调用）
+  const ls = spawnSync('git', ['ls-files', '-z', '-t', '--cached', '--others', '--exclude-standard'], { cwd: ROOT, encoding: 'utf8' });
   if (ls.status !== 0 || !ls.stdout) {
     console.error('✗ git ls-files 失败（fail-closed）：', ls.stderr || '无输出');
     process.exit(1);
   }
-  const files = ls.stdout.split('\0').filter((f) =>
-    (/\.md$/.test(f) || /^prototype\/[^/]+\.html$/.test(f))
-    && f !== 'CHANGELOG-ARCHIVE.md'
-    && !f.startsWith('prototype/output/')
-  );
-
-  // 跟踪面集合（v0.21.4：目标必须在 git 跟踪面——本地存在但未入库的目标在公开克隆必断链）
-  const lt = spawnSync('git', ['ls-files', '-z', '--cached'], { cwd: ROOT, encoding: 'utf8' });
-  if (lt.status !== 0 || !lt.stdout) {
-    console.error('✗ git ls-files --cached 失败（fail-closed）：', lt.stderr || '无输出');
-    process.exit(1);
+  const trackedAbs = new Set();
+  const files = [];
+  for (const entry of ls.stdout.split('\0')) {
+    if (!entry) continue;
+    const tag = entry[0], f = entry.slice(2);
+    if (tag === 'H') trackedAbs.add(join(ROOT, f));
+    if ((/\.md$/.test(f) || /^prototype\/[^/]+\.html$/.test(f))
+      && f !== 'CHANGELOG-ARCHIVE.md'
+      && !f.startsWith('prototype/output/')) files.push(f);
   }
-  const trackedAbs = new Set(lt.stdout.split('\0').filter(Boolean).map((f) => join(ROOT, f)));
   const isTracked = (abs) => trackedAbs.has(abs);
 
   let linkTotal = 0, checked = 0;

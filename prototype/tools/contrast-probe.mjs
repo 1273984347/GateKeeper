@@ -1,35 +1,20 @@
 // contrast-probe.mjs — 换肤可访问性探针：实测页面内所有可见文本与背景的对比度
 // 用法：node tools/contrast-probe.mjs [light|dark]
 // 产出：标准输出（不足项逐条点名）+ 落 output/contrast-<theme>.md
-import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { existsSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { resolveChromium, launch as launchBrowser, skipMsg } from './browser.mjs';
 
 const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TARGET = join(PROTO, 'gatekeeper.html');
 const THEME = process.argv[2] || 'dark';
 const URL = 'file:///' + TARGET.replace(/\\/g, '/');
 
-let chromium;
-try {
-  chromium = createRequire(import.meta.url)('playwright').chromium;
-} catch {
-  const guess = join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright');
-  chromium = createRequire(import.meta.url)(join(guess, 'index.js')).chromium;
-}
-async function launch() {
-  try { return await chromium.launch(); }
-  catch (e) {
-    const cache = join(process.env.LOCALAPPDATA || process.env.APPDATA || '', 'ms-playwright');
-    const dir = existsSync(cache) ? readdirSync(cache).filter((d) => /^chromium-\d+$/.test(d)).sort().reverse()[0] : null;
-    const exe = dir ? join(cache, dir, 'chrome-win64', 'chrome.exe') : '';
-    if (!exe || !existsSync(exe)) throw e;
-    return chromium.launch({ executablePath: exe });
-  }
-}
+const { chromium } = resolveChromium();
+if (!chromium) { console.log(skipMsg('对比度探针')); process.exit(0); }
 
-const browser = await launch();
+const browser = await launchBrowser(chromium);
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 await page.goto(URL);
 await page.waitForTimeout(900);

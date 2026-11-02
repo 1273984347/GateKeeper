@@ -65,20 +65,22 @@ export function findStaleGateTerms(text) {
   return out;
 }
 
-/** 逐行扫「N 门全绿」，返回 [{line, n}] */
+/** 逐行扫「N 门全绿」，返回 [{line, n}]（豁免标记行整行跳过——v0.21.5 与 findStaleGateTerms 口径对齐） */
 export function findGateCountClaims(text) {
   const out = [];
   text.split('\n').forEach((l, i) => {
+    if (l.includes('doc-sync:exempt')) return;
     const m = l.match(/(\d+)\s*门全绿/);
     if (m) out.push({ line: i + 1, n: Number(m[1]) });
   });
   return out;
 }
 
-/** 逐行扫「测试 N 例」，返回 [{line, n}] */
+/** 逐行扫「测试 N 例」，返回 [{line, n}]（豁免标记行整行跳过——v0.21.5 与 findStaleGateTerms 口径对齐） */
 export function findTestCountClaims(text) {
   const out = [];
   text.split('\n').forEach((l, i) => {
+    if (l.includes('doc-sync:exempt')) return;
     const m = l.match(/测试\s*(\d+)\s*例/);
     if (m) out.push({ line: i + 1, n: Number(m[1]) });
   });

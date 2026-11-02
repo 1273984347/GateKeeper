@@ -3,16 +3,27 @@
 //   node dws-bridge.mjs                       # dry-run（默认，仅打印将执行的 dws 命令）
 //   node dws-bridge.mjs --live                # 真实调用钉钉（需先登录 + 填 config.dws.json）
 //   node dws-bridge.mjs --artifacts x.json --config c.json
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path'; // join 供 CONFIG/产物路径使用；existsSync/homedir/arch 随 runCmd 删除一并清理
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { analyze, flattenFindings, REGISTRY } from './gates.mjs';
+
+const PROTO_DIR = dirname(fileURLToPath(import.meta.url));
 
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
 const opt = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
 const LIVE = flag('--live');
-const ART_FILE = opt('--artifacts', './artifacts.sample.json');
-const CFG_FILE = opt('--config', './config.dws.json');
+// 默认输入锚定脚本目录（从仓库根误运行不再 ENOENT 崩）；显式传参相对 CWD 解析（测试临时目录依赖此语义）
+const ART_FILE = opt('--artifacts', join(PROTO_DIR, 'artifacts.sample.json'));
+const CFG_FILE = opt('--config', join(PROTO_DIR, 'config.dws.json'));
+for (const [label, f] of [['--artifacts', ART_FILE], ['--config', CFG_FILE]]) {
+  if (!existsSync(f)) {
+    console.error(`✗ 找不到 ${label}=${f}`);
+    console.error('  本脚本须在 prototype/ 目录运行（cd prototype 后 node dws-bridge.mjs），或用绝对路径显式指定。产物落运行目录的 output/。');
+    process.exit(2);
+  }
+}
 
 const cfg = JSON.parse(readFileSync(CFG_FILE, 'utf8'));
 const artifacts = JSON.parse(readFileSync(ART_FILE, 'utf8'));

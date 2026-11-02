@@ -23,7 +23,7 @@
 gates.mjs  ── 唯一规则源（纯逻辑，无 DOM/无 IO）
    ├─ gatekeeper.html   呈现层：健康环/门禁卡/粘贴检测/编排可视化
    └─ dws-bridge.mjs    编排层：裁决 → dws 命令计划（Agent 直接执行）
-        └─ run-real.mjs 真实场景适配层：外部文档 schema → 门禁 meta 映射
+        └─ real-batch-audit.mjs 真实场景适配层：外部文档 schema → 门禁 meta 映射
 ```
 
 **为什么这么切**：呈现与编排都消费同一份 `gates.mjs`，杜绝"前端说通过、后端说阻断"的分裂；`sync-gates.mjs --check` 作漂移门禁，把"单一事实源"从约定升级为可拦截。
@@ -71,10 +71,10 @@ BANNED [ {cat, level, basis, words[], fix} ]     // 8 类，可扩展
 
 ## 7. 关键设计决策与诚实记录
 
-- **默认配置面向脱敏样例**：真实项目（如西游记 docs 的 `轨标/核验状态` schema）需经 `run-real.mjs` 做元信息映射 + 渠道开关（广告法门禁仅营销/发布场景启用），否则会把文学语境"第一/唯一"误判为违规。这是**已知设计边界**，不是 bug。
+- **默认配置面向脱敏样例**：真实项目（如西游记 docs 的 `轨标/核验状态` schema）需经 `real-batch-audit.mjs` 配 project-config 做元信息映射 + 渠道开关（广告法门禁仅营销/发布场景启用），否则会把文学语境"第一/唯一"误判为违规。这是**已知设计边界**，不是 bug。
 - **提效口径诚实法**：端到端 = 扫描（实测 ms）+ DWS 编排（实测 ~0.5s/动作）；人工基线标为假设区间；**禁用"纯算力 ÷ 人脑时间"的倍数**（曾算出 44 万倍属误导）。
 - **反模式清单**：禁硬编码漂移数字（用引用式）；禁假收敛（改后必 Grep/`--check` 核验）；禁把已公开成品的能力当作本作品的新增功能宣称。
 
 ## 8. 相关文件
 
-`gates.mjs`（规则）· `gatekeeper.html`（呈现）· `dws-bridge.mjs`（编排）· `run-real.mjs`（真实适配）· `sync-gates.mjs`（单一事实源门禁）· `bench.mjs`（实测）· `ROADMAP.md`（演进）
+`gates.mjs`（规则）· `gatekeeper.html`（呈现）· `dws-bridge.mjs`（编排）· `real-batch-audit.mjs`（真实适配）· `sync-gates.mjs`（单一事实源门禁）· `bench.mjs`（实测）· `ROADMAP.md`（演进）

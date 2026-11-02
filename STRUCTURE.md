@@ -32,6 +32,7 @@ prototype/
 ├── sync-gates.mjs       把 gates.mjs 注入 HTML 引擎块 + `--check` 漂移门禁
 ├── sync-configs.mjs     把 configs/*.json + 批次数据注入 HTML 配置/数据块 + `--check` 第二道漂移门禁
 ├── render-core.mjs      渲染纯函数（esc/highlight/scoreColor；单一事实源第三链）
+├── parse-meta.mjs       `> 键：值` 元信息块解析单一实现（project-check/real-batch-audit 共用；v0.21.5 收敛）
 ├── sync-render.mjs      把 render-core.mjs 注入 HTML 渲染块 + `--check` 第三道漂移门禁
 ├── render-core.test.mjs 渲染纯函数单测（9 例；与 gates.test.mjs 同栈）
 ├── verify.mjs           回归红线 + 换配置差异统一验收（本地 / CI 共用）
@@ -65,7 +66,6 @@ prototype/
 │   ├── release.mjs       收官执行器：registry→重注入→版本行→十三门→手工步骤清单（A-02；--dry-run/--verify；不自动 commit）
 │   └── test-release.mjs  release 纯函数自测 18 例
 ├── bench.mjs            省时实测基准（召回/误报/耗时）
-├── run-real.mjs         真实业务场景 runner（读真实文档 → 门禁 → 报告）
 ├── configs/             声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）
 │   ├── gatekeeper-self.json / ecommerce-marketing.json / xiyouji.json  三套对照配置
 │   └── batches.sample.json  多项目批次数据（3 项目 9 篇，注入 HTML 供前端消费）

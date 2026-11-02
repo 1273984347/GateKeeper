@@ -6,10 +6,10 @@
 //   · M19 A1（间距刻度）尚未工具化 → 本门承担 AL7（声明级解析，口径同 A1）；
 //   · M19 A11 由 tools/class-audit.mjs 承担；
 //   · AL12（功能零回归）由 smoke.mjs + verify.mjs 承担，本门不重复。
-import { createRequire } from 'node:module';
-import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
+import { resolveChromium, launch as launchBrowser, skipMsg } from './browser.mjs';
 
 // —— 阈值（取自 prototype/output/geo-baseline-m20-batch5.md 实测基线）——
 export const TH = {
@@ -73,24 +73,10 @@ export function scanSpacing(css, th = TH) {
 
 // ——— 测量（浏览器）———
 const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
-// 依赖解析失败置 null：直接执行时打印 SKIP 退出 0（新用户环境无 Playwright 不红门，v0.21.4）；
+// 依赖解析单一实现（tools/browser.mjs）：未安装 → SKIP exit 0（新用户环境不红门，v0.21.4）；
 // 依赖在但浏览器起不来仍 fail-closed exit 1（v0.21.3 口径不变：判据未跑 ≠ 判据通过）。
-let chromium = null;
-try { chromium = createRequire(import.meta.url)('playwright').chromium; }
-catch {
-  try { chromium = createRequire(import.meta.url)(join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright', 'index.js')).chromium; }
-  catch { chromium = null; }
-}
-async function launch() {
-  try { return await chromium.launch(); }
-  catch (e) {
-    const cache = join(process.env.LOCALAPPDATA || process.env.APPDATA || '', 'ms-playwright');
-    const dir = existsSync(cache) ? readdirSync(cache).filter((d) => /^chromium-\d+$/.test(d)).sort().reverse()[0] : null;
-    const exe = dir ? join(cache, dir, 'chrome-win64', 'chrome.exe') : '';
-    if (!exe || !existsSync(exe)) throw e;
-    return chromium.launch({ executablePath: exe });
-  }
-}
+const { chromium } = resolveChromium();
+async function launch() { return launchBrowser(chromium); }
 
 const URL = 'file:///' + join(PROTO, 'gatekeeper.html').replace(/\\/g, '/');
 const VPS = [1280, 1024, 640, 480, 390];
@@ -100,10 +86,7 @@ const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv
 if (isMain) await main();
 
 async function main() {
-if (!chromium) {
-  console.log('⏭️ SKIP 布局门禁：未安装 Playwright（可选依赖，不阻断）。安装后启用：npm i -g playwright && npx playwright install chromium');
-  process.exit(0);
-}
+if (!chromium) { console.log(skipMsg('布局门禁')); process.exit(0); }
 let browser;
 try { browser = await launch(); }
 catch (e) {
@@ -111,16 +94,21 @@ catch (e) {
   console.error('  详情：' + String(e.message || e).slice(0, 160));
     process.exit(1);
 }
+// 单页复用 + 渲染稳定等待（v0.21.5 提速：原 3 次整页加载 + 硬编码 sleep ≈9s → 双 rAF 等待一次加载 ≈2s；测量口径逐项不变）
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(String(e.message).slice(0, 120)));
+const settle = async (ms) => {
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await page.waitForTimeout(ms);
+};
 await page.goto(URL);
-await page.waitForTimeout(900);
+await settle(300);
 
 const measure = {};
 for (const w of VPS) {
   await page.setViewportSize({ width: w, height: 900 });
-  await page.waitForTimeout(500);
+  await settle(150);
   const ov = await page.evaluate(() => {
     const H = (s) => { const e = document.querySelector(s); return e ? Math.round(e.getBoundingClientRect().height) : 0; };
     const chrome = H('header.top') + H('.band') + H('.viewnav') + H('.crumbs');
@@ -149,12 +137,13 @@ for (const w of VPS) {
   measure[w] = { overview: ov };
 }
 
-// 明细视图（1280 档测动线判据）
+// 明细视图（1280 档测动线判据；同页继续，不再新开 page）
 await page.setViewportSize({ width: 1280, height: 900 });
+await settle(150);
 await page.evaluate(() => document.querySelector('.vtab[data-view="inspect"]').click());
-await page.waitForTimeout(500);
+await settle(200);
 await page.evaluate(() => document.querySelector('#list .item').click());
-await page.waitForTimeout(600);
+await settle(250);
 
 const ins = await page.evaluate(() => {
   const y = (el) => el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : null;
@@ -184,34 +173,22 @@ const ins = await page.evaluate(() => {
     approve: { disabled: document.getElementById('btnApprove').disabled, label: document.getElementById('btnApprove').textContent.trim() },
   };
 });
-await page.close();
-
-// 放行态按钮（最后一篇产出物可发布）
-const page2 = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-await page2.goto(URL); await page2.waitForTimeout(900);
-await page2.evaluate(() => document.querySelector('.vtab[data-view="inspect"]').click());
-await page2.waitForTimeout(400);
-await page2.evaluate(() => { const items = document.querySelectorAll('#list .item'); items[items.length - 1].click(); });
-await page2.waitForTimeout(500);
-const passBtn = await page2.evaluate(() => ({ disabled: document.getElementById('btnApprove').disabled }));
-await page2.close();
-
-// AL10：点就近证据条 → 命中项须在视口内
-const page3 = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-await page3.goto(URL); await page3.waitForTimeout(900);
-await page3.evaluate(() => document.querySelector('.vtab[data-view="inspect"]').click());
-await page3.waitForTimeout(400);
-await page3.evaluate(() => document.querySelector('#list .item').click());
-await page3.waitForTimeout(500);
-await page3.evaluate(() => document.querySelector('#topEvidence .te-item')?.click());
-await page3.waitForTimeout(1100);
-const hitReachable = await page3.evaluate(() => {
+// 放行态按钮（最后一篇产出物可发布）与 AL10 就近证据条（同页按序复测，替代原 page2/page3 两次整页加载）
+await page.setViewportSize({ width: 1280, height: 900 });
+await settle(150);
+// AL10：点就近证据条 → 命中项须在视口内（沿用首篇选中态）
+await page.evaluate(() => document.querySelector('#topEvidence .te-item')?.click());
+await settle(400);
+const hitReachable = await page.evaluate(() => {
   const s = document.querySelector('#cards .finding.sel');
   if (!s) return false;
   const b = s.getBoundingClientRect();
   return b.top >= 0 && b.bottom <= window.innerHeight;
 });
-await page3.close();
+// 放行态：切到最后一篇（可发布文档）后主按钮可点
+await page.evaluate(() => { const items = document.querySelectorAll('#list .item'); items[items.length - 1].click(); });
+await settle(200);
+const passBtn = await page.evaluate(() => ({ disabled: document.getElementById('btnApprove').disabled }));
 await browser.close();
 
 // AL7：CSS 声明级解析
