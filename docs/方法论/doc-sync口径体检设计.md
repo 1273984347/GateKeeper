@@ -2,7 +2,7 @@
 
 ## 来源事故
 
-"门禁流水线条数"文档口径长期漂移：gate.mjs 实为 7-8 门，CLAUDE/AGENTS/STRUCTURE/README 等 9 处仍写"五门禁"（M15-T1 首跑全数捕获）；gate.mjs 标签"verify（13 项）"实为 12 项（M15-T2 抓出）。源仓竞赛项目《治理升级方案》P1-P3 同款缺口论证。
+"门禁流水线条数"文档口径长期漂移：gate.mjs 实为 7-8 门，STRUCTURE/README 等多处仍写"五门禁"（M15-T1 首跑全数捕获）；gate.mjs 标签"verify（13 项）"实为 12 项（M15-T2 抓出）。源仓项目《治理升级方案》P1-P3 同款缺口论证。
 
 ## 规则
 
@@ -17,4 +17,4 @@
 
 ## 出处
 
-M15-T1/T2（commit 86beaa8/f6328de）；竞赛仓《治理升级方案》P1；源仓 tools/doc-sync.mjs。
+M15-T1/T2（commit 86beaa8/f6328de）；源仓《治理升级方案》P1；上游同款工具 doc-sync.mjs。

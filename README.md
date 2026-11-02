@@ -5,10 +5,8 @@
 > Session：会话 ID 见 git 提交记录
 
 > **一句话**：让 AI 批量产出的文档，规模再大也管得住、查得清、放得行。
-> **当前版本**：v0.21.3
-> 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部 + [交接文档.md](交接文档.md)「一、当前进度」；本文件不内嵌会漂移的数字，用引用式表述。
-
-![GateKeeper 治理控制台](prototype/screenshots/ui-1280.png)
+> **当前版本**：v0.21.4
+> 版本与计数的**唯一权威**见 [CHANGELOG.md](CHANGELOG.md) 顶部；本文件不内嵌会漂移的数字，用引用式表述。
 
 ## 这是什么
 
@@ -60,11 +58,13 @@ gates.mjs        六道门禁引擎（纯逻辑，前后端共用的唯一规则
  ├─ verify.mjs        回归红线 + 换配置差异统一验收（本地 / CI 共用）
  └─ dws-bridge.mjs    编排：裁决 → dws 命令计划（--live 由 Agent 直接调用才落地）
       ├─ configs/*.json          声明式 project-config（版本注册表/引用/指标/渠道开关/字段映射）+ batches.sample.json 批次数据
-      ├─ config.dws.json         目标 ID：群 / 复核人 / 作者 / 审批人 openDingTalkId
-      └─ output/                 产物：accept-*.md 验收报告 · gate-report.json · dws-plan.sh · live-evidence.md · bench-report.md
+      ├─ config.dws.json         目标 ID 占位符：群 / 复核人 / 作者 / 审批人 openDingTalkId（真实值本地填入，勿提交）
+      └─ output/                 运行产物（本地生成，已 gitignore 不入库）：accept-*.md 验收报告 · gate-report.json · dws-plan.sh · bench-report.md
 ```
 
 ## 快速开始
+
+> 环境要求：**Node.js ≥ 20**（与 CI 同版本，零第三方依赖）。可选：`npm i -g playwright && npx playwright install chromium` 后启用布局门禁（门禁链第十三门）与前端冒烟，未安装时这两项自动 SKIP 不阻断。
 
 ```bash
 cd prototype
@@ -91,7 +91,6 @@ node tools/gate.mjs        # ↑全量门禁一键串行+汇总（--full 追加 
 | [Web端可扩展改造方案.md](Web端可扩展改造方案.md) | web 端从单页报表→三层治理控制台改造规格：四痛点映射 / 分期 / 风险（v0.12.0 已全量实施） |
 | [ROADMAP.md](ROADMAP.md) | 后续发展与迭代路线图：短中长期 / 指标演进 / 决策闸门 |
 | [CHANGELOG.md](CHANGELOG.md) | 正向时间线，每条含「来源/执行/文件/验证/状态」四件套 |
-| [交接文档.md](交接文档.md) | 接手主入口：进度 / 下一步 / 方法论 / 雷区 |
 | [STRUCTURE.md](STRUCTURE.md) | 目录结构与命名/单一事实源/归档约定 |
 | [配置切换Demo.md](配置切换Demo.md) | 同一引擎换三套配置体检三类项目——"改配置不改代码"的可执行实证 |
 | [prototype/README-DWS.md](prototype/README-DWS.md) | DWS 接入指南与执行模型 |
@@ -100,7 +99,7 @@ node tools/gate.mjs        # ↑全量门禁一键串行+汇总（--full 追加 
 
 ## 核心指标（引用式，权威值见 CHANGELOG / bench-report）
 
-六道门禁（G1 引用溯源 · G2 版本一致 · G3 格式 · G4 广告法 · G5 敏感信息 · G6 证据链）；对 20 条埋 15 处违规的样例批次，流水线**召回 100%、零误报、扫描毫秒级**；对 216 篇真实文档批次体检 173 可发布(80%)、218 真实缺口、506 文学误报经配置抑制；已在真实钉钉组织跑通待办/群消息/文档归档/DING 四类 DWS 动作。详见 `prototype/output/bench-report.md`、`prototype/output/live-evidence.md`。
+六道门禁（G1 引用溯源 · G2 版本一致 · G3 格式 · G4 广告法 · G5 敏感信息 · G6 证据链）；对 20 条埋 15 处违规的样例批次，流水线**召回 100%、零误报、扫描毫秒级**；对 216 篇真实文档批次体检 173 可发布(80%)、218 真实缺口、506 文学误报经配置抑制；已在真实钉钉组织跑通待办/群消息/文档归档/DING 四类 DWS 动作。实测数字由 `node bench.mjs` 本地生成（`prototype/output/bench-report.md`，运行产物不入库）。
 
 ## 授权与免责
 

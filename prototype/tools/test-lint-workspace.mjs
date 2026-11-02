@@ -4,7 +4,7 @@
  * 用法：node tools/test-lint-workspace.mjs
  */
 import { strict as assert } from 'node:assert';
-import { parseStructureTree, findJunk, GITIGNORE_PROBES } from './lint-workspace.mjs';
+import { parseStructureTree, findJunk, GITIGNORE_PROBES, TRACKED_FORBIDDEN, findTrackedForbidden } from './lint-workspace.mjs';
 
 let pass = 0, failCount = 0;
 const t = (name, fn) => {
@@ -70,6 +70,29 @@ t('反例：文件名含 log 子串但非 .log 后缀不报（如 catalog.md）'
 t('探针清单 ≥8 类且含 nul/pyc/log', () => {
   assert.ok(GITIGNORE_PROBES.includes('nul') && GITIGNORE_PROBES.some((p) => p.endsWith('.pyc')) && GITIGNORE_PROBES.some((p) => p.endsWith('.log')));
   assert.ok(GITIGNORE_PROBES.length >= 8);
+});
+
+// ---- findTrackedForbidden：防回流探针（v0.21.4） ----
+t('防回流：output/screenshots 目录规则按前缀命中', () => {
+  const hits = findTrackedForbidden(['prototype/output/gate-report.json', 'prototype/screenshots/ui-1280.png']);
+  assert.deepEqual(hits.map((h) => h.rule), ['prototype/output/', 'prototype/screenshots/']);
+});
+t('防回流：内部协作文档文件规则全等命中（含中文名）', () => {
+  const hits = findTrackedForbidden(['交接文档.md', 'CLAUDE.md', 'AGENTS.md', '新Agent启动Prompt.md', 'prototype/人工冷跑开跑清单.md']);
+  assert.equal(hits.length, 5);
+});
+t('防回流：.agents/.zcode/docs/档案 目录前缀命中', () => {
+  assert.equal(findTrackedForbidden(['.agents/skills/gk-release/SKILL.md', '.zcode/workflows/x.dwf.ts', 'docs/档案/批次编号对齐表.md']).length, 3);
+});
+t('防回流反例：公开面文件不命中', () => {
+  assert.equal(findTrackedForbidden(['README.md', 'prototype/gates.mjs', 'docs/方法论/E1铁律.md', 'STRUCTURE.md']).length, 0);
+});
+t('防回流反例：同名前缀但不相等不命中（如 CLAUDE.md.bak）', () => {
+  assert.equal(findTrackedForbidden(['CLAUDE.md.bak', 'docs/档案备份/x.md'.replace('档案备份', 'arch')]).length, 0);
+});
+t('防回流清单 ≥8 条且含 output/screenshots/CLAUDE.md', () => {
+  assert.ok(TRACKED_FORBIDDEN.includes('prototype/output/') && TRACKED_FORBIDDEN.includes('prototype/screenshots/') && TRACKED_FORBIDDEN.includes('CLAUDE.md'));
+  assert.ok(TRACKED_FORBIDDEN.length >= 8);
 });
 
 console.log(`\n===== test-lint-workspace：${pass} 过 / ${failCount} 败 =====`);

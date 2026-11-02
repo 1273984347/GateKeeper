@@ -9,9 +9,11 @@ const PROTO = dirname(fileURLToPath(import.meta.url));
 const ROOT = dirname(PROTO);
 
 // 权威核心文档清单（新增/删除核心文档时改这里；与 STRUCTURE.md、CHANGELOG 口径对齐）
+// v0.21.4 公开整备批：公开面=本仓跟踪面，内部协作文档（交接文档/CLAUDE/AGENTS/启动Prompt）已移出跟踪面
+// （本地保留、gitignore 维护），故退出 CORE_DOCS——check-docs 权威口径只覆盖公开面文档。
 const CORE_DOCS = [
-  'README.md', 'DESIGN.md', 'ROADMAP.md', '交接文档.md',
-  'STRUCTURE.md', '配置切换Demo.md', 'CLAUDE.md', 'AGENTS.md', '新Agent启动Prompt.md',
+  'README.md', 'DESIGN.md', 'ROADMAP.md',
+  'STRUCTURE.md', '配置切换Demo.md',
 ];
 const CONFIG = join('configs', 'gatekeeper-self.json');
 

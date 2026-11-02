@@ -73,9 +73,14 @@ export function scanSpacing(css, th = TH) {
 
 // ——— 测量（浏览器）———
 const PROTO = join(dirname(fileURLToPath(import.meta.url)), '..');
-let chromium;
+// 依赖解析失败置 null：直接执行时打印 SKIP 退出 0（新用户环境无 Playwright 不红门，v0.21.4）；
+// 依赖在但浏览器起不来仍 fail-closed exit 1（v0.21.3 口径不变：判据未跑 ≠ 判据通过）。
+let chromium = null;
 try { chromium = createRequire(import.meta.url)('playwright').chromium; }
-catch { chromium = createRequire(import.meta.url)(join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright', 'index.js')).chromium; }
+catch {
+  try { chromium = createRequire(import.meta.url)(join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright', 'index.js')).chromium; }
+  catch { chromium = null; }
+}
 async function launch() {
   try { return await chromium.launch(); }
   catch (e) {
@@ -95,6 +100,10 @@ const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv
 if (isMain) await main();
 
 async function main() {
+if (!chromium) {
+  console.log('⏭️ SKIP 布局门禁：未安装 Playwright（可选依赖，不阻断）。安装后启用：npm i -g playwright && npx playwright install chromium');
+  process.exit(0);
+}
 let browser;
 try { browser = await launch(); }
 catch (e) {

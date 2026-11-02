@@ -22,3 +22,18 @@ desktop.ini
 .codebuddy/
 .trae/
 .writerHelper/
+
+# ---- 运行产物与测试截图（脚本可重生成，公开面禁入·2026-11-03 公开整备批）----
+prototype/output/
+prototype/screenshots/
+
+# ---- 内部协作文档（本地保留、不入库不入公开面·2026-11-03 公开整备批）----
+/CLAUDE.md
+/AGENTS.md
+/交接文档.md
+/新Agent启动Prompt.md
+/.agents/
+/.zcode/
+/docs/档案/
+/docs/工作复盘与优化分析报告-*.md
+/prototype/人工冷跑开跑清单.md

@@ -4,7 +4,7 @@
 > Session：会话 ID 见 git 提交记录
 
 > 项目：GateKeeper ｜ 当前版本见 CHANGELOG
-> 本文件是**设计层**（为什么这么设计、设计契约与取舍）；工程治理见 README/交接文档/STRUCTURE，演进规划见 ROADMAP.md。
+> 本文件是**设计层**（为什么这么设计、设计契约与取舍）；工程治理见 README/STRUCTURE，演进规划见 ROADMAP.md。
 
 ## 1. 设计目标与原则
 

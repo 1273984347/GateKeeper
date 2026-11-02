@@ -12,13 +12,17 @@ const TARGET = process.argv[2] ? join(process.cwd(), process.argv[2]) : join(PRO
 if (!existsSync(TARGET)) { console.error(`✗ 找不到被测文件：${TARGET}`); process.exit(2); }
 const URL = 'file:///' + TARGET.replace(/\\/g, '/');
 
-let chromium;
+let chromium = null;
 try {
   chromium = createRequire(import.meta.url)('playwright').chromium;
 } catch {
   const guess = join(process.env.APPDATA || '', 'npm', 'node_modules', 'playwright');
   try { chromium = createRequire(import.meta.url)(join(guess, 'index.js')).chromium; }
-  catch { console.error('✗ 未找到 playwright。设置 NODE_PATH 指向全局 node_modules 后重试（或 npm i -g playwright && npx playwright install chromium）。'); process.exit(2); }
+  catch {
+    // 依赖缺失 ≠ 冒烟通过：SKIP 需显式声明（v0.21.4 首航友好——新用户环境不红，但维护者必须自知未测）
+    console.log('⏭️ SKIP 前端冒烟：未安装 Playwright（可选依赖）。安装后启用：npm i -g playwright && npx playwright install chromium（维护者环境未测 ≠ 通过，勿据此宣称冒烟绿）');
+    process.exit(0);
+  }
 }
 
 const checks = [];

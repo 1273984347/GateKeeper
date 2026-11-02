@@ -2,11 +2,12 @@
 /**
  * lint-workspace.mjs — 工作区体检（M17 前批，方案 A）：文件清单漂移防线；只读，绝不修改任何文件
  *
- * 三项检查：
+ * 四项检查：
  *   1. 未跟踪垃圾：git status --porcelain 的 `??` 条目命中垃圾模式（nul/pyc/pyo/__pycache__/log/tmp/bak/.DS_Store/Thumbs.db/desktop.ini）→ FAIL；
  *      非垃圾 untracked（正常 WIP 新文件）→ INFO 不阻断。
  *   2. STRUCTURE 树声明 → 存在（单向）：STRUCTURE.md 围栏树中声明的每个文件/目录必须真实存在；文件被移动/删除而未更新 STRUCTURE → FAIL。
  *   3. .gitignore 覆盖探针：垃圾模式代表路径必须被 ignore 规则覆盖（git check-ignore），缺覆盖 → FAIL。
+ *   4. 防回流探针（v0.21.4 公开整备批）：运行产物/截图/内部协作文档属于本地面，禁止回到 git 跟踪面（git add -f 也拦）——命中即 FAIL。
  *
  * 用法：node tools/lint-workspace.mjs            # 等价 --check；有 FAIL exit 1
  *       node tools/lint-workspace.mjs --check
@@ -40,6 +41,25 @@ export const GITIGNORE_PROBES = [
   '__pycache__/x.pyc', '.DS_Store', 'Thumbs.db', 'desktop.ini',
   'x.local.md',
 ];
+
+// 防回流清单（v0.21.4 公开整备批冻结）：本地面路径禁回跟踪面。扩展需同步 test-lint-workspace。
+export const TRACKED_FORBIDDEN = [
+  'prototype/output/', 'prototype/screenshots/',
+  'CLAUDE.md', 'AGENTS.md', '交接文档.md', '新Agent启动Prompt.md',
+  '.agents/', '.zcode/', 'docs/档案/', 'prototype/人工冷跑开跑清单.md',
+];
+
+/** 跟踪路径中命中防回流清单的条目，返回 [{path, rule}]（目录规则按前缀匹配，文件规则全等匹配） */
+export function findTrackedForbidden(paths, forbidden = TRACKED_FORBIDDEN) {
+  const out = [];
+  for (const p of paths) {
+    const norm = p.replace(/\\/g, '/');
+    for (const rule of forbidden) {
+      if (rule.endsWith('/') ? norm.startsWith(rule) : norm === rule) { out.push({ path: p, rule }); break; }
+    }
+  }
+  return out;
+}
 
 /** 解析 STRUCTURE.md 围栏树：返回 {declared:[路径], missing:[路径]}（exists 可注入便于测试）
  * 语义：围栏内裸根标签行（如 `prototype/`）是本围栏的根目录，全部条目拼在其下；
@@ -129,11 +149,21 @@ function main() {
     }
   }
 
+  // 4) 防回流探针（v0.21.4）：本地面路径禁回跟踪面
+  const ls = spawnSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' });
+  if (ls.status !== 0) { fail('git ls-files', '执行失败（fail-closed）'); }
+  else {
+    sources.trackedFiles = ls.stdout.split('\n').filter(Boolean).length;
+    for (const hit of findTrackedForbidden(ls.stdout.split('\n').filter(Boolean))) {
+      fail('防回流探针', `${hit.path} 属本地面（规则 ${hit.rule}），禁止回跟踪面——git rm --cached 处置`);
+    }
+  }
+
   const jsonOut = { ok: failures.length === 0, sources, infos, failures };
   if (process.argv.includes('--json')) console.log(JSON.stringify(jsonOut, null, 2));
   else {
     console.log(`\n===== lint-workspace 工作区体检 =====`);
-    console.log(`真值源：untracked=${sources.untracked ?? '?'} · STRUCTURE 声明=${sources.declaredPaths ?? '?'} · ignore 探针通过=${sources.ignoredProbes ?? '?'}/${GITIGNORE_PROBES.length}`);
+    console.log(`真值源：untracked=${sources.untracked ?? '?'} · STRUCTURE 声明=${sources.declaredPaths ?? '?'} · ignore 探针通过=${sources.ignoredProbes ?? '?'}/${GITIGNORE_PROBES.length} · 跟踪文件=${sources.trackedFiles ?? '?'}`);
     for (const i of infos) console.log(`ℹ ${i}`);
     if (failures.length === 0) console.log('✅ 0 FAIL · 文件清单无漂移');
     else {

@@ -9,24 +9,20 @@
 
 ```
 GateKeeper/
-├── README.md            项目门面（双读者：使用者 / 接手 Agent）
-├── CLAUDE.md            AI 代理速查（12 条必守/常用命令/环境注意；M14-T3 立项、M15-T3 第 10 条、M16-T2/T5 第 11/12 条，已入 CORE_DOCS）
-├── AGENTS.md            维护者操作手册（SOP-1..5 + 禁改清单 + 治理文档维护契约；已入 CORE_DOCS）
-├── 新Agent启动Prompt.md  跨工具/人工操作场景的可复制 payload（五段骨架；M16-T3，已入 CORE_DOCS）
+├── README.md            项目门面
 ├── DESIGN.md            设计方案（设计层：目标/架构/门禁契约/视觉/数据模型/取舍）
 ├── UI升级方案.md         界面美化升级规格（量化验收/设计令牌/自检结论）
 ├── Web端可扩展改造方案.md  web 端三层治理控制台改造规格（四痛点/分期/风险；已实施 v0.12.0 存档）
 ├── ROADMAP.md           后续发展与迭代路线图（路线层，里程碑编号权威）
 ├── CHANGELOG.md         正向时间线 · 唯一写细节 · 四件套
-├── 交接文档.md           接手主入口（进度/下一步/方法论/雷区）
 ├── STRUCTURE.md         本文件
 ├── 配置切换Demo.md       三配置三结论可推广性 demo + 介绍话术
 ├── .github/workflows/   gatekeeper.yml —— CI 门禁（漂移双检 + verify + check-docs + project-check）
-├── .agents/skills/      项目技能 4 个（gk-release/gk-port/gk-review/gk-newgate；M16 review 移植内部协作仓 .agents 模式）
-├── .zcode/workflows/    项目工作流 2 个（rescan-audit 安全向复审 / gk-review-wave 台账向五查复审；SOP-2 第 7 步双复审）
-├── docs/                过程治理文档（时点分析快照如工作复盘报告；档案/批次编号对齐表=M15-T3 对账唯一依据；档案/方案/=四份移植方案存档；方法论/=M16-T4 经验文档库 8 篇）
+├── docs/方法论/          方法论文档库（8 篇：E1铁律/单一事实源与注入漂移/doc-sync口径体检设计/管道会吞退出码/正则锚定语境/改动面审计/诚实口径与假设区间标注/可选配置形参保零回归）
 └── prototype/           可运行原型与编排
 ```
+
+> **不入库说明（v0.21.4 公开整备批）**：维护者本地的 AI 协作文档（CLAUDE.md/AGENTS.md/交接文档/启动Prompt/`.agents/`/`.zcode/`）、过程档案（`docs/档案/`、工作复盘报告）与运行产物（`prototype/output/`、`prototype/screenshots/`）均已在 `.gitignore` 声明，**本地保留、不入库不入公开面**；`lint-workspace` 第四查（防回流探针）确保上述路径永不回到跟踪面。
 
 ## prototype/ 子目录
 
@@ -75,31 +71,16 @@ prototype/
 │   ├── gatekeeper-self.json / ecommerce-marketing.json / xiyouji.json  三套对照配置
 │   └── batches.sample.json  多项目批次数据（3 项目 9 篇，注入 HTML 供前端消费）
 ├── artifacts.sample.json 输入样例：5 份脱敏产出物 A–E
-├── config.dws.json      真实 DWS 目标 ID（群/复核人/作者/审批人 openDingTalkId）
+├── config.dws.json      DWS 目标 ID 占位符（群/复核人/作者/审批人；真实值本地填入勿提交）
 ├── README-DWS.md        DWS 接入指南与执行模型
 ├── 人工实测对照表.md      人工审核耗时对照实测表（human-baseline 采集器的纸质兜底与判分口径）
-├── screenshots/         UI 截图（Playwright 真实截图，非 AI 生成；README 配图出处；数量以目录实况为准——旧档 ui-* 11 张 + v2-* 呈现层换肤档 + layout-* 布局层档，前缀不互相覆盖）
-│   ├── ui-1280.png      控制台桌面全页（1280 档）
-│   ├── ui-1024.png      控制台 1024 档
-│   ├── ui-640.png       控制台移动全页（640 档）
-│   ├── ui-light.png     明暗主题亮色（demo 模式）
-│   ├── ui-dark.png      明暗主题暗色（demo 模式）
-│   ├── 01-dashboard.png 批次健康环 · 02-gates-A.png 六道门禁明细（G4 亮红）· 02a-verdict.png 单份裁决条 · 03-dws-E.png DWS 编排链
-│   ├── ui-light-font.png 衬线字体亮色嵌入验证（M8.2 存档）
-│   └── ui-dark-font.png  衬线字体暗色嵌入验证（M8.2 存档）
-└── output/              运行产物（可由脚本重生成）
-    ├── accept-A..E.md   每份验收报告（doc create 归档正文） <!--lint-workspace:exempt 区间记法非字面路径，实存 accept-A.md~accept-E.md 共 5 份-->
-    ├── gate-report.json 批次裁决汇总
-    ├── dws-plan.sh      生成的 dws 执行计划
-    ├── live-evidence.md 真实 DWS 落地回执（含端到端计时锚点）· demo 模式结果态数据源
-    ├── real-case-report.md 真实文档体检报告
-    ├── bench-report.md  实测数据报告
-    └── …等 20+ 项运行产物（project-check-* / real-batch-* / selfcheck 报告 / accept-* 验收报告 / dws-plan.sh / 整改待办 / 字体子集 woff2+used_chars）；woff2/used_chars 为 fontTools 一次性产物，非仓内脚本可重生成
+├── screenshots/         UI 测试截图（本地生成，已 gitignore 不入库；`tools/shot.mjs` 重生成）
+└── output/              运行产物（本地生成，已 gitignore 不入库；accept-*/gate-report/dws-plan/bench-report/real-batch-*/project-check-* 等，均可由对应脚本重生成）
 ```
 
 ## 命名规范
 
-- 治理文档用固定名（README/CHANGELOG/交接文档/STRUCTURE），与西游记项目一致，便于跨项目接手。
+- 治理文档用固定名（README/CHANGELOG/STRUCTURE），便于跨项目接手。
 - 脚本 `.mjs`（ESM）；产物统一落 `output/`；截图落 `screenshots/`。
 - 样例产出物 id 用单字母 A–E，与报告一一对应。
 - 里程碑 `M#`（区别于西游记 `W#`）；版本 `vX.Y.Z`。
@@ -108,17 +89,16 @@ prototype/
 
 | 事实 | 唯一权威位置 | 其他文档 |
 |---|---|---|
-| 版本号 | CHANGELOG 顶部 | README 抬头、交接文档「一」引用式同步 |
+| 版本号 | CHANGELOG 顶部 | README 抬头引用式同步 |
 | 门禁规则 | `gates.mjs` | HTML 引擎块由 `sync-gates.mjs` 生成（勿手改）；`--check` 防漂移 |
 | 配置/批次数据 | `configs/*.json` | HTML 配置/数据块由 `sync-configs.mjs` 生成（勿手改）；`--check` 防漂移；前端不硬编码项目 |
 | 计数（样例数/门禁数/图数） | 脚本实测 / `find` | 一律引用式表述，禁硬编码 |
-| 实测数字 | `output/bench-report.md` | README 核心指标引用 |
-| DWS 回执 | `output/live-evidence.md` | README / 交接文档引用 |
+| 实测数字 | `bench.mjs` 实时输出（output/ 本地生成不入库） | README 核心指标引用 |
 
 ## 归档约定
 
-- `CHANGELOG.md` / `交接文档.md` 超过约 50KB 时，把过期里程碑归档到同名 `-archive.md`，主文件只留现役。
-- 历史细节只进 CHANGELOG；交接文档「三、方法论沉淀」只留可复利经验，不留流水账。
+- `CHANGELOG.md` 超过约 50KB 时，把过期里程碑归档到同名 `-archive.md`，主文件只留现役。
+- 历史细节只进 CHANGELOG；方法论沉淀只留可复利经验，不留流水账。
 
 ## 版本变更
 
