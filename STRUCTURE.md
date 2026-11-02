@@ -11,18 +11,17 @@
 GateKeeper/
 ├── README.md            项目门面
 ├── DESIGN.md            设计方案（设计层：目标/架构/门禁契约/视觉/数据模型/取舍）
-├── UI升级方案.md         界面美化升级规格（量化验收/设计令牌/自检结论）
-├── Web端可扩展改造方案.md  web 端三层治理控制台改造规格（四痛点/分期/风险；已实施 v0.12.0 存档）
 ├── ROADMAP.md           后续发展与迭代路线图（路线层，里程碑编号权威）
 ├── CHANGELOG.md         正向时间线 · 唯一写细节 · 四件套
 ├── STRUCTURE.md         本文件
 ├── 配置切换Demo.md       三配置三结论可推广性 demo + 介绍话术
 ├── .github/workflows/   gatekeeper.yml —— CI 门禁（漂移双检 + verify + check-docs + project-check）
+├── assets/brand/        品牌资产（lockup 明暗双版 SVG，README 头图；设计探索稿与参数化生成器本地维护不入库）
 ├── docs/方法论/          方法论文档库（8 篇：E1铁律/单一事实源与注入漂移/doc-sync口径体检设计/管道会吞退出码/正则锚定语境/改动面审计/诚实口径与假设区间标注/可选配置形参保零回归）
 └── prototype/           可运行原型与编排
 ```
 
-> **不入库说明（v0.21.4 公开整备批）**：维护者本地的 AI 协作文档（CLAUDE.md/AGENTS.md/交接文档/启动Prompt/`.agents/`/`.zcode/`）、过程档案（`docs/档案/`、工作复盘报告）与运行产物（`prototype/output/`、`prototype/screenshots/`）均已在 `.gitignore` 声明，**本地保留、不入库不入公开面**；`lint-workspace` 第四查（防回流探针）确保上述路径永不回到跟踪面。
+> **不入库说明（v0.21.4 公开整备批）**：维护者本地的 AI 协作文档（CLAUDE.md/AGENTS.md/交接文档/启动Prompt/`.agents/`/`.zcode/`）、过程与规格档案（`docs/档案/`、工作复盘报告、UI升级方案、Web端可扩展改造方案）与运行产物（`prototype/output/`、`prototype/screenshots/`）均已在 `.gitignore` 声明，**本地保留、不入库不入公开面**；`lint-workspace` 第四查（防回流探针）确保上述路径永不回到跟踪面。
 
 ## prototype/ 子目录
 

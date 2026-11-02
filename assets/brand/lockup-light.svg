@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" role="img" aria-label="GateKeeper 定制 G · 斜闸杆 light">
+  <title>GateKeeper I 定制 G · 斜闸杆 · light</title>
+  <g transform="translate(24,10) scale(0.70)">
+    
+  <path fill="none" stroke="#1b1b1b" stroke-width="27.38" stroke-linecap="butt"
+        d="M170.03,150.16 A60.31,60.31 0 1 1 170.03,89.84"/>
+  <path fill="#1b1b1b" d="M156.34,80.26 H183.72 V133.69 H156.34 Z"/>
+  <path fill="#1b1b1b" d="M143.13,106.31 H183.72 V133.69 H143.13 Z"/>
+  <path fill="#1b1b1b" d="M179.71,129.68 L194.89,114.51 L175.53,95.15 L160.35,110.32 Z"/>
+  <path fill="#0f6cbd" d="M195.24,114.15 L205.88,103.52 L186.52,84.16 L175.88,94.79 Z"/>
+  </g>
+  
+      
+  <path fill="none" stroke="#1b1b1b" stroke-width="7.40" stroke-linecap="butt"
+        d="M269.12,92.15 A16.30,16.30 0 1 1 269.12,75.85"/>
+  <path fill="#1b1b1b" d="M264.86,73.26 H273.37 V88.25 H264.86 Z"/>
+  <path fill="#1b1b1b" d="M261.85,79.75 H273.37 V88.25 H261.85 Z"/>
+  <path fill="#1b1b1b" d="M272.12,87.01 L276.23,82.91 L270.21,76.89 L266.11,80.99 Z"/>
+  <path fill="#0f6cbd" d="M276.58,82.55 L279.20,79.94 L273.18,73.92 L270.56,76.54 Z"/>
+      <text x="275.56" y="104" font-family="'Segoe UI Variable Text','Segoe UI','Microsoft YaHei UI','Microsoft YaHei',system-ui,sans-serif" font-size="56" font-weight="700" letter-spacing="-0.6" fill="#1b1b1b">ateKeeper</text>
+</svg>

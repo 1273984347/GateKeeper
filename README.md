@@ -1,5 +1,10 @@
 # GateKeeper
 [![GateKeeper CI 状态](https://github.com/1273984347/GateKeeper/actions/workflows/gatekeeper.yml/badge.svg)](https://github.com/1273984347/GateKeeper/actions/workflows/gatekeeper.yml)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/lockup-dark.svg">
+  <img src="assets/brand/lockup-light.svg" alt="GateKeeper · 定制 G 斜闸杆" width="360">
+</picture>
 > 创建日期：2026-08-31
 > 来源：AI 产出治理项目自审（自我深度审查）
 > Session：会话 ID 见 git 提交记录
@@ -87,8 +92,6 @@ node tools/gate.mjs        # ↑全量门禁一键串行+汇总（--full 追加 
 | 文档 | 作用 |
 |---|---|
 | [DESIGN.md](DESIGN.md) | 设计方案：目标原则 / 三层架构 / 门禁契约 / 视觉系统 / 数据模型 / 取舍 |
-| [UI升级方案.md](UI升级方案.md) | 界面美化升级规格：量化验收标准 / 设计令牌 / 自检结论 |
-| [Web端可扩展改造方案.md](Web端可扩展改造方案.md) | web 端从单页报表→三层治理控制台改造规格：四痛点映射 / 分期 / 风险（v0.12.0 已全量实施） |
 | [ROADMAP.md](ROADMAP.md) | 后续发展与迭代路线图：短中长期 / 指标演进 / 决策闸门 |
 | [CHANGELOG.md](CHANGELOG.md) | 正向时间线，每条含「来源/执行/文件/验证/状态」四件套 |
 | [STRUCTURE.md](STRUCTURE.md) | 目录结构与命名/单一事实源/归档约定 |

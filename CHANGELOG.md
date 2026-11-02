@@ -20,7 +20,8 @@
 > - **文件**：.gitignore、README.md、ROADMAP.md、STRUCTURE.md、DESIGN.md、UI升级方案.md、CHANGELOG.md、prototype/check-docs.mjs、tools/lint-workspace.mjs、tools/test-lint-workspace.mjs、tools/lint-links.mjs、tools/test-lint-links.mjs、tools/lint-layout.mjs、tools/smoke.mjs、prototype/gatekeeper.html（证据块）、prototype/README-DWS.md、docs/方法论/×3、prototype/configs/gatekeeper-self.json（0.21.4 + 登记）、本文件；另 95 文件 `git rm --cached`。
 > - **验证**：`node tools/gate.mjs` 十三门全绿（本地两轮 + GitHub 重克隆复检）；test-lint-workspace 19/19、test-lint-links 18/18；防回流负样本——`git add -f CLAUDE.md` 后第四查红、`git rm --cached` 后转绿；跟踪面校验负样本即公开克隆首跑 5 断链实录；历史重写后 GitHub 重克隆终验：全历史敏感串扫描 8 项全零（真实群 ID/nodeId/openDingId/taskId/私有仓名/本地路径）、内部路径历史残留 0、72 跟踪文件、70 提交。
 > - **状态**：已落地（本地）。git 历史重写（filter-repo 路径剔除 + replace-text 打码真实 ID/路径/仓名）与强推为同批第 2 阶段，重写后原 SHA 失效、旧史仅存本地备份 bundle。
-> - **例外声明**：本批按公开脱敏例外对 CHANGELOG 历史段做了私有仓名中性化（触碰"历史段只增不删"纪律，原史以本地备份 bundle 为准）；交接文档/对齐表等内部文档自此转为本地维护、不再有 git 历史。
+> - **追加（同日用户指令三连）**：①备份 bundle 经用户确认删除（旧 SHA 自此永久不可解析，重写不可回滚）；②README 头图接入品牌资产 `assets/brand/lockup-{light,dark}.svg`（方向 I 纯英文 lockup，`<picture>` 明暗双主题——中文副标仍在候选待拍板故不预设）；③UI升级方案/Web端可扩展改造方案按用户指令移出公开面（本地保留 + gitignore + 防回流清单 + README/DESIGN/ROADMAP/STRUCTURE/VISUAL-ACCEPTANCE 引用改自包含表述）。
+> - **例外声明**：本批按公开脱敏例外对 CHANGELOG 历史段做了私有仓名中性化（触碰"历史段只增不删"纪律，原史备份 bundle 已按用户指令删除，脱敏前状态不再可回溯）；交接文档/对齐表等内部文档自此转为本地维护、不再有 git 历史。
 
 ---
 

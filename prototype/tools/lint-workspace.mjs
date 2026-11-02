@@ -47,6 +47,7 @@ export const TRACKED_FORBIDDEN = [
   'prototype/output/', 'prototype/screenshots/',
   'CLAUDE.md', 'AGENTS.md', '交接文档.md', '新Agent启动Prompt.md',
   '.agents/', '.zcode/', 'docs/档案/', 'prototype/人工冷跑开跑清单.md',
+  'UI升级方案.md', 'Web端可扩展改造方案.md',
 ];
 
 /** 跟踪路径中命中防回流清单的条目，返回 [{path, rule}]（目录规则按前缀匹配，文件规则全等匹配） */

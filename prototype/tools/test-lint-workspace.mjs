@@ -78,8 +78,8 @@ t('防回流：output/screenshots 目录规则按前缀命中', () => {
   assert.deepEqual(hits.map((h) => h.rule), ['prototype/output/', 'prototype/screenshots/']);
 });
 t('防回流：内部协作文档文件规则全等命中（含中文名）', () => {
-  const hits = findTrackedForbidden(['交接文档.md', 'CLAUDE.md', 'AGENTS.md', '新Agent启动Prompt.md', 'prototype/人工冷跑开跑清单.md']);
-  assert.equal(hits.length, 5);
+  const hits = findTrackedForbidden(['交接文档.md', 'CLAUDE.md', 'AGENTS.md', '新Agent启动Prompt.md', 'prototype/人工冷跑开跑清单.md', 'UI升级方案.md', 'Web端可扩展改造方案.md']);
+  assert.equal(hits.length, 7);
 });
 t('防回流：.agents/.zcode/docs/档案 目录前缀命中', () => {
   assert.equal(findTrackedForbidden(['.agents/skills/gk-release/SKILL.md', '.zcode/workflows/x.dwf.ts', 'docs/档案/批次编号对齐表.md']).length, 3);
