@@ -11,7 +11,8 @@ const t = (name, fn) => {
   try { fn(); pass++; console.log(`✓ ${name}`); }
   catch (e) { failCount++; console.log(`✗ ${name}\n   ${e.message.split('\n')[0]}`); }
 };
-const ROOT = 'D:/repo';
+// 假根按平台取绝对路径：'D:/repo' 在 POSIX 不是绝对路径，resolve 会落到 cwd 下致 escape 误判（CI 红，2026-11-03 修正）
+const ROOT = process.platform === 'win32' ? 'D:/repo' : '/repo';
 const existsYes = () => true, existsNo = () => false;
 
 // ---- extractMdLinks：正 3 ----
