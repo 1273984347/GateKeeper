@@ -74,8 +74,8 @@ prototype/
 ├── config.dws.json      DWS 目标 ID 占位符（群/复核人/作者/审批人；真实值本地填入勿提交）
 ├── README-DWS.md        DWS 接入指南与执行模型
 ├── 人工实测对照表.md      人工审核耗时对照实测表（human-baseline 采集器的纸质兜底与判分口径）
-├── screenshots/         UI 测试截图（本地生成，已 gitignore 不入库；`tools/shot.mjs` 重生成）
-└── output/              运行产物（本地生成，已 gitignore 不入库；accept-*/gate-report/dws-plan/bench-report/real-batch-*/project-check-* 等，均可由对应脚本重生成）
+├── screenshots/         UI 测试截图（本地生成，已 gitignore 不入库；`tools/shot.mjs` 重生成） <!--lint-workspace:exempt 本地生成目录，公开克隆不存在-->
+└── output/              运行产物（本地生成，已 gitignore 不入库；accept-*/gate-report/dws-plan/bench-report/real-batch-*/project-check-* 等，均可由对应脚本重生成） <!--lint-workspace:exempt 本地生成目录，公开克隆不存在-->
 ```
 
 ## 命名规范

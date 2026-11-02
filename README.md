@@ -95,7 +95,6 @@ node tools/gate.mjs        # ↑全量门禁一键串行+汇总（--full 追加 
 | [配置切换Demo.md](配置切换Demo.md) | 同一引擎换三套配置体检三类项目——"改配置不改代码"的可执行实证 |
 | [prototype/README-DWS.md](prototype/README-DWS.md) | DWS 接入指南与执行模型 |
 | [prototype/人工实测对照表.md](prototype/人工实测对照表.md) | 人工审核耗时对照实测表（含 human-baseline 采集器使用说明） |
-| [docs/工作复盘与优化分析报告-2026-10.md](docs/工作复盘与优化分析报告-2026-10.md) | 2026-10 工作周期复盘：经验/技能/问题/流程优化与行动计划（时点快照） |
 
 ## 核心指标（引用式，权威值见 CHANGELOG / bench-report）
 

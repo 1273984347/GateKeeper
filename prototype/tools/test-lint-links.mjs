@@ -67,5 +67,17 @@ t('%20 解码后判定（dir%20name，分隔符无关）', () => {
   assert.equal(resolveTarget('dir%20name/f.md', ROOT + '/r.md', ROOT, (p) => p.replace(/\\/g, '/') === ROOT + '/dir name/f.md').kind, 'ok');
 });
 
+// ---- resolveTarget：跟踪面校验（v0.21.4 公开整备批）----
+t('isTracked 缺省不启用（旧口径兼容）', () => {
+  assert.equal(resolveTarget('./README.md', ROOT + '/r.md', ROOT, existsYes).kind, 'ok');
+});
+t('目标在跟踪面 → ok', () => {
+  assert.equal(resolveTarget('./README.md', ROOT + '/r.md', ROOT, existsYes, () => true).kind, 'ok');
+});
+t('目标存在但不在跟踪面 → untracked（公开克隆断链盲区）', () => {
+  const r = resolveTarget('./交接文档.md', ROOT + '/r.md', ROOT, existsYes, (p) => !String(p).includes('交接文档'));
+  assert.equal(r.kind, 'untracked');
+});
+
 console.log(`\n===== test-lint-links：${pass} 过 / ${failCount} 败 =====`);
 process.exit(failCount === 0 ? 0 : 1);
