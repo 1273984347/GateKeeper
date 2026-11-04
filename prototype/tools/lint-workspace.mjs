@@ -49,6 +49,7 @@ export const TRACKED_FORBIDDEN = [
   '.agents/', '.zcode/', 'docs/档案/', 'prototype/人工冷跑开跑清单.md',
   'UI升级方案.md', 'Web端可扩展改造方案.md',
   'docs/工作复盘与优化分析报告-*.md',
+  'experiments/',
 ];
 
 function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, (c) => (c === '*' ? '\0' : '\\' + c)); }
