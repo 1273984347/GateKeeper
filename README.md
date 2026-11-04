@@ -69,7 +69,25 @@ gates.mjs        六道门禁引擎（纯逻辑，前后端共用的唯一规则
 
 ## 快速开始
 
-> 环境要求：**Node.js ≥ 20**（与 CI 同版本，零第三方依赖）。可选：`npm i -g playwright && npx playwright install chromium` 后启用布局门禁（门禁链第十三门）与前端冒烟，未安装时这两项自动 SKIP 不阻断。
+### 60 秒本地跑通（不接钉钉）
+
+钉钉/DWS 是**可选编排层**——核心门禁引擎、CLI 工具与治理控制台零外部依赖，纯本地即可跑通：
+
+```bash
+git clone https://github.com/1273984347/GateKeeper.git
+cd GateKeeper/prototype
+node verify.mjs                                                  # 回归红线：12 项断言全绿（样例五裁决基线）
+node tools/gate.mjs                                              # 十三门全量门禁串行（约 10 秒，无 Playwright 时浏览器门自动 SKIP）
+node project-check.mjs --config configs/gatekeeper-self.json ../README.md   # 用治理口径体检任意 markdown 文档
+```
+
+浏览器直接打开 `gatekeeper.html`（可加 `?demo=1` 进离线演示模式）——五视图 · 五级下钻 · 换配置 diff，单文件零外部依赖。`dws-bridge.mjs` 不填钉钉 ID 也正常运行（dry-run 出计划不执行），接真实钉钉才需要填 `config.dws.json`（见 [prototype/README-DWS.md](prototype/README-DWS.md)）。
+
+### 环境要求
+
+> **Node.js ≥ 20**（与 CI 同版本，零第三方依赖）。可选：`npm i -g playwright && npx playwright install chromium` 后启用布局门禁（门禁链第十三门）与前端冒烟，未安装时这两项自动 SKIP 不阻断。
+
+### 常用命令
 
 ```bash
 cd prototype
@@ -105,4 +123,4 @@ node tools/gate.mjs        # ↑全量门禁一键串行+汇总（--full 追加 
 
 ## 授权与免责
 
-样例与演示数据均为脱敏模拟，不含真实个人信息或商业秘密。广告合规门禁为辅助审核，不替代法务正式审批。
+本项目以 [Apache License 2.0](LICENSE) 开源。样例与演示数据均为脱敏模拟，不含真实个人信息或商业秘密。广告合规门禁为辅助审核，不替代法务正式审批。

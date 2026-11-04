@@ -10,6 +10,7 @@
 ```
 GateKeeper/
 ├── README.md            项目门面
+├── LICENSE              Apache-2.0（2026 GateKeeper contributors）
 ├── DESIGN.md            设计方案（设计层：目标/架构/门禁契约/视觉/数据模型/取舍）
 ├── ROADMAP.md           后续发展与迭代路线图（路线层，里程碑编号权威）
 ├── CHANGELOG.md         正向时间线 · 唯一写细节 · 四件套
